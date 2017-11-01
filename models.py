@@ -21,7 +21,7 @@ class Bridge(db.Model):
     twitter_last_id = db.Column(db.BigInteger, default=0)
     twitter_handle = db.Column(db.String(15), nullable=False)
 
-    mastodon_access_token = db.Column(db.String(80), nullable=False)
+    mastodon_access_code = db.Column(db.String(80), nullable=False)
     mastodon_last_id = db.Column(db.BigInteger, default=0)
     mastodon_user = db.Column(db.String(30), nullable=False)
     mastodon_host_id = db.Column(db.Integer, db.ForeignKey('mastodon_host.id'), nullable=False)

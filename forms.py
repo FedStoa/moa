@@ -1,9 +1,9 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import BooleanField, StringField, SelectField
 from wtforms.validators import DataRequired, Email
 
 
-class OptionsForm(Form):
+class OptionsForm(FlaskForm):
     enabled = BooleanField('Enable Bridge?', default=True)
 
     post_to_twitter = BooleanField('Post to Twitter?', default=True)
@@ -19,5 +19,5 @@ class OptionsForm(Form):
                                   default='public')
 
 
-class MastodonIDForm(Form):
+class MastodonIDForm(FlaskForm):
     mastodon_id = StringField('Enter your Mastodon ID', validators=[DataRequired(), Email()])

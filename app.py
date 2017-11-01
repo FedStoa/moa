@@ -68,15 +68,19 @@ def options():
                     'toot_visibility': form.toot_visibility.data,
                     }
 
+        # get latest twitter ID
+
+        # get latest mastodon ID
+
         b = Bridge(enabled=form.enabled.data,
 
                    twitter_oauth_token=session['twitter']['oauth_token'],
-                   twitter_oauth_token_secretn=session['twitter']['oauth_token_secret'],
+                   twitter_oauth_secret=session['twitter']['oauth_token_secret'],
                    twitter_handle=session['twitter']['screen_name'],
 
                    mastodon_access_code=session['mastodon']['access_code'],
                    mastodon_user=session['mastodon']['username'],
-                   mastodon_host=get_or_create_host(session['mastodon']['mastodon_host']),
+                   mastodon_host=get_or_create_host(session['mastodon']['host']),
 
                    settings=json.dumps(settings),
                    updated=datetime.now()
@@ -149,7 +153,7 @@ def mastodon_login():
     form = MastodonIDForm()
     if form.validate_on_submit():
 
-        user_id = request.form.get('mastodon_id')
+        user_id = form.mastodon_id.data
 
         if "@" not in user_id:
             flash('Invalid Mastodon ID')
@@ -157,17 +161,16 @@ def mastodon_login():
 
         username, host = user_id.split('@')
 
-        session['mastodon'] = {'host': host}
+        session['mastodon_host'] = host
 
         # Do we have an app registered with this instance?
-
         mastodonhost = get_or_create_host(host)
 
         mastodon_api = Mastodon(
             client_id=mastodonhost.client_id,
             client_secret=mastodonhost.client_secret,
             api_base_url=mastodonhost.hostname,
-            debug_requests=True
+            debug_requests=False
         )
 
         return redirect(
@@ -190,13 +193,14 @@ def mastodon_oauthorized():
         flash('You denied the request to sign in to Mastodon.')
     else:
 
-        mastodonhost = get_or_create_host(session['mastodon']['host'])
+        mastodonhost = get_or_create_host(session['mastodon_host'])
+        session.pop('mastodon_host', None)
 
         mastodon_api = Mastodon(
             client_id=mastodonhost.client_id,
             client_secret=mastodonhost.client_secret,
             api_base_url=mastodonhost.hostname,
-            debug_requests=True
+            debug_requests=False
         )
 
         access_code = mastodon_api.log_in(
@@ -205,10 +209,13 @@ def mastodon_oauthorized():
             redirect_uri=url_for("mastodon_oauthorized", _external=True)
         )
 
-        session['mastodon']['access_code'] = access_code
         mastodon_api.access_code = access_code
 
-        session['mastodon']['username'] = mastodon_api.account_verify_credentials()["username"]
+        session['mastodon'] = {
+            'host': mastodonhost.hostname,
+            'access_code': access_code,
+            'username': mastodon_api.account_verify_credentials()["username"]
+        }
 
     return redirect(url_for('index'))
 
