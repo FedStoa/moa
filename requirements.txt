@@ -9,14 +9,20 @@ chardet==3.0.4            # via requests
 click==6.7                # via flask
 flask-oauthlib==0.9.4
 flask-sqlalchemy==2.3.2
+flask-wtf==0.14.2
 flask==0.12.2
 idna==2.6                 # via requests
 itsdangerous==0.24        # via flask
 jinja2==2.9.6             # via flask
 markupsafe==1.0           # via jinja2
+mastodon.py==1.1.1
 oauthlib==2.0.6           # via flask-oauthlib, requests-oauthlib
+python-dateutil==2.6.1    # via mastodon.py
+pytz==2017.3              # via mastodon.py
 requests-oauthlib==0.8.0  # via flask-oauthlib
-requests==2.18.4          # via requests-oauthlib
+requests==2.18.4          # via mastodon.py, requests-oauthlib
+six==1.11.0               # via mastodon.py, python-dateutil
 sqlalchemy==1.1.14        # via flask-sqlalchemy
 urllib3==1.22             # via requests
 werkzeug==0.12.2          # via flask
+wtforms==2.1              # via flask-wtf

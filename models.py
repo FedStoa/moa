@@ -1,8 +1,9 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
 
 class MastodonHost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -10,17 +11,18 @@ class MastodonHost(db.Model):
     client_id = db.Column(db.String(64), nullable=False)
     client_secret = db.Column(db.String(64), nullable=False)
     created = db.Column(db.DateTime, default=datetime.utcnow)
+    bridges = db.relationship('Bridge', backref='mastodon_host', lazy='dynamic')
 
 
 class Bridge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     twitter_oauth_token = db.Column(db.String(80), nullable=False)
     twitter_oauth_secret = db.Column(db.String(80), nullable=False)
-    twitter_last_id = db.Column(db.BigInteger)
+    twitter_last_id = db.Column(db.BigInteger, default=0)
     twitter_handle = db.Column(db.String(15), nullable=False)
 
     mastodon_access_token = db.Column(db.String(80), nullable=False)
-    mastodon_last_id = db.Column(db.BigInteger)
+    mastodon_last_id = db.Column(db.BigInteger, default=0)
     mastodon_user = db.Column(db.String(30), nullable=False)
     mastodon_host_id = db.Column(db.Integer, db.ForeignKey('mastodon_host.id'), nullable=False)
 

@@ -1,4 +1,5 @@
 <!doctype html>
+<html>
 <head>
 <title>Moa</title>
 <!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}"> -->
@@ -14,16 +15,29 @@
 
 <br>
 
-{% if g.m_user %}2. Mastodon: {{ g.m_user.username }}{% else %}
+{% if g.m_user %}2. Mastodon: {{ g.m_user.username }}<br>{% else %}
 <form action="{{ url_for('mastodon_login') }}" method="POST">
-2. Enter your Mastodon address: <input type=text name=username size=40>
-<input type=submit value="GO">
+    2. {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance') }}
+    {{ form.csrf_token }}
+    <input type=submit value="GO">
 </form>
 {% endif %}
 
-<br>
-
 3. Select Options
+<form method="POST" action="{{ url_for('options') }}">
+    {{ form.enabled.label }}{{ form.enabled }}
+    <br>
+    {{ form.post_to_twitter.label }}{{ form.post_to_twitter }}
+    <br>
+    {{ form.split_twitter_messages.label }}{{ form.split_twitter_messages }}
+    <br>
+    {{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}
+    <br>
+    {{ form.toot_visibility.label }}{{ form.toot_visibility }}
+    <br>
+    {{ form.csrf_token }}
+    <input type="submit" value="Save">
+</form>
 
 <br>
 4. <a href="{{ url_for('logout') }}">Logout</a>
