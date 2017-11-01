@@ -1,4 +1,3 @@
-import json
 import os
 from datetime import datetime
 
@@ -8,8 +7,8 @@ from flask import redirect, render_template
 from flask_oauthlib.client import OAuth
 from mastodon import Mastodon
 
-from forms import OptionsForm, MastodonIDForm
-from models import db, Bridge, MastodonHost
+from forms import SettingsForm, MastodonIDForm
+from models import db, Bridge, MastodonHost, Settings
 
 app = Flask(__name__)
 app.config.from_object('config.DevelopmentConfig')
@@ -35,15 +34,6 @@ app.logger.debug(twitter)
 #         resp = session['twitter']
 #         return resp['oauth_token'], resp['oauth_token_secret']
 
-
-@app.route('/')
-def index():
-    form = OptionsForm()
-    mform = MastodonIDForm()
-
-    return render_template('index.html.j2', form=form, mform=mform)
-
-
 @app.before_request
 def before_request():
     g.t_user = None
@@ -55,42 +45,78 @@ def before_request():
     if 'mastodon' in session:
         g.m_user = session['mastodon']
 
-    app.logger.info(session)
+        # app.logger.info(session)
+
+
+@app.route('/')
+def index():
+    mform = MastodonIDForm()
+    settings = Settings()
+    enabled = True
+
+    if 'twitter' in session and 'mastodon' in session:
+        # look up settings
+        bridge = Bridge.query.filter_by(
+            mastodon_user=session['mastodon']['username'],
+            twitter_handle=session['twitter']['screen_name'],
+        ).first()
+
+        if bridge:
+            settings = bridge.settings
+            enabled = bridge.enabled
+            app.logger.debug(f"Existing settings found: {enabled} {settings.__dict__}")
+
+    form = SettingsForm(obj=settings)
+
+    return render_template('index.html.j2',
+                           form=form,
+                           mform=mform,
+                           enabled=enabled,
+                           )
 
 
 @app.route('/options', methods=["POST"])
 def options():
-    form = OptionsForm()
+    form = SettingsForm()
+
     if form.validate_on_submit():
-        settings = {'post_to_twitter': form.post_to_twitter.data,
-                    'split_twitter_messages': form.split_twitter_messages.data,
-                    'post_to_mastodon': form.post_to_mastodon.data,
-                    'toot_visibility': form.toot_visibility.data,
-                    }
 
-        # get latest twitter ID
+        settings = Settings()
 
-        # get latest mastodon ID
+        form.populate_obj(settings)
 
-        b = Bridge(enabled=form.enabled.data,
+        bridge = Bridge.query.filter_by(
+            mastodon_user=session['mastodon']['username'],
+            twitter_handle=session['twitter']['screen_name'],
+        ).first()
 
-                   twitter_oauth_token=session['twitter']['oauth_token'],
-                   twitter_oauth_secret=session['twitter']['oauth_token_secret'],
-                   twitter_handle=session['twitter']['screen_name'],
+        if bridge:
+            bridge.enabled = form.enabled.data
+            bridge.settings = settings
+            bridge.updated = datetime.now()
+            app.logger.debug("Existing settings found")
 
-                   mastodon_access_code=session['mastodon']['access_code'],
-                   mastodon_user=session['mastodon']['username'],
-                   mastodon_host=get_or_create_host(session['mastodon']['host']),
+        else:
 
-                   settings=json.dumps(settings),
-                   updated=datetime.now()
-                   )
+            bridge = Bridge(enabled=form.enabled.data,
+
+                            twitter_oauth_token=session['twitter']['oauth_token'],
+                            twitter_oauth_secret=session['twitter']['oauth_token_secret'],
+                            twitter_handle=session['twitter']['screen_name'],
+
+                            mastodon_access_code=session['mastodon']['access_code'],
+                            mastodon_user=session['mastodon']['username'],
+                            mastodon_host=get_or_create_host(session['mastodon']['host']),
+
+                            settings=settings,
+                            updated=datetime.now()
+                            )
+            app.logger.debug("Saving new settings")
+            db.session.add(bridge)
 
         flash("Settings Saved.")
-        db.session.add(b)
-        db.session.commit()
 
-        return redirect(url_for('index'))
+        db.session.commit()
 
     return redirect(url_for('index'))
 

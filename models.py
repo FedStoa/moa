@@ -35,3 +35,10 @@ class Bridge(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+
+class Settings:
+    post_to_twitter = True
+    split_twitter_messages = True
+    post_to_mastodon = True
+    toot_visibility = 'public'

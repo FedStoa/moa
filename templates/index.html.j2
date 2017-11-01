@@ -25,7 +25,7 @@
 
 3. Select Options
 <form method="POST" action="{{ url_for('options') }}">
-    {{ form.enabled.label }}{{ form.enabled }}
+    {{ form.enabled.label }}{{ form.enabled(checked=enabled) }}
     <br>
     {{ form.post_to_twitter.label }}{{ form.post_to_twitter }}
     <br>
@@ -33,7 +33,7 @@
     <br>
     {{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}
     <br>
-    {{ form.toot_visibility.label }}{{ form.toot_visibility }}
+    {{ form.toot_visibility.label }}: {{ form.toot_visibility }}
     <br>
     {{ form.csrf_token }}
     <input type="submit" value="Save">
