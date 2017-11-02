@@ -1,11 +1,13 @@
 import os
 from datetime import datetime
 
+import twitter
 from flask import Flask
 from flask import g, session, request, url_for, flash
 from flask import redirect, render_template
 from flask_oauthlib.client import OAuth
 from mastodon import Mastodon
+from mastodon.Mastodon import MastodonAPIError
 
 from forms import SettingsForm, MastodonIDForm
 from models import db, Bridge, MastodonHost, Settings
@@ -15,7 +17,7 @@ app.config.from_object('config.DevelopmentConfig')
 db.init_app(app)
 oauth = OAuth(app)
 
-twitter = oauth.remote_app(
+twitter_oauth = oauth.remote_app(
     'twitter',
     consumer_key=app.config['TWITTER_CONSUMER_KEY'],
     consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
@@ -24,8 +26,6 @@ twitter = oauth.remote_app(
     access_token_url='https://api.twitter.com/oauth/access_token',
     authorize_url='https://api.twitter.com/oauth/authorize'
 )
-
-app.logger.debug(twitter)
 
 
 # @twitter.tokengetter
@@ -45,7 +45,7 @@ def before_request():
     if 'mastodon' in session:
         g.m_user = session['mastodon']
 
-        # app.logger.info(session)
+        app.logger.info(session)
 
 
 @app.route('/')
@@ -111,6 +111,30 @@ def options():
                             settings=settings,
                             updated=datetime.now()
                             )
+
+            # get twitter ID
+            twitter_api = twitter.Api(
+                consumer_key=app.config['TWITTER_CONSUMER_KEY'],
+                consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
+                access_token_key=session['twitter']['oauth_token'],
+                access_token_secret=session['twitter']['oauth_token_secret'],
+                tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+            )
+
+            bridge.twitter_last_id = twitter_api.GetUserTimeline()[0].id
+
+            # get mastodon ID
+            api = mastodon_api(session['mastodon']['host'],
+                               access_code=session['mastodon']['access_code'])
+
+            account_id = api.account_verify_credentials()["id"]
+
+            try:
+                bridge.mastodon_last_id = api.account_statuses(account_id)[0]["id"]
+
+            except MastodonAPIError:
+                bridge.mastodon_last_id = 0
+
             app.logger.debug("Saving new settings")
             db.session.add(bridge)
 
@@ -132,12 +156,12 @@ def twitter_login():
 
     app.logger.debug(callback_url)
 
-    return twitter.authorize(callback=callback_url)
+    return twitter_oauth.authorize(callback=callback_url)
 
 
 @app.route('/twitter_oauthorized')
 def twitter_oauthorized():
-    resp = twitter.authorized_response()
+    resp = twitter_oauth.authorized_response()
     if resp is None:
         flash('You denied the request to sign in.')
     else:
@@ -158,7 +182,7 @@ def get_or_create_host(hostname):
         client_id, client_secret = Mastodon.create_app(
             "Moa",
             scopes=["read", "write"],
-            api_base_url=hostname,
+            api_base_url=f"https://{hostname}",
             website="https://moa.social/",
             redirect_uris=url_for("mastodon_oauthorized", _external=True)
 
@@ -171,7 +195,23 @@ def get_or_create_host(hostname):
         db.session.add(mastodonhost)
         db.session.commit()
 
+    app.logger.debug("Using Mastodon Host: {mastodonhost.hostname}")
+
     return mastodonhost
+
+
+def mastodon_api(hostname, access_code=None):
+    mastodonhost = get_or_create_host(hostname)
+
+    api = Mastodon(
+        client_id=mastodonhost.client_id,
+        client_secret=mastodonhost.client_secret,
+        api_base_url=f"https://{mastodonhost.hostname}",
+        access_token=access_code,
+        debug_requests=False
+    )
+
+    return api
 
 
 @app.route('/mastodon_login', methods=['POST'])
@@ -189,18 +229,10 @@ def mastodon_login():
 
         session['mastodon_host'] = host
 
-        # Do we have an app registered with this instance?
-        mastodonhost = get_or_create_host(host)
-
-        mastodon_api = Mastodon(
-            client_id=mastodonhost.client_id,
-            client_secret=mastodonhost.client_secret,
-            api_base_url=mastodonhost.hostname,
-            debug_requests=False
-        )
+        api = mastodon_api(host)
 
         return redirect(
-            mastodon_api.auth_request_url(
+            api.auth_request_url(
                 scopes=['read', 'write'],
                 redirect_uris=url_for("mastodon_oauthorized", _external=True)
             )
@@ -214,33 +246,31 @@ def mastodon_login():
 @app.route('/mastodon_oauthorized')
 def mastodon_oauthorized():
     authorization_code = request.args.get('code')
+    app.logger.info(f"Authorization code {authorization_code}")
 
     if authorization_code is None:
         flash('You denied the request to sign in to Mastodon.')
     else:
 
-        mastodonhost = get_or_create_host(session['mastodon_host'])
+        host = session['mastodon_host']
         session.pop('mastodon_host', None)
 
-        mastodon_api = Mastodon(
-            client_id=mastodonhost.client_id,
-            client_secret=mastodonhost.client_secret,
-            api_base_url=mastodonhost.hostname,
-            debug_requests=False
-        )
+        api = mastodon_api(host)
 
-        access_code = mastodon_api.log_in(
+        access_code = api.log_in(
             code=authorization_code,
             scopes=["read", "write"],
             redirect_uri=url_for("mastodon_oauthorized", _external=True)
         )
 
-        mastodon_api.access_code = access_code
+        app.logger.info(f"Access code {access_code}")
+
+        api.access_code = access_code
 
         session['mastodon'] = {
-            'host': mastodonhost.hostname,
+            'host': host,
             'access_code': access_code,
-            'username': mastodon_api.account_verify_credentials()["username"]
+            'username': api.account_verify_credentials()["username"]
         }
 
     return redirect(url_for('index'))

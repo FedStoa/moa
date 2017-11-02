@@ -3,3 +3,4 @@ Flask-OAuthlib
 flask_sqlalchemy
 Flask-WTF
 Mastodon.py
+python-twitter
