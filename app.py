@@ -6,14 +6,16 @@ from flask import Flask
 from flask import g, session, request, url_for, flash
 from flask import redirect, render_template
 from flask_oauthlib.client import OAuth
+from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
 
 from forms import SettingsForm, MastodonIDForm
-from models import db, Bridge, MastodonHost, Settings
+from models import metadata, Bridge, MastodonHost, Settings
 
 app = Flask(__name__)
 app.config.from_object('config.DevelopmentConfig')
+db = SQLAlchemy(metadata=metadata)
 db.init_app(app)
 oauth = OAuth(app)
 
@@ -56,7 +58,7 @@ def index():
 
     if 'twitter' in session and 'mastodon' in session:
         # look up settings
-        bridge = Bridge.query.filter_by(
+        bridge = db.session.query(Bridge).filter_by(
             mastodon_user=session['mastodon']['username'],
             twitter_handle=session['twitter']['screen_name'],
         ).first()
@@ -85,7 +87,7 @@ def options():
 
         form.populate_obj(settings)
 
-        bridge = Bridge.query.filter_by(
+        bridge = db.session.query(Bridge).filter_by(
             mastodon_user=session['mastodon']['username'],
             twitter_handle=session['twitter']['screen_name'],
         ).first()
@@ -176,7 +178,7 @@ def twitter_oauthorized():
 
 
 def get_or_create_host(hostname):
-    mastodonhost = MastodonHost.query.filter_by(hostname=hostname).first()
+    mastodonhost = db.session.MastodonHost(Bridge).filter_by(hostname=hostname).first()
 
     if not mastodonhost:
         client_id, client_secret = Mastodon.create_app(
