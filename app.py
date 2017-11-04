@@ -1,6 +1,5 @@
-import os
 from datetime import datetime
-
+from pathlib import Path
 import twitter
 from flask import Flask
 from flask import g, session, request, url_for, flash
@@ -87,67 +86,64 @@ def options():
 
         form.populate_obj(settings)
 
+        bridge_found = False
+
         bridge = db.session.query(Bridge).filter_by(
             mastodon_user=session['mastodon']['username'],
             twitter_handle=session['twitter']['screen_name'],
         ).first()
 
         if bridge:
-            bridge.enabled = form.enabled.data
-            bridge.settings = settings
-            bridge.updated = datetime.now()
+            bridge_found = True
             app.logger.debug("Existing settings found")
-
         else:
+            bridge = Bridge()
 
-            bridge = Bridge(enabled=form.enabled.data,
+        bridge.enabled = form.enabled.data
+        bridge.settings = settings
+        bridge.updated = datetime.now()
+        bridge.twitter_oauth_token = session['twitter']['oauth_token']
+        bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
+        bridge.twitter_handle = session['twitter']['screen_name']
+        bridge.mastodon_access_code = session['mastodon']['access_code']
+        bridge.mastodon_user = session['mastodon']['username']
+        bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
 
-                            twitter_oauth_token=session['twitter']['oauth_token'],
-                            twitter_oauth_secret=session['twitter']['oauth_token_secret'],
-                            twitter_handle=session['twitter']['screen_name'],
+        # get twitter ID
+        twitter_api = twitter.Api(
+            consumer_key=app.config['TWITTER_CONSUMER_KEY'],
+            consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
+            access_token_key=session['twitter']['oauth_token'],
+            access_token_secret=session['twitter']['oauth_token_secret'],
+            tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+        )
 
-                            mastodon_access_code=session['mastodon']['access_code'],
-                            mastodon_user=session['mastodon']['username'],
-                            mastodon_host=get_or_create_host(session['mastodon']['host']),
+        bridge.twitter_last_id = twitter_api.GetUserTimeline()[0].id
 
-                            settings=settings,
-                            updated=datetime.now()
-                            )
+        # get mastodon ID
+        api = mastodon_api(session['mastodon']['host'],
+                           access_code=session['mastodon']['access_code'])
 
-            # get twitter ID
-            twitter_api = twitter.Api(
-                consumer_key=app.config['TWITTER_CONSUMER_KEY'],
-                consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
-                access_token_key=session['twitter']['oauth_token'],
-                access_token_secret=session['twitter']['oauth_token_secret'],
-                tweet_mode='extended'  # Allow tweets longer than 140 raw characters
-            )
+        bridge.mastodon_account_id = api.account_verify_credentials()["id"]
 
-            bridge.twitter_last_id = twitter_api.GetUserTimeline()[0].id
+        try:
+            bridge.mastodon_last_id = api.account_statuses(bridge.mastodon_account_id)[0]["id"]
 
-            # get mastodon ID
-            api = mastodon_api(session['mastodon']['host'],
-                               access_code=session['mastodon']['access_code'])
+        except MastodonAPIError:
+            bridge.mastodon_last_id = 0
 
-            bridge.mastodon_account_id = api.account_verify_credentials()["id"]
+        app.logger.debug("Saving new settings")
 
-            try:
-                bridge.mastodon_last_id = api.account_statuses(bridge.mastodon_account_id)[0]["id"]
-
-            except MastodonAPIError:
-                bridge.mastodon_last_id = 0
-
-            app.logger.debug("Saving new settings")
+        if not bridge_found:
             db.session.add(bridge)
 
-        flash("Settings Saved.")
+    flash("Settings Saved.")
 
-        db.session.commit()
+    db.session.commit()
 
     return redirect(url_for('index'))
 
 
-#
 # Twitter
 #
 
@@ -185,7 +181,7 @@ def get_or_create_host(hostname):
             "Moa",
             scopes=["read", "write"],
             api_base_url=f"https://{hostname}",
-            website="https://moa.social/",
+            website="https://moa.party/",
             redirect_uris=url_for("mastodon_oauthorized", _external=True)
 
         )
@@ -287,7 +283,7 @@ def logout():
 
 if __name__ == '__main__':
 
-    if not os.path.isfile('/tmp/test.db'):
+    if not Path('/tmp/test.db').exists():
         with app.app_context():
             db.create_all()
     app.run()
