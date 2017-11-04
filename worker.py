@@ -8,11 +8,11 @@ import time
 
 import requests
 import twitter
-from twitter import twitter_utils, TwitterError
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from twitter import twitter_utils, TwitterError
 
 from config import DevelopmentConfig
 from models import Bridge
@@ -130,19 +130,19 @@ for bridge in bridges:
 
                 # Don't cross-post replies
                 if len(content_clean) != 0 and content_clean[0] == '@':
-                    print('Skipping toot "' + content_clean + '" - is a reply.')
+                    l.info(f'Skipping toot "{content_clean}" - is a reply.')
                     continue
 
                 # Split toots, if need be, using Many magic numbers.
                 content_parts = []
                 if calc_expected_status_length(content_clean, short_url_length=url_length) > 140:
-                    print('Toot bigger 140 characters, need to split...')
+                    l.info('Toot bigger 140 characters, need to split...')
                     current_part = ""
                     for next_word in content_clean.split(" "):
                         # Need to split here?
-                        if calc_expected_status_length(current_part + " " + next_word,
+                        if calc_expected_status_length(f"{current_part} {next_word}",
                                                        short_url_length=url_length) > 135:
-                            print("new part")
+                            # print("new part")
                             space_left = 135 - calc_expected_status_length(current_part,
                                                                            short_url_length=url_length) - 1
 
@@ -150,7 +150,7 @@ for bridge in bridges:
                                 # Want to split word?
                                 if len(next_word) > 30 and space_left > 5 and not twitter.twitter_utils.is_url(
                                         next_word):
-                                    current_part = current_part + " " + next_word[:space_left]
+                                    current_part = f"{current_part} {next_word[:space_left]}"
                                     content_parts.append(current_part)
                                     current_part = next_word[space_left:]
                                 else:
@@ -162,20 +162,20 @@ for bridge in bridges:
                                     content_parts.append(current_part[:135])
                                     current_part = current_part[135:]
                             else:
-                                print('In fact we just cut')
+                                l.info('In fact we just cut')
                                 space_for_suffix = len('… ') + url_length
-                                content_parts.append(current_part[:-space_for_suffix] + '… ' + toot['url'])
+                                content_parts.append(f"{current_part[:-space_for_suffix]}… {toot['url']}")
                                 current_part = ''
                                 break
                         else:
                             # Just plop next word on
-                            current_part = current_part + " " + next_word
+                            current_part = f"{current_part} {next_word}"
                     # Insert last part
                     if len(current_part.strip()) != 0 or len(content_parts) == 0:
                         content_parts.append(current_part.strip())
 
                 else:
-                    print('Toot smaller 140 chars, posting directly...')
+                    l.info('Toot smaller 140 chars, posting directly...')
                     content_parts.append(content_clean)
 
                 # Tweet all the parts. On error, give up and go on with the next toot.
@@ -185,14 +185,14 @@ for bridge in bridges:
                         media_ids = []
                         content_tweet = content_parts[i]
                         if bridge.settings.split_twitter_messages:
-                            content_tweet += " --"
+                            content_tweet += "…"
 
                         # Last content part: Upload media, no -- at the end
                         if i == len(content_parts) - 1:
                             for attachment in media_attachments:
                                 attachment_url = attachment["url"]
 
-                                print('Downloading ' + attachment_url)
+                                l.info('Downloading ' + attachment_url)
                                 attachment_file = requests.get(attachment_url, stream=True)
                                 attachment_file.raw.decode_content = True
                                 temp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -204,7 +204,7 @@ for bridge in bridges:
                                 os.rename(temp_file.name, upload_file_name)
 
                                 temp_file_read = open(upload_file_name, 'rb')
-                                print('Uploading ' + upload_file_name)
+                                l.info('Uploading ' + upload_file_name)
                                 media_ids.append(twitter_api.UploadMediaChunked(media=temp_file_read))
                                 temp_file_read.close()
                                 os.unlink(upload_file_name)
@@ -221,12 +221,12 @@ for bridge in bridges:
                             try:
                                 # Tweet
                                 if len(media_ids) == 0:
-                                    print('Tweeting "' + content_tweet + '"...')
+                                    l.info(f'Tweeting "{content_tweet}"')
                                     reply_to = twitter_api.PostUpdate(content_tweet, in_reply_to_status_id=reply_to).id
                                     twitter_last_id = reply_to
                                     post_success = True
                                 else:
-                                    print('Tweeting "' + content_tweet + '", with attachments...')
+                                    l.info(f'Tweeting "{content_tweet}", with attachments')
                                     reply_to = twitter_api.PostUpdate(content_tweet,
                                                                       media=media_ids,
                                                                       in_reply_to_status_id=reply_to).id
@@ -240,8 +240,7 @@ for bridge in bridges:
                                 else:
                                     raise
                 except:
-                    l.error("Encountered error after " + str(TWITTER_RETRIES) + " retries. Not retrying.")
-
+                    l.error(f"Encountered error after {TWITTER_RETRIES} retries. Not retrying.")
 
         bridge.mastodon_last_id = mastodon_last_id
         bridge.twitter_last_id = twitter_last_id
@@ -259,7 +258,9 @@ for bridge in bridges:
                 content = tweet.full_text
                 media_attachments = tweet.media
                 urls = tweet.urls
-                sensitive = tweet.possibly_sensitive
+                sensitive = bool(tweet.possibly_sensitive)
+                l.info(f"Sensitive {sensitive}")
+
                 twitter_last_id = tweet.id
 
                 content_toot = html.unescape(content)
@@ -294,7 +295,7 @@ for bridge in bridges:
                         upload_file_name = temp_file.name + file_extension
                         os.rename(temp_file.name, upload_file_name)
 
-                        print('Uploading ' + upload_file_name)
+                        l.info('Uploading ' + upload_file_name)
                         media_ids.append(mast_api.media_post(upload_file_name))
                         os.unlink(upload_file_name)
 
@@ -308,7 +309,9 @@ for bridge in bridges:
                                 l.info(f'Tooting "{content_toot}"...')
                                 post = mast_api.status_post(
                                     content_toot,
-                                    visibility=bridge.settings.toot_visibility)
+                                    visibility=bridge.settings.toot_visibility,
+                                    sensitive=sensitive)
+
                                 mastodon_last_id = post["id"]
                                 post_success = True
                             else:
@@ -317,9 +320,11 @@ for bridge in bridges:
                                     content_toot,
                                     media_ids=media_ids,
                                     visibility=bridge.settings.toot_visibility,
-                                    sensitive=None)
+                                    sensitive=sensitive)
+
                                 mastodon_last_id = post["id"]
                                 post_success = True
+
                         except MastodonAPIError:
                             if retry_counter < TWITTER_RETRIES:
                                 retry_counter += 1
@@ -328,7 +333,7 @@ for bridge in bridges:
                                 raise MastodonAPIError
 
                 except MastodonAPIError:
-                    print("Encountered error after " + str(TWITTER_RETRIES) + " retries. Not retrying.")
+                    l.error("Encountered error after " + str(TWITTER_RETRIES) + " retries. Not retrying.")
 
             bridge.mastodon_last_id = mastodon_last_id
             bridge.twitter_last_id = twitter_last_id
