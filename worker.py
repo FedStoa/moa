@@ -269,7 +269,7 @@ for bridge in bridges:
                 if mentions:
                     for mention in mentions:
                         # Replace all mentions for an equivalent to clearly signal their origin on Twitter
-                        content_toot = re.sub(mention, mention + '@🐦', content_toot)
+                        content_toot = re.sub(mention, f"🐦{mention[1:]}", content_toot)
 
                 if urls:
                     for url in urls:
