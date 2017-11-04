@@ -129,10 +129,10 @@ def options():
             api = mastodon_api(session['mastodon']['host'],
                                access_code=session['mastodon']['access_code'])
 
-            account_id = api.account_verify_credentials()["id"]
+            bridge.mastodon_account_id = api.account_verify_credentials()["id"]
 
             try:
-                bridge.mastodon_last_id = api.account_statuses(account_id)[0]["id"]
+                bridge.mastodon_last_id = api.account_statuses(bridge.mastodon_account_id)[0]["id"]
 
             except MastodonAPIError:
                 bridge.mastodon_last_id = 0
@@ -178,7 +178,7 @@ def twitter_oauthorized():
 
 
 def get_or_create_host(hostname):
-    mastodonhost = db.session.MastodonHost(Bridge).filter_by(hostname=hostname).first()
+    mastodonhost = db.session.query(MastodonHost).filter_by(hostname=hostname).first()
 
     if not mastodonhost:
         client_id, client_secret = Mastodon.create_app(

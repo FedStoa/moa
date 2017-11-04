@@ -31,6 +31,7 @@ class Bridge(Base):
 
     mastodon_access_code = Column(String(80), nullable=False)
     mastodon_last_id = Column(BigInteger, default=0)
+    mastodon_account_id = Column(BigInteger, default=0)
     mastodon_user = Column(String(30), nullable=False)
     mastodon_host_id = Column(Integer, ForeignKey('mastodon_host.id'), nullable=False)
 
