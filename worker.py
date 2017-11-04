@@ -4,17 +4,21 @@ import mimetypes
 import os
 import re
 import tempfile
+import time
 
 import requests
-import time
 import twitter
 from mastodon import Mastodon
+from mastodon.Mastodon import MastodonAPIError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app import mastodon_api
 from config import DevelopmentConfig
 from models import Bridge
+
+#
+# Lot's of code lifted from https://github.com/halcy/MastodonToTwitter
+#
 
 MASTODON_RETRIES = 3
 TWITTER_RETRIES = 3
@@ -36,6 +40,9 @@ bridges = session.query(Bridge).filter_by(enabled=True)
 for bridge in bridges:
     l.info(bridge.settings.__dict__)
 
+    mastodon_last_id = 0
+    twitter_last_id = 0
+
     mastodonhost = bridge.mastodon_host
 
     mast_api = Mastodon(
@@ -56,21 +63,39 @@ for bridge in bridges:
 
     if bridge.settings.post_to_twitter:
         l.info(f"Mastodon: {bridge.mastodon_user} -> Twitter: {bridge.twitter_handle}")
+        new_toots = mast_api.account_statuses(
+            bridge.mastodon_account_id,
+            since_id=bridge.mastodon_last_id
+        )
+        if len(new_toots) != 0:
+            mastodon_last_id = int(new_toots[0]['id'])
+        l.info(f"{len(new_toots)} new toots found")
 
     if bridge.settings.post_to_mastodon:
         l.info(f"Twitter: {bridge.twitter_handle} -> Mastodon: {bridge.mastodon_user}")
-
         new_tweets = twitter_api.GetUserTimeline(
             since_id=bridge.twitter_last_id,
             include_rts=False,
             exclude_replies=True)
+        if len(new_tweets) != 0:
+            twitter_last_id = new_tweets[0].id
+        l.info(f"{len(new_tweets)} new tweets found")
+
+    if bridge.settings.post_to_twitter:
+        if len(new_toots) != 0:
+            new_toots.reverse()
+            # print([s.full_text for s in new_toots])
+
+        bridge.mastodon_last_id = mastodon_last_id
+        bridge.twitter_last_id = twitter_last_id
+
+    if bridge.settings.post_to_mastodon:
 
         if len(new_tweets) != 0:
-            l.info(f"{len(new_tweets)} new tweets found")
 
             new_tweets.reverse()
 
-            print([s.full_text for s in new_tweets])
+            # print([s.full_text for s in new_tweets])
 
             for tweet in new_tweets:
 
@@ -78,6 +103,7 @@ for bridge in bridges:
                 media_attachments = tweet.media
                 urls = tweet.urls
                 sensitive = tweet.possibly_sensitive
+                twitter_last_id = tweet.id
 
                 content_toot = html.unescape(content)
                 mentions = re.findall(r'[@]\S*', content_toot)
@@ -126,7 +152,7 @@ for bridge in bridges:
                                 post = mast_api.status_post(
                                     content_toot,
                                     visibility=bridge.settings.toot_visibility)
-                                since_toot_id = post["id"]
+                                mastodon_last_id = post["id"]
                                 post_success = True
                             else:
                                 l.info(f'Tooting "{content_toot}", with attachments...')
@@ -135,15 +161,21 @@ for bridge in bridges:
                                     media_ids=media_ids,
                                     visibility=bridge.settings.toot_visibility,
                                     sensitive=None)
-                                since_toot_id = post["id"]
+                                mastodon_last_id = post["id"]
                                 post_success = True
-                        except:
+                        except MastodonAPIError:
                             if retry_counter < TWITTER_RETRIES:
                                 retry_counter += 1
                                 time.sleep(TWITTER_RETRY_DELAY)
                             else:
-                                raise
-                except:
+                                raise MastodonAPIError
+
+                except MastodonAPIError:
                     print("Encountered error after " + str(TWITTER_RETRIES) + " retries. Not retrying.")
+
+            bridge.mastodon_last_id = mastodon_last_id
+            bridge.twitter_last_id = twitter_last_id
+
+    session.commit()
 
 session.close()
