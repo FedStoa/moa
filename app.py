@@ -1,5 +1,7 @@
 from datetime import datetime
 from pathlib import Path
+
+import os
 import twitter
 from flask import Flask
 from flask import g, session, request, url_for, flash
@@ -13,7 +15,9 @@ from forms import SettingsForm, MastodonIDForm
 from models import metadata, Bridge, MastodonHost, Settings
 
 app = Flask(__name__)
-app.config.from_object('config.DevelopmentConfig')
+config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
+app.config.from_object(config)
+
 db = SQLAlchemy(metadata=metadata)
 db.init_app(app)
 oauth = OAuth(app)
