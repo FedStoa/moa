@@ -1,69 +1,74 @@
 <!doctype html>
 <html>
 <head>
-<title>Moa</title>
-<!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}"> -->
+    <meta charset="utf-8">
+    <title>Moa</title>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<h1>Moa</h1>
-{% for message in get_flashed_messages() %}
-  <p class=message>{{ message }}</p>
-{% endfor %}
+<div class="center">
+<pre>
+ _ __ ___   ___   __ _
+| '_ ` _ \ / _ \ / _` |
+| | | | | | (_) | (_| |
+|_| |_| |_|\___/ \__,_|
+</pre>
 
-{% block body %}
+    <p>Link your twitter and Mastodon accounts.</p>
 
-{#    Twitter    #}
-1. {% if g.t_user %}Twitter: {{ g.t_user.screen_name }}{% else %}<a href="{{ url_for('twitter_login') }}">Connect to Twitter</a> {% endif %}
+    {% for message in get_flashed_messages() %}
+        <p class=message>{{ message }}</p>
+    {% endfor %}
 
-<br>
+    {% block body %}
+
+        <p>
+            {#    Twitter    #}
+            1. {% if g.t_user %}Twitter: {{ g.t_user.screen_name }}{% else %}
+            <a href="{{ url_for('twitter_login') }}">Connect to Twitter</a> {% endif %}
+
+        </p>
+
+        {#    Mastodon    #}
+        {% if g.t_user %}
+            {% if g.m_user %}<p>2. Mastodon: {{ g.m_user.username }}</p>{% else %}
+                <form action="{{ url_for('mastodon_login') }}" method="POST">
+                    2. {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance') }}
+                    {{ form.csrf_token }}
+                    <input type=submit value="GO">
+                </form>
+            {% endif %}
+        {% endif %}
 
 
-{#    Mastodon    #}
-{% if g.t_user %}
+        {#    Options    #}
 
-{% if g.m_user %}2. Mastodon: {{ g.m_user.username }}<br>{% else %}
-<form action="{{ url_for('mastodon_login') }}" method="POST">
-    2. {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance') }}
-    {{ form.csrf_token }}
-    <input type=submit value="GO">
-</form>
-{% endif %}
-{% endif %}
+        {% if g.t_user and g.m_user %}
 
+            3. Select Options
+            <form method="POST" action="{{ url_for('options') }}">
+                <ul>
+                    <li>{{ form.enabled.label }}{{ form.enabled(checked=enabled) }}</li>
 
-{#    Options    #}
+                    <li>{{ form.post_to_twitter.label }}{{ form.post_to_twitter }}</li>
+                    <li>{{ form.split_twitter_messages.label }}{{ form.split_twitter_messages }}</li>
+                    <li>{{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}</li>
+                    <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
+                </ul>
+                {{ form.csrf_token }}
+                <input type="submit" value="Save">
+            </form>
 
-{% if g.t_user and g.m_user %}
+        {% endif %}
 
-3. Select Options
-<form method="POST" action="{{ url_for('options') }}">
-    {{ form.enabled.label }}{{ form.enabled(checked=enabled) }}
-    <br>
-    {{ form.post_to_twitter.label }}{{ form.post_to_twitter }}
-    <br>
-    {{ form.split_twitter_messages.label }}{{ form.split_twitter_messages }}
-    <br>
-    {{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}
-    <br>
-    {{ form.toot_visibility.label }}: {{ form.toot_visibility }}
-    <br>
-    {{ form.csrf_token }}
-    <input type="submit" value="Save">
-</form>
+        {#    Logout    #}
 
-{% endif %}
+        {% if g.t_user %}
+            <p><a href="{{ url_for('logout') }}">Logout</a></p>
+        {% endif %}
 
-<br>
+    {% endblock %}
 
-{#    Logout    #}
-
-{% if g.t_user %}
-
-4. <a href="{{ url_for('logout') }}">Logout</a>
-
-{% endif %}
-
-{% endblock %}
-
+</div>
 </body>
 </html>

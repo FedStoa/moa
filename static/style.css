@@ -1,0 +1,23 @@
+body {
+    font-family: Monaco, monospace;
+}
+
+input, select {
+    font-family: Monaco, monospace;
+
+}
+
+.center {
+   margin: auto;
+   width: 50%;
+   padding: 10px;
+}
+
+.message {
+    font-weight: bold;
+}
+
+.message:before {
+    content: "»";
+    margin-right: 6px;
+}

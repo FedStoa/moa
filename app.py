@@ -50,7 +50,7 @@ def before_request():
     if 'mastodon' in session:
         g.m_user = session['mastodon']
 
-        app.logger.info(session)
+    # app.logger.info(session)
 
 
 @app.route('/')
