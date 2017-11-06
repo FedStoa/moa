@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired, Email
 
 
 class SettingsForm(FlaskForm):
-    enabled = BooleanField('Enable Bridge?')
+    enabled = BooleanField('Enabled?')
 
     post_to_twitter = BooleanField('Post to Twitter?')
     split_twitter_messages = BooleanField('Split messages on Twitter?')
