@@ -18,6 +18,7 @@ jinja2==2.9.6             # via flask
 markupsafe==1.0           # via jinja2
 mastodon.py==1.1.1
 oauthlib==2.0.6           # via flask-oauthlib, requests-oauthlib
+pymysql==0.7.11
 python-dateutil==2.6.1    # via mastodon.py
 python-twitter==3.3
 pytz==2017.3              # via mastodon.py

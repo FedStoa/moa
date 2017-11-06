@@ -51,3 +51,22 @@ class Settings:
     split_twitter_messages = True
     post_to_mastodon = True
     toot_visibility = 'public'
+
+
+if __name__ == '__main__':
+
+    import os
+    import importlib
+    import pymysql
+    from sqlalchemy import create_engine
+
+    moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
+    config = getattr(importlib.import_module('config'), moa_config)
+
+    engine = create_engine(config.DATABASE_URI)
+    metadata = MetaData(engine, reflect=True)
+    print("Creating Tables")
+
+    metadata.create_all()
+    for _t in metadata.tables:
+        print("Table: ", _t)

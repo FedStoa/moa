@@ -3,3 +3,4 @@ __pycache__
 config.py
 /.idea
 /.moa-venv
+/tmp/restart.txt

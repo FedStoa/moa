@@ -287,7 +287,4 @@ def logout():
 
 if __name__ == '__main__':
 
-    if not Path('/tmp/test.db').exists():
-        with app.app_context():
-            db.create_all()
     app.run()
