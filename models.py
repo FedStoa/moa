@@ -63,7 +63,7 @@ if __name__ == '__main__':
     moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
     config = getattr(importlib.import_module('config'), moa_config)
 
-    engine = create_engine(config.DATABASE_URI)
+    engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
     metadata = MetaData(engine, reflect=True)
     print("Creating Tables")
 
