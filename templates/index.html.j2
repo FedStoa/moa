@@ -11,9 +11,15 @@
 {% endfor %}
 
 {% block body %}
+
+{#    Twitter    #}
 1. {% if g.t_user %}Twitter: {{ g.t_user.screen_name }}{% else %}<a href="{{ url_for('twitter_login') }}">Connect to Twitter</a> {% endif %}
 
 <br>
+
+
+{#    Mastodon    #}
+{% if g.t_user %}
 
 {% if g.m_user %}2. Mastodon: {{ g.m_user.username }}<br>{% else %}
 <form action="{{ url_for('mastodon_login') }}" method="POST">
@@ -22,6 +28,12 @@
     <input type=submit value="GO">
 </form>
 {% endif %}
+{% endif %}
+
+
+{#    Options    #}
+
+{% if g.t_user and g.m_user %}
 
 3. Select Options
 <form method="POST" action="{{ url_for('options') }}">
@@ -39,8 +51,18 @@
     <input type="submit" value="Save">
 </form>
 
+{% endif %}
+
 <br>
+
+{#    Logout    #}
+
+{% if g.t_user %}
+
 4. <a href="{{ url_for('logout') }}">Logout</a>
+
+{% endif %}
+
 {% endblock %}
 
 </body>
