@@ -59,15 +59,13 @@
             <form method="POST" action="{{ url_for('options') }}">
                 <ul>
                     <li>{{ form.enabled.label }}{{ form.enabled(checked=enabled) }}</li>
+                    <li>{{ form.post_to_twitter.label }}{{ form.post_to_twitter }}</li>
                     <ul>
-                        <li>{{ form.post_to_twitter.label }}{{ form.post_to_twitter }}</li>
-                        <ul>
-                            <li>{{ form.split_twitter_messages.label }}{{ form.split_twitter_messages }}</li>
-                        </ul>
-                        <li>{{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}</li>
-                        <ul>
-                            <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
-                        </ul>
+                        <li>{{ form.split_twitter_messages.label }}{{ form.split_twitter_messages }}</li>
+                    </ul>
+                    <li>{{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}</li>
+                    <ul>
+                        <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
                     </ul>
                 </ul>
                 {{ form.csrf_token }}
@@ -88,8 +86,8 @@
     {% endblock %}
 
     <hr>
-    Created by <a href="https://pdx.social/@foozmeat">James Moore</a>. Code available on <a
-        href="https://github.com/foozmeat/moa">Github</a>.
+    Created by <a target="_new" href="https://pdx.social/@foozmeat">James Moore</a>.
+    Code available on <a target="_new" href="https://github.com/foozmeat/moa">Github</a>.
 
 </div>
 </body>
