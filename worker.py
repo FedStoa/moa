@@ -50,11 +50,11 @@ def calc_expected_status_length(status, short_url_length=23):
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
 
-l = logging.getLogger()
-l.setLevel(logging.INFO)
+l = logging.getLogger('worker')
+l.setLevel(logging.DEBUG)
 c = DevelopmentConfig()
 
-engine = create_engine(c.DATABASE_URI)
+engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
 session = Session(engine)
 
 bridges = session.query(Bridge).filter_by(enabled=True)
@@ -108,7 +108,8 @@ for bridge in bridges:
             new_toots.reverse()
             # print([s.full_text for s in new_toots])
 
-            MEDIA_REGEXP = re.compile(re.escape(mastodonhost.hostname.rstrip("/")) + "\/media\/(\w)+(\s|$)+")
+            MEDIA_REGEXP = re.compile("https://" +
+                re.escape(mastodonhost.hostname) + "\/media\/[\w-]+\s?")
             url_length = max(twitter_api.GetShortUrlLength(False), twitter_api.GetShortUrlLength(True)) + 1
             l.debug(f"URL length: {url_length}")
 
@@ -116,17 +117,24 @@ for bridge in bridges:
                 content = toot["content"]
                 media_attachments = toot["media_attachments"]
 
+                l.info(f"Working on toot {toot['id']}")
+
                 # We trust mastodon to return valid HTML
                 content_clean = re.sub(r'<a [^>]*href="([^"]+)">[^<]*</a>', '\g<1>', content)
 
                 # We replace html br with new lines
                 content_clean = "\n".join(re.compile(r'<br ?/?>', re.IGNORECASE).split(content_clean))
+
                 # We must also replace new paragraphs with double line skips
                 content_clean = "\n\n".join(re.compile(r'</p><p>', re.IGNORECASE).split(content_clean))
+
                 # Then we can delete the other html contents and unescape the string
                 content_clean = html.unescape(str(re.compile(r'<.*?>').sub("", content_clean).strip()))
+
                 # Trim out media URLs
                 content_clean = re.sub(MEDIA_REGEXP, "", content_clean)
+
+                content_clean = content_clean.strip()
 
                 # Don't cross-post replies
                 if len(content_clean) != 0 and content_clean[0] == '@':
@@ -175,7 +183,7 @@ for bridge in bridges:
                         content_parts.append(current_part.strip())
 
                 else:
-                    l.info('Toot smaller 140 chars, posting directly...')
+                    l.info('Toot < 140 chars, posting directly...')
                     content_parts.append(content_clean)
 
                 # Tweet all the parts. On error, give up and go on with the next toot.
@@ -338,6 +346,6 @@ for bridge in bridges:
             bridge.mastodon_last_id = mastodon_last_id
             bridge.twitter_last_id = twitter_last_id
 
-    session.commit()
+    # session.commit()
 
 session.close()
