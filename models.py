@@ -57,16 +57,20 @@ if __name__ == '__main__':
 
     import os
     import importlib
-    import pymysql
     from sqlalchemy import create_engine
 
     moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
     config = getattr(importlib.import_module('config'), moa_config)
 
-    engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
+    if "mysql" in config.SQLALCHEMY_DATABASE_URI:
+        import pymysql
+
+    engine = create_engine(config.SQLALCHEMY_DATABASE_URI, echo=True)
     metadata = MetaData(engine, reflect=True)
     print("Creating Tables")
 
-    metadata.create_all()
-    for _t in metadata.tables:
-        print("Table: ", _t)
+    Base.metadata.create_all(engine)
+    # metadata.create_all()
+    for t in metadata.tables:
+        # t.create()
+        print("Table: ", t)
