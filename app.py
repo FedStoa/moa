@@ -197,7 +197,7 @@ def get_or_create_host(hostname):
         db.session.add(mastodonhost)
         db.session.commit()
 
-    app.logger.debug("Using Mastodon Host: {mastodonhost.hostname}")
+    app.logger.debug(f"Using Mastodon Host: {mastodonhost.hostname}")
 
     return mastodonhost
 

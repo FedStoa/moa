@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, StringField, SelectField
+from wtforms import BooleanField, StringField, SelectField, RadioField
 from wtforms.validators import DataRequired, Email
 
 
@@ -10,12 +10,11 @@ class SettingsForm(FlaskForm):
     split_twitter_messages = BooleanField('Split messages on Twitter?')
 
     post_to_mastodon = BooleanField('Post to Mastodon?')
-    toot_visibility = SelectField('Toot visibility',
-                                  choices=[
-                                      ('public', 'Public'),
-                                      ('private', "Private"),
-                                      ('unlisted', 'Unlisted'),
-                                  ])
+    toot_visibility = RadioField('Toot visibility', choices=[
+        ('public', 'Public'),
+        ('private', "Private"),
+        ('unlisted', 'Unlisted'),
+    ])
 
 
 class MastodonIDForm(FlaskForm):

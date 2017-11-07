@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <title>Moa</title>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+            crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="center">
@@ -14,7 +17,8 @@
 |_| |_| |_|\___/ \__,_|
 </pre>
 
-    <p>Link your <a href="https://twitter.com">twitter</a> and <a href="https://joinmastodon.org">Mastodon</a> accounts.</p>
+    <p>Link your <a href="https://twitter.com">twitter</a> and <a href="https://joinmastodon.org">Mastodon</a> accounts.
+        No bamboozle.</p>
 
     {% for message in get_flashed_messages() %}
         <p class=message>{{ message }}</p>
@@ -24,18 +28,24 @@
 
         <p>
             {#    Twitter    #}
-            1. {% if g.t_user %}Twitter: {{ g.t_user.screen_name }}{% else %}
-            <a href="{{ url_for('twitter_login') }}">Connect to Twitter</a> {% endif %}
+            {% if g.t_user %}
+                [&#x2714;] Twitter: <strong>{{ g.t_user.screen_name }}</strong>
+            {% else %}
+                <a href="{{ url_for('twitter_login') }}">[ ] Connect to Twitter</a>
+            {% endif %}
 
         </p>
 
         {#    Mastodon    #}
         {% if g.t_user %}
-            {% if g.m_user %}<p>2. Mastodon: {{ g.m_user.username }}</p>{% else %}
+            {% if g.m_user %}
+                <p>[&#x2714;] Mastodon: <strong>{{ g.m_user.username }}@{{ g.m_user.host }}</strong></p>
+            {% else %}
                 <form action="{{ url_for('mastodon_login') }}" method="POST">
-                    2. {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance') }}
+                    [
+                    ] {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance', size=30) }}
                     {{ form.csrf_token }}
-                    <input type=submit value="GO">
+                    <input type=submit value="OK">
                 </form>
             {% endif %}
         {% endif %}
@@ -45,15 +55,20 @@
 
         {% if g.t_user and g.m_user %}
 
-            3. Select Options
+            Settings
             <form method="POST" action="{{ url_for('options') }}">
                 <ul>
                     <li>{{ form.enabled.label }}{{ form.enabled(checked=enabled) }}</li>
-
-                    <li>{{ form.post_to_twitter.label }}{{ form.post_to_twitter }}</li>
-                    <li>{{ form.split_twitter_messages.label }}{{ form.split_twitter_messages }}</li>
-                    <li>{{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}</li>
-                    <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
+                    <ul>
+                        <li>{{ form.post_to_twitter.label }}{{ form.post_to_twitter }}</li>
+                        <ul>
+                            <li>{{ form.split_twitter_messages.label }}{{ form.split_twitter_messages }}</li>
+                        </ul>
+                        <li>{{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}</li>
+                        <ul>
+                            <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
+                        </ul>
+                    </ul>
                 </ul>
                 {{ form.csrf_token }}
                 <input type="submit" value="Save">
@@ -64,13 +79,17 @@
         {#    Logout    #}
 
         {% if g.t_user %}
-            <p><a href="{{ url_for('logout') }}">Logout</a></p>
+            <br>
+            <form action="{{ url_for('logout') }}" method="GET">
+                <input type="submit" value="Logout">
+            </form>
         {% endif %}
 
     {% endblock %}
 
-<hr>
-    Created by <a href="https://pdx.social/@foozmeat">James Moore</a>. Code available on <a href="https://github.com/foozmeat/moa">Github</a>.
+    <hr>
+    Created by <a href="https://pdx.social/@foozmeat">James Moore</a>. Code available on <a
+        href="https://github.com/foozmeat/moa">Github</a>.
 
 </div>
 </body>

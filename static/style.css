@@ -8,16 +8,106 @@ input, select {
 }
 
 .center {
-   margin: auto;
-   width: 50%;
-   padding: 10px;
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+    border: 0.6rem double;
+}
+
+a:link {
+    text-decoration: none;
 }
 
 .message {
     font-weight: bold;
+    color: red;
 }
 
 .message:before {
     content: "»";
     margin-right: 6px;
+}
+
+input,
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    -o-appearance: none;
+    appearance: none;
+    border-radius: 0;
+    font-size: 1.2em;
+    color: inherit;
+    border: 0;
+}
+
+input[type="radio"]:before,
+input[type="checkbox"]:before {
+    content: "[ ";
+}
+
+input[type="radio"]:checked:before,
+input[type="checkbox"]:checked:before {
+    content: "[";
+}
+
+input[type="radio"]:after,
+input[type="checkbox"]:after {
+    content: "]";
+}
+
+input[type="radio"]:checked:after,
+input[type="checkbox"]:checked:after {
+    content: "✔]"
+}
+
+input[type="text"] {
+    color: #444444;
+    background: #CCCCCC;
+
+}
+
+input[type="submit"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    -o-appearance: none;
+    appearance: none;
+
+    border: 0;
+    font-size: inherit;
+    position: relative;
+
+    /*margin: 0.3rem 1rem;*/
+    padding: 0.3rem 1rem;
+
+    background: #999999;
+    color: white;
+    top: 0.1rem;
+    left: 0.1rem;
+    box-shadow: 0.15rem 0.15rem 0 #000;
+
+}
+
+input[type="submit"]:hover {
+
+}
+
+input[type="submit"]:active {
+    top: 0.15rem;
+    left: 0.15rem;
+    box-shadow: inset 0.10rem 0.10rem 0 #000;
+
+}
+
+input[type="submit"] {
+}
+
+input[type="submit"]:first-letter {
+    color: #dd7777;
+    text-decoration: underline;
+}
+
+ul {
+  padding-left: 20px;
 }
