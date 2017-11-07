@@ -346,6 +346,6 @@ for bridge in bridges:
             bridge.mastodon_last_id = mastodon_last_id
             bridge.twitter_last_id = twitter_last_id
 
-    # session.commit()
+    session.commit()
 
 session.close()
