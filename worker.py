@@ -6,16 +6,17 @@ import os
 import re
 import tempfile
 import time
-
 import requests
 import twitter
+import pprint as pp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from twitter import twitter_utils, TwitterError
+from lib.toot import Toot
 
-from models import Bridge
+from lib.models import Bridge
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
@@ -28,27 +29,6 @@ MASTODON_RETRIES = 3
 TWITTER_RETRIES = 3
 MASTODON_RETRY_DELAY = 20
 TWITTER_RETRY_DELAY = 20
-
-# Some helpers copied out from python-twitter, because they're broken there
-URL_REGEXP = re.compile((
-                            r'('
-                            r'(?!(https?://|www\.)?\.|ftps?://|([0-9]+\.){{1,3}}\d+)'  # exclude urls that start with "."
-                            r'(?:https?://|www\.)*(?!.*@)(?:[\w+-_]+[.])'  # beginning of url
-                            r'(?:{0}\b|'  # all tlds
-                            r'(?:[:0-9]))'  # port numbers & close off TLDs
-                            r'(?:[\w+\/]?[a-z0-9!\*\'\(\);:&=\+\$/%#\[\]\-_\.,~?])*'  # path/query params
-                            r')').format(r'\b|'.join(twitter_utils.TLDS)), re.U | re.I | re.X)
-
-
-def calc_expected_status_length(status, short_url_length=23):
-    replaced_chars = 0
-    status_length = len(status)
-    match = re.findall(URL_REGEXP, status)
-    if len(match) >= 1:
-        replaced_chars = len(''.join(map(lambda x: x[0], match)))
-        status_length = status_length - replaced_chars + (short_url_length * len(match))
-    return status_length
-
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
@@ -108,149 +88,80 @@ for bridge in bridges:
     if bridge.settings.post_to_twitter:
         if len(new_toots) != 0:
             new_toots.reverse()
-            # print([s.full_text for s in new_toots])
 
-            MEDIA_REGEXP = re.compile("https://" +
-                re.escape(mastodonhost.hostname) + "\/media\/[\w-]+\s?")
             url_length = max(twitter_api.GetShortUrlLength(False), twitter_api.GetShortUrlLength(True)) + 1
             l.debug(f"URL length: {url_length}")
 
             for toot in new_toots:
-                content = toot["content"]
-                media_attachments = toot["media_attachments"]
 
-                l.info(f"Working on toot {toot['id']}")
+                t = Toot(toot, bridge.settings)
+                t.url_length = url_length
 
-                # We trust mastodon to return valid HTML
-                content_clean = re.sub(r'<a [^>]*href="([^"]+)">[^<]*</a>', '\g<1>', content)
+                l.info(f"Working on toot {t.id}")
 
-                # We replace html br with new lines
-                content_clean = "\n".join(re.compile(r'<br ?/?>', re.IGNORECASE).split(content_clean))
-
-                # We must also replace new paragraphs with double line skips
-                content_clean = "\n\n".join(re.compile(r'</p><p>', re.IGNORECASE).split(content_clean))
-
-                # Then we can delete the other html contents and unescape the string
-                content_clean = html.unescape(str(re.compile(r'<.*?>').sub("", content_clean).strip()))
-
-                # Trim out media URLs
-                content_clean = re.sub(MEDIA_REGEXP, "", content_clean)
-
-                content_clean = content_clean.strip()
+                pp.pprint(toot)
 
                 # Don't cross-post replies
-                if len(content_clean) != 0 and content_clean[0] == '@':
-                    l.info(f'Skipping toot "{content_clean}" - is a reply.')
+                if t.is_reply:
+                    l.info(f'Skipping reply.')
                     continue
 
-                # Split toots, if need be, using Many magic numbers.
-                content_parts = []
-                if calc_expected_status_length(content_clean, short_url_length=url_length) > 140:
-                    l.info('Toot bigger 140 characters, need to split...')
-                    current_part = ""
-                    for next_word in content_clean.split(" "):
-                        # Need to split here?
-                        if calc_expected_status_length(f"{current_part} {next_word}",
-                                                       short_url_length=url_length) > 135:
-                            # print("new part")
-                            space_left = 135 - calc_expected_status_length(current_part,
-                                                                           short_url_length=url_length) - 1
+                t.split_toot()
+                t.download_attachments()
 
-                            if bridge.settings.split_twitter_messages:
-                                # Want to split word?
-                                if len(next_word) > 30 and space_left > 5 and not twitter.twitter_utils.is_url(
-                                        next_word):
-                                    current_part = f"{current_part} {next_word[:space_left]}"
-                                    content_parts.append(current_part)
-                                    current_part = next_word[space_left:]
-                                else:
-                                    content_parts.append(current_part)
-                                    current_part = next_word
+                reply_to = None
+                media_ids = []
 
-                                # Split potential overlong word in current_part
-                                while len(current_part) > 135:
-                                    content_parts.append(current_part[:135])
-                                    current_part = current_part[135:]
-                            else:
-                                l.info('In fact we just cut')
-                                space_for_suffix = len('… ') + url_length
-                                content_parts.append(f"{current_part[:-space_for_suffix]}… {toot['url']}")
-                                current_part = ''
-                                break
-                        else:
-                            # Just plop next word on
-                            current_part = f"{current_part} {next_word}"
-                    # Insert last part
-                    if len(current_part.strip()) != 0 or len(content_parts) == 0:
-                        content_parts.append(current_part.strip())
+                # Do normal posting for all but the last tweet where we need to upload media
+                for tweet in t.tweet_parts[:-1]:
 
-                else:
-                    l.info('Toot < 140 chars, posting directly...')
-                    content_parts.append(content_clean)
+                    retry_counter = 0
+                    post_success = False
 
-                # Tweet all the parts. On error, give up and go on with the next toot.
-                try:
-                    reply_to = None
-                    for i in range(len(content_parts)):
-                        media_ids = []
-                        content_tweet = content_parts[i]
-                        if bridge.settings.split_twitter_messages:
-                            content_tweet += "…"
+                    while not post_success and retry_counter < TWITTER_RETRIES:
 
-                        # Last content part: Upload media, no -- at the end
-                        if i == len(content_parts) - 1:
-                            for attachment in media_attachments:
-                                attachment_url = attachment["url"]
+                        l.info(f'Tweeting "{tweet}"')
+                        try:
+                            reply_to = twitter_api.PostUpdate(tweet, in_reply_to_status_id=reply_to).id
+                        except TwitterError as e:
+                            l.error(e.message)
+                            if retry_counter < TWITTER_RETRIES:
+                                retry_counter += 1
+                                time.sleep(TWITTER_RETRY_DELAY)
 
-                                l.info('Downloading ' + attachment_url)
-                                attachment_file = requests.get(attachment_url, stream=True)
-                                attachment_file.raw.decode_content = True
-                                temp_file = tempfile.NamedTemporaryFile(delete=False)
-                                temp_file.write(attachment_file.raw.read())
-                                temp_file.close()
+                        twitter_last_id = reply_to
+                        post_success = True
 
-                                file_extension = mimetypes.guess_extension(attachment_file.headers['Content-type'])
-                                upload_file_name = temp_file.name + file_extension
-                                os.rename(temp_file.name, upload_file_name)
+                tweet = t.tweet_parts[-1]
 
-                                temp_file_read = open(upload_file_name, 'rb')
-                                l.info('Uploading ' + upload_file_name)
-                                media_ids.append(twitter_api.UploadMediaChunked(media=temp_file_read))
-                                temp_file_read.close()
-                                os.unlink(upload_file_name)
+                for attachment in t.attachments:
 
-                            content_tweet = content_parts[i]
+                    temp_file_read = open(attachment, 'rb')
+                    l.info('Uploading ' + attachment)
+                    media_ids.append(twitter_api.UploadMediaChunked(media=temp_file_read))
+                    temp_file_read.close()
+                    os.unlink(attachment)
 
-                        # Some final cleaning
-                        content_tweet = content_tweet.strip()
+                retry_counter = 0
+                post_success = False
 
-                        # Retry three times before giving up
-                        retry_counter = 0
-                        post_success = False
-                        while not post_success:
-                            try:
-                                # Tweet
-                                if len(media_ids) == 0:
-                                    l.info(f'Tweeting "{content_tweet}"')
-                                    reply_to = twitter_api.PostUpdate(content_tweet, in_reply_to_status_id=reply_to).id
-                                    twitter_last_id = reply_to
-                                    post_success = True
-                                else:
-                                    l.info(f'Tweeting "{content_tweet}", with attachments')
-                                    reply_to = twitter_api.PostUpdate(content_tweet,
-                                                                      media=media_ids,
-                                                                      in_reply_to_status_id=reply_to).id
-                                    twitter_last_id = reply_to
-                                    post_success = True
-                            except TwitterError as e:
-                                l.error(e.message)
-                                if retry_counter < TWITTER_RETRIES:
-                                    retry_counter += 1
-                                    time.sleep(TWITTER_RETRY_DELAY)
-                                else:
-                                    raise
-                except:
-                    l.error(f"Encountered error after {TWITTER_RETRIES} retries. Not retrying.")
+                while not post_success and retry_counter < TWITTER_RETRIES:
+
+                    l.info(f'Tweeting "{tweet}"')
+                    try:
+                        reply_to = twitter_api.PostUpdate(tweet,
+                                                          media=media_ids,
+                                                          in_reply_to_status_id=reply_to).id
+                    except TwitterError as e:
+                        l.error(e.message)
+                        if retry_counter < TWITTER_RETRIES:
+                            retry_counter += 1
+                            time.sleep(TWITTER_RETRY_DELAY)
+
+                    twitter_last_id = reply_to
+                    post_success = True
+
+                twitter_last_id = reply_to
 
         bridge.mastodon_last_id = mastodon_last_id
         bridge.twitter_last_id = twitter_last_id
@@ -348,6 +259,6 @@ for bridge in bridges:
             bridge.mastodon_last_id = mastodon_last_id
             bridge.twitter_last_id = twitter_last_id
 
-    session.commit()
+    # session.commit()
 
 session.close()
