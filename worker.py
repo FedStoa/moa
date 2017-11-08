@@ -51,7 +51,7 @@ FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
 
 l = logging.getLogger('worker')
-l.setLevel(logging.DEBUG)
+l.setLevel(logging.INFO)
 c = DevelopmentConfig()
 
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
