@@ -1,4 +1,5 @@
 import html
+import importlib
 import logging
 import mimetypes
 import os
@@ -14,8 +15,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from twitter import twitter_utils, TwitterError
 
-from config import DevelopmentConfig
 from models import Bridge
+
+moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
+c = getattr(importlib.import_module('config'), moa_config)
 
 #
 # Lot's of code lifted from https://github.com/halcy/MastodonToTwitter
@@ -52,7 +55,6 @@ logging.basicConfig(format=FORMAT)
 
 l = logging.getLogger('worker')
 l.setLevel(logging.INFO)
-c = DevelopmentConfig()
 
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
 session = Session(engine)
