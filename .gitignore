@@ -4,3 +4,4 @@ config.py
 /.idea
 /.moa-venv
 /tmp/restart.txt
+/logs/*.log
