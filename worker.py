@@ -62,7 +62,7 @@ session = Session(engine)
 bridges = session.query(Bridge).filter_by(enabled=True)
 
 for bridge in bridges:
-    l.info(bridge.settings.__dict__)
+    l.debug(bridge.settings.__dict__)
 
     mastodon_last_id = bridge.mastodon_last_id
     twitter_last_id = bridge.twitter_last_id
@@ -269,7 +269,7 @@ for bridge in bridges:
                 media_attachments = tweet.media
                 urls = tweet.urls
                 sensitive = bool(tweet.possibly_sensitive)
-                l.info(f"Sensitive {sensitive}")
+                l.debug(f"Sensitive {sensitive}")
 
                 twitter_last_id = tweet.id
 
@@ -294,7 +294,7 @@ for bridge in bridges:
 
                         attachment_url = attachment.media_url
 
-                        l.info('Downloading ' + attachment_url)
+                        l.debug('Downloading ' + attachment_url)
                         attachment_file = requests.get(attachment_url, stream=True)
                         attachment_file.raw.decode_content = True
                         temp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -305,7 +305,7 @@ for bridge in bridges:
                         upload_file_name = temp_file.name + file_extension
                         os.rename(temp_file.name, upload_file_name)
 
-                        l.info('Uploading ' + upload_file_name)
+                        l.debug('Uploading ' + upload_file_name)
                         media_ids.append(mast_api.media_post(upload_file_name))
                         os.unlink(upload_file_name)
 
