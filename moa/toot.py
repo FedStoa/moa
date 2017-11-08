@@ -7,8 +7,7 @@ import logging
 
 import os
 import requests
-import twitter
-from twitter import twitter_utils, TwitterError
+from twitter import twitter_utils
 
 URL_REGEXP = re.compile((
                             r'('

@@ -11,8 +11,8 @@ from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
 
-from lib.forms import SettingsForm, MastodonIDForm
-from lib.models import metadata, Bridge, MastodonHost, Settings
+from moa.forms import SettingsForm, MastodonIDForm
+from moa.models import metadata, Bridge, MastodonHost, Settings
 
 app = Flask(__name__)
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
@@ -131,7 +131,11 @@ def options():
         bridge.mastodon_account_id = api.account_verify_credentials()["id"]
 
         try:
-            bridge.mastodon_last_id = api.account_statuses(bridge.mastodon_account_id)[0]["id"]
+            statuses = api.account_statuses(bridge.mastodon_account_id)
+            if len(statuses) > 0:
+                bridge.mastodon_last_id = statuses[0]["id"]
+            else:
+                bridge.mastodon_last_id = 0
 
         except MastodonAPIError:
             bridge.mastodon_last_id = 0

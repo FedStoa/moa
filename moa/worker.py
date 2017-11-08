@@ -13,22 +13,18 @@ from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from twitter import twitter_utils, TwitterError
-from lib.toot import Toot
 
-from lib.models import Bridge
+from helpers import send_tweet
+from toot import Toot
+
+from models import Bridge
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
 
-#
-# Lot's of code lifted from https://github.com/halcy/MastodonToTwitter
-#
 
 MASTODON_RETRIES = 3
-TWITTER_RETRIES = 3
 MASTODON_RETRY_DELAY = 20
-TWITTER_RETRY_DELAY = 20
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
@@ -99,7 +95,7 @@ for bridge in bridges:
 
                 l.info(f"Working on toot {t.id}")
 
-                pp.pprint(toot)
+                l.debug(pp.pformat(toot))
 
                 # Don't cross-post replies
                 if t.is_reply:
@@ -115,22 +111,7 @@ for bridge in bridges:
                 # Do normal posting for all but the last tweet where we need to upload media
                 for tweet in t.tweet_parts[:-1]:
 
-                    retry_counter = 0
-                    post_success = False
-
-                    while not post_success and retry_counter < TWITTER_RETRIES:
-
-                        l.info(f'Tweeting "{tweet}"')
-                        try:
-                            reply_to = twitter_api.PostUpdate(tweet, in_reply_to_status_id=reply_to).id
-                        except TwitterError as e:
-                            l.error(e.message)
-                            if retry_counter < TWITTER_RETRIES:
-                                retry_counter += 1
-                                time.sleep(TWITTER_RETRY_DELAY)
-
-                        twitter_last_id = reply_to
-                        post_success = True
+                    reply_to = send_tweet(tweet, reply_to, media_ids, twitter_api)
 
                 tweet = t.tweet_parts[-1]
 
@@ -142,24 +123,7 @@ for bridge in bridges:
                     temp_file_read.close()
                     os.unlink(attachment)
 
-                retry_counter = 0
-                post_success = False
-
-                while not post_success and retry_counter < TWITTER_RETRIES:
-
-                    l.info(f'Tweeting "{tweet}"')
-                    try:
-                        reply_to = twitter_api.PostUpdate(tweet,
-                                                          media=media_ids,
-                                                          in_reply_to_status_id=reply_to).id
-                    except TwitterError as e:
-                        l.error(e.message)
-                        if retry_counter < TWITTER_RETRIES:
-                            retry_counter += 1
-                            time.sleep(TWITTER_RETRY_DELAY)
-
-                    twitter_last_id = reply_to
-                    post_success = True
+                reply_to = send_tweet(tweet, reply_to, media_ids, twitter_api)
 
                 twitter_last_id = reply_to
 
@@ -247,18 +211,18 @@ for bridge in bridges:
                                 post_success = True
 
                         except MastodonAPIError:
-                            if retry_counter < TWITTER_RETRIES:
+                            if retry_counter < MASTODON_RETRIES:
                                 retry_counter += 1
-                                time.sleep(TWITTER_RETRY_DELAY)
+                                time.sleep(MASTODON_RETRY_DELAY)
                             else:
                                 raise MastodonAPIError
 
                 except MastodonAPIError:
-                    l.error("Encountered error after " + str(TWITTER_RETRIES) + " retries. Not retrying.")
+                    l.error("Encountered error after " + str(MASTODON_RETRIES) + " retries. Not retrying.")
 
             bridge.mastodon_last_id = mastodon_last_id
             bridge.twitter_last_id = twitter_last_id
 
-    # session.commit()
+    session.commit()
 
 session.close()
