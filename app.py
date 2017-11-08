@@ -11,8 +11,8 @@ from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
 
-from forms import SettingsForm, MastodonIDForm
-from models import metadata, Bridge, MastodonHost, Settings
+from lib.forms import SettingsForm, MastodonIDForm
+from lib.models import metadata, Bridge, MastodonHost, Settings
 
 app = Flask(__name__)
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
