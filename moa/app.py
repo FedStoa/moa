@@ -33,12 +33,6 @@ twitter_oauth = oauth.remote_app(
 )
 
 
-# @twitter.tokengetter
-# def get_twitter_token():
-#     if 'twitter' in session:
-#         resp = session['twitter']
-#         return resp['oauth_token'], resp['oauth_token_secret']
-
 @app.before_request
 def before_request():
     g.t_user = None
