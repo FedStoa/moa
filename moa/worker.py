@@ -32,13 +32,14 @@ logging.basicConfig(format=FORMAT)
 l = logging.getLogger('worker')
 l.setLevel(logging.INFO)
 
+l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
 session = Session(engine)
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
 for bridge in bridges:
-    l.debug(bridge.settings.__dict__)
+    # l.debug(bridge.settings.__dict__)
 
     mastodon_last_id = bridge.mastodon_last_id
     twitter_last_id = bridge.twitter_last_id
@@ -62,24 +63,24 @@ for bridge in bridges:
     )
 
     if bridge.settings.post_to_twitter:
-        l.info(f"Mastodon: {bridge.mastodon_user} -> Twitter: {bridge.twitter_handle}")
         new_toots = mast_api.account_statuses(
             bridge.mastodon_account_id,
             since_id=bridge.mastodon_last_id
         )
         if len(new_toots) != 0:
             mastodon_last_id = int(new_toots[0]['id'])
-        l.info(f"{len(new_toots)} new toots found")
+            l.info(f"Mastodon: {bridge.mastodon_user} -> Twitter: {bridge.twitter_handle}")
+            l.info(f"{len(new_toots)} new toots found")
 
     if bridge.settings.post_to_mastodon:
-        l.info(f"Twitter: {bridge.twitter_handle} -> Mastodon: {bridge.mastodon_user}")
         new_tweets = twitter_api.GetUserTimeline(
             since_id=bridge.twitter_last_id,
             include_rts=False,
             exclude_replies=True)
         if len(new_tweets) != 0:
             twitter_last_id = new_tweets[0].id
-        l.info(f"{len(new_tweets)} new tweets found")
+            l.info(f"Twitter: {bridge.twitter_handle} -> Mastodon: {bridge.mastodon_user}")
+            l.info(f"{len(new_tweets)} new tweets found")
 
     if bridge.settings.post_to_twitter:
         if len(new_toots) != 0:
@@ -136,9 +137,9 @@ for bridge in bridges:
 
             new_tweets.reverse()
 
-            # print([s.full_text for s in new_tweets])
-
             for tweet in new_tweets:
+
+                l.debug(tweet.full_text)
 
                 content = tweet.full_text
                 media_attachments = tweet.media
@@ -184,6 +185,9 @@ for bridge in bridges:
                         media_ids.append(mast_api.media_post(upload_file_name))
                         os.unlink(upload_file_name)
 
+                if len(content_toot) == 0:
+                    content_toot = u"\u2063"
+
                 try:
                     retry_counter = 0
                     post_success = False
@@ -210,7 +214,8 @@ for bridge in bridges:
                                 mastodon_last_id = post["id"]
                                 post_success = True
 
-                        except MastodonAPIError:
+                        except MastodonAPIError as e:
+                            l.error(e)
                             if retry_counter < MASTODON_RETRIES:
                                 retry_counter += 1
                                 time.sleep(MASTODON_RETRY_DELAY)
@@ -227,3 +232,4 @@ for bridge in bridges:
         session.commit()
 
 session.close()
+l.info("All done")
