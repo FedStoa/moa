@@ -4,4 +4,4 @@ cd /var/www/moa/moa
 source ../.moa-venv/bin/activate
 
 export MOA_CONFIG=ProductionConfig
-python moa/worker.py >> logs/worker.log 2>&1
+python worker.py >> logs/worker.log 2>&1
