@@ -7,6 +7,7 @@ class SettingsForm(FlaskForm):
     enabled = BooleanField('Enabled?')
 
     post_to_twitter = BooleanField('Post Public toots to Twitter?')
+    post_boosts_to_twitter = BooleanField('Post Boosts to Twitter?')
     split_twitter_messages = BooleanField('Split long messages on Twitter?')
 
     post_to_mastodon = BooleanField('Post to Mastodon?')

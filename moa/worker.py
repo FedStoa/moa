@@ -97,13 +97,7 @@ for bridge in bridges:
 
                 l.debug(pp.pformat(toot))
 
-                # Don't cross-post replies
-                if t.is_reply:
-                    l.info(f'Skipping reply.')
-                    continue
-
-                if t.visibility is not 'public':
-                    l.info(f'Skipping: not public.')
+                if t.should_skip:
                     continue
 
                 t.split_toot()

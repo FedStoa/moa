@@ -92,6 +92,24 @@ class Toot:
         return f"{o.scheme}://{o.netloc}"
 
     @property
+    def should_skip(self):
+
+        # Don't cross-post replies
+        if self.is_reply:
+            logger.info(f'Skipping reply.')
+            return True
+
+        if self.visibility != 'public':
+            logger.info(f'Skipping: not public.')
+            return True
+
+        if self.is_boost and not self.settings.post_boosts_to_twitter:
+            logger.info(f'Skipping: not posting boosts')
+            return True
+
+        return False
+
+    @property
     def joined_tweet_parts(self):
         return "".join(self.tweet_parts)
 
