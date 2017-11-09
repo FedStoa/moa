@@ -99,8 +99,12 @@ class Toot:
             logger.info(f'Skipping reply.')
             return True
 
-        if self.visibility != 'public':
-            logger.info(f'Skipping: not public.')
+        if self.visibility == 'private' and not self.settings.post_private_to_twitter:
+            logger.info(f'Skipping: Not Posting Private toots.')
+            return True
+
+        if self.visibility == 'unlisted':
+            logger.info(f'Skipping: Not Posting Unlisted toots.')
             return True
 
         if self.is_boost and not self.settings.post_boosts_to_twitter:
