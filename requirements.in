@@ -2,7 +2,7 @@ Flask
 Flask-OAuthlib
 flask_sqlalchemy
 Flask-WTF
-Mastodon.py
+-e git+https://github.com/foozmeat/Mastodon.py#egg=Mastodon.py
 python-twitter
 PyMySQL
 raven[flask]

@@ -139,10 +139,19 @@ for bridge in bridges:
 
             for tweet in new_tweets:
 
-                l.debug(tweet.full_text)
+                # we can't get image alt text from the timeline call :/
+                fetched_tweet = twitter_api.GetStatus(
+                    status_id=tweet.id,
+                    trim_user=True,
+                    include_my_retweet=False,
+                    include_entities=True,
+                    include_ext_alt_text=True
+                )
+
+                # l.debug(pp.pformat(fetched_tweet.__dict__))
 
                 content = tweet.full_text
-                media_attachments = tweet.media
+                media_attachments = fetched_tweet.media
                 urls = tweet.urls
                 sensitive = bool(tweet.possibly_sensitive)
                 l.debug(f"Sensitive {sensitive}")
@@ -165,12 +174,13 @@ for bridge in bridges:
 
                 if media_attachments:
                     for attachment in media_attachments:
+                        # l.debug(pp.pformat(attachment.__dict__))
                         # Remove the t.co link to the media
                         content_toot = re.sub(attachment.url, "", content_toot)
 
                         attachment_url = attachment.media_url
 
-                        l.debug('Downloading ' + attachment_url)
+                        l.debug(f'Downloading {attachment.ext_alt_text} {attachment_url}')
                         attachment_file = requests.get(attachment_url, stream=True)
                         attachment_file.raw.decode_content = True
                         temp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -181,8 +191,10 @@ for bridge in bridges:
                         upload_file_name = temp_file.name + file_extension
                         os.rename(temp_file.name, upload_file_name)
 
-                        l.debug('Uploading ' + upload_file_name)
-                        media_ids.append(mast_api.media_post(upload_file_name))
+                        if c.SEND:
+                            l.debug('Uploading ' + upload_file_name)
+                            media_ids.append(mast_api.media_post(upload_file_name,
+                                                                 description=attachment.ext_alt_text))
                         os.unlink(upload_file_name)
 
                 if len(content_toot) == 0:
@@ -196,22 +208,25 @@ for bridge in bridges:
                             # Toot
                             if len(media_ids) == 0:
                                 l.info(f'Tooting "{content_toot}"...')
-                                post = mast_api.status_post(
-                                    content_toot,
-                                    visibility=bridge.settings.toot_visibility,
-                                    sensitive=sensitive)
 
-                                mastodon_last_id = post["id"]
+                                if c.SEND:
+                                    post = mast_api.status_post(
+                                        content_toot,
+                                        visibility=bridge.settings.toot_visibility,
+                                        sensitive=sensitive)
+
+                                    mastodon_last_id = post["id"]
                                 post_success = True
                             else:
                                 l.info(f'Tooting "{content_toot}", with attachments...')
-                                post = mast_api.status_post(
-                                    content_toot,
-                                    media_ids=media_ids,
-                                    visibility=bridge.settings.toot_visibility,
-                                    sensitive=sensitive)
+                                if c.SEND:
+                                    post = mast_api.status_post(
+                                        content_toot,
+                                        media_ids=media_ids,
+                                        visibility=bridge.settings.toot_visibility,
+                                        sensitive=sensitive)
 
-                                mastodon_last_id = post["id"]
+                                    mastodon_last_id = post["id"]
                                 post_success = True
 
                         except MastodonAPIError as e:
