@@ -8,6 +8,8 @@ class Config(object):
     TWITTER_CONSUMER_KEY = ''
     TWITTER_CONSUMER_SECRET = ''
     SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
+    SEND = True
+    SENTRY_DSN = ''
 
 
 class ProductionConfig(Config):
