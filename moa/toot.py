@@ -128,6 +128,8 @@ class Toot:
             # Trim out media URLs
             self.content = re.sub(media_regexp, "", self.content)
 
+            self.content = re.sub(r'@(\w+)@twitter.com', '@\g<1>', self.content)
+
             self.content = self.content.strip()
 
             if self.is_boost:
@@ -172,7 +174,6 @@ class Toot:
                 logger.info('Truncating toot')
                 space_for_suffix = len('… ') + self.url_length
                 self.tweet_parts.append(f"{current_part[:-space_for_suffix]}… {self.url}")
-                current_part = ''
 
     def download_attachments(self):
 
