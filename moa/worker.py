@@ -103,15 +103,16 @@ for bridge in bridges:
                     continue
 
                 t.split_toot()
-                t.download_attachments()
+                if c.SEND:
+                    t.download_attachments()
 
                 reply_to = None
                 media_ids = []
 
                 # Do normal posting for all but the last tweet where we need to upload media
                 for tweet in t.tweet_parts[:-1]:
-
-                    reply_to = send_tweet(tweet, reply_to, media_ids, twitter_api)
+                    if c.SEND:
+                        reply_to = send_tweet(tweet, reply_to, media_ids, twitter_api)
 
                 tweet = t.tweet_parts[-1]
 
@@ -123,7 +124,8 @@ for bridge in bridges:
                     temp_file_read.close()
                     os.unlink(attachment)
 
-                reply_to = send_tweet(tweet, reply_to, media_ids, twitter_api)
+                if c.SEND:
+                    reply_to = send_tweet(tweet, reply_to, media_ids, twitter_api)
 
                 twitter_last_id = reply_to
 
@@ -223,6 +225,7 @@ for bridge in bridges:
             bridge.mastodon_last_id = mastodon_last_id
             bridge.twitter_last_id = twitter_last_id
 
-    session.commit()
+    if c.SEND:
+        session.commit()
 
 session.close()
