@@ -39,7 +39,11 @@ class Toot:
 
     @property
     def raw_content(self):
-        return self.data['content']
+
+        if self.is_boost:
+            return self.data['reblog']['content']
+        else:
+            return self.data['content']
 
     @property
     def is_reply(self):
@@ -51,19 +55,31 @@ class Toot:
 
     @property
     def is_sensitive(self):
-        return self.data['sensitive']
+        if self.is_boost:
+            return self.data['reblog']['sensitive']
+        else:
+            return self.data['sensitive']
 
     @property
     def spoiler_text(self):
-        return self.data['spoiler_text']
+        if self.is_boost:
+            return self.data['reblog']['spoiler_text']
+        else:
+            return self.data['spoiler_text']
 
     @property
     def media_attachments(self):
-        return self.data['media_attachments']
+        if self.is_boost:
+            return self.data['reblog']['media_attachments']
+        else:
+            return self.data['media_attachments']
 
     @property
     def url(self):
-        return self.data['url']
+        if self.is_boost:
+            return self.data['reblog']['url']
+        else:
+            return self.data['url']
 
     @property
     def instance_url(self):
@@ -109,6 +125,9 @@ class Toot:
             self.content = re.sub(media_regexp, "", self.content)
 
             self.content = self.content.strip()
+
+            if self.is_boost:
+                self.content = f"📢🐘 “{self.content}”\n{self.url}"
 
         return self.content
 
@@ -169,7 +188,7 @@ class Toot:
 
             self.attachments.append(upload_file_name)
 
-    def cleanup(self):
-
-        for a in self.attachments:
-            os.unlink(a)
+    # def cleanup(self):
+    #
+    #     for a in self.attachments:
+    #         os.unlink(a)
