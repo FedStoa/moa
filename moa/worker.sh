@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd /var/www/moa
+cd /var/www/moa/moa
 source ../.moa-venv/bin/activate
 
 export MOA_CONFIG=ProductionConfig
