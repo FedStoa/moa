@@ -7,6 +7,10 @@ input, select {
 
 }
 
+form {
+    display: inline;
+}
+
 .center {
     margin: auto;
     width: 50%;

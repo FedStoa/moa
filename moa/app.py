@@ -58,6 +58,7 @@ def index():
     mform = MastodonIDForm()
     settings = Settings()
     enabled = True
+    found_settings = False
 
     if 'twitter' in session and 'mastodon' in session:
         # look up settings
@@ -67,6 +68,7 @@ def index():
         ).first()
 
         if bridge:
+            found_settings = True
             settings = bridge.settings
             enabled = bridge.enabled
             app.logger.debug(f"Existing settings found: {enabled} {settings.__dict__}")
@@ -77,6 +79,7 @@ def index():
                            form=form,
                            mform=mform,
                            enabled=enabled,
+                           found_settings=found_settings
                            )
 
 
@@ -151,6 +154,22 @@ def options():
 
     return redirect(url_for('index'))
 
+
+@app.route('/delete', methods=["POST"])
+def delete():
+    if 'twitter' in session and 'mastodon' in session:
+        # look up settings
+        bridge = db.session.query(Bridge).filter_by(
+            mastodon_user=session['mastodon']['username'],
+            twitter_handle=session['twitter']['screen_name'],
+        ).first()
+
+        if bridge:
+            app.logger.info(f"Deleting settings for {session['mastodon']['username']} {session['twitter']['screen_name']}")
+            db.session.delete(bridge)
+            db.session.commit()
+
+    return redirect(url_for('logout'))
 
 # Twitter
 #
