@@ -151,7 +151,10 @@ class Toot:
             self.content = self.content.strip()
 
             if self.is_boost:
-                self.content = f"📢🐘 “{self.content}”\n{self.url}"
+                if len(self.content) > 0:
+                    self.content = f"📢🐘 “{self.content}”\n{self.url}"
+                else:
+                    self.content = f"📢🐘\n{self.url}\n"
 
         return self.content
 
