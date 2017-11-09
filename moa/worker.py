@@ -102,6 +102,10 @@ for bridge in bridges:
                     l.info(f'Skipping reply.')
                     continue
 
+                if t.visibility is not 'public':
+                    l.info(f'Skipping: not public.')
+                    continue
+
                 t.split_toot()
                 if c.SEND:
                     t.download_attachments()

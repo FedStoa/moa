@@ -38,6 +38,10 @@ class Toot:
         return self.data['id']
 
     @property
+    def visibility(self):
+        return self.data['visibility']
+
+    @property
     def raw_content(self):
 
         if self.is_boost:
