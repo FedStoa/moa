@@ -1,15 +1,18 @@
 import logging
 import time
+
+from mastodon.Mastodon import MastodonAPIError
 from twitter import TwitterError
 
 TWITTER_RETRIES = 3
 TWITTER_RETRY_DELAY = 20
+MASTODON_RETRIES = 3
+MASTODON_RETRY_DELAY = 20
 
 logger = logging.getLogger('worker')
 
 
 def send_tweet(tweet, reply_to, media_ids, twitter_api):
-
     retry_counter = 0
     post_success = False
 
@@ -37,6 +40,41 @@ def send_tweet(tweet, reply_to, media_ids, twitter_api):
         post_success = True
 
     if retry_counter == TWITTER_RETRIES:
+        logger.error("Retry limit reached.")
+        return None
+
+    return reply_to
+
+
+def send_toot(tweet, settings, mast_api, reply_to=None):
+    retry_counter = 0
+    post_success = False
+
+    while not post_success and retry_counter < MASTODON_RETRIES:
+        logger.info(f'Tooting "{tweet.clean_content}"')
+
+        if tweet.media_ids:
+            logger.info(f'With media {tweet.media_ids}')
+
+        try:
+            post = mast_api.status_post(
+                tweet.clean_content,
+                media_ids=tweet.media_ids,
+                visibility=settings.toot_visibility,
+                sensitive=tweet.sensitive)
+
+            reply_to = post["id"]
+
+        except MastodonAPIError as e:
+            logger.error(e.message)
+
+            if retry_counter < MASTODON_RETRIES:
+                retry_counter += 1
+                time.sleep(MASTODON_RETRY_DELAY)
+
+        post_success = True
+
+    if retry_counter == MASTODON_RETRIES:
         logger.error("Retry limit reached.")
         return None
 

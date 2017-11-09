@@ -54,6 +54,10 @@ class Toot:
         return self.data['in_reply_to_id'] is not None
 
     @property
+    def is_self_reply(self):
+        return self.is_reply and self.data['in_reply_to_account_id'] == self.data['account']['id']
+
+    @property
     def is_boost(self):
         return self.data['reblog'] is not None
 
