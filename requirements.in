@@ -5,3 +5,4 @@ Flask-WTF
 Mastodon.py
 python-twitter
 PyMySQL
+raven[flask]

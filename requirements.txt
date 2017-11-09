@@ -4,7 +4,8 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-certifi==2017.7.27.1      # via requests
+blinker==1.4              # via raven
+certifi==2017.11.5        # via requests
 chardet==3.0.4            # via requests
 click==6.7                # via flask
 flask-oauthlib==0.9.4
@@ -14,7 +15,7 @@ flask==0.12.2
 future==0.16.0            # via python-twitter
 idna==2.6                 # via requests
 itsdangerous==0.24        # via flask
-jinja2==2.9.6             # via flask
+jinja2==2.10              # via flask
 markupsafe==1.0           # via jinja2
 mastodon.py==1.1.1
 oauthlib==2.0.6           # via flask-oauthlib, requests-oauthlib
@@ -22,10 +23,11 @@ pymysql==0.7.11
 python-dateutil==2.6.1    # via mastodon.py
 python-twitter==3.3
 pytz==2017.3              # via mastodon.py
+raven[flask]==6.3.0
 requests-oauthlib==0.8.0  # via flask-oauthlib, python-twitter
 requests==2.18.4          # via mastodon.py, python-twitter, requests-oauthlib
 six==1.11.0               # via mastodon.py, python-dateutil
-sqlalchemy==1.1.14        # via flask-sqlalchemy
+sqlalchemy==1.1.15        # via flask-sqlalchemy
 urllib3==1.22             # via requests
 werkzeug==0.12.2          # via flask
 wtforms==2.1              # via flask-wtf

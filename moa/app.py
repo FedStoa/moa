@@ -18,6 +18,10 @@ app = Flask(__name__)
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
 app.config.from_object(config)
 
+if app.config['SENTRY_DSN']:
+    from raven.contrib.flask import Sentry
+    sentry = Sentry(app, dsn=app.config['SENTRY_DSN'])
+
 db = SQLAlchemy(metadata=metadata)
 db.init_app(app)
 oauth = OAuth(app)
