@@ -117,11 +117,19 @@ for bridge in bridges:
 
                 for attachment in t.attachments:
 
-                    temp_file_read = open(attachment, 'rb')
-                    l.info('Uploading ' + attachment)
-                    media_ids.append(twitter_api.UploadMediaChunked(media=temp_file_read))
+                    file = attachment[0]
+                    description = attachment[1]
+
+                    temp_file_read = open(file, 'rb')
+                    l.info(f'Uploading {description} {file}')
+                    media_id = twitter_api.UploadMediaChunked(media=temp_file_read)
+
+                    if description:
+                        twitter_api.PostMediaMetadata(media_id, alt_text=description)
+
+                    media_ids.append(media_id)
                     temp_file_read.close()
-                    os.unlink(attachment)
+                    os.unlink(file)
 
                 if c.SEND:
                     reply_to = send_tweet(tweet, reply_to, media_ids, twitter_api)

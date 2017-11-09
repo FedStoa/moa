@@ -212,7 +212,7 @@ class Toot:
             upload_file_name = temp_file.name + file_extension
             os.rename(temp_file.name, upload_file_name)
 
-            self.attachments.append(upload_file_name)
+            self.attachments.append((upload_file_name, attachment['description']))
 
     # def cleanup(self):
     #
