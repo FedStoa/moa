@@ -110,6 +110,18 @@ class Toot:
         return False
 
     @property
+    def mentions(self):
+
+        mentions = []
+        for m in self.data['mentions']:
+
+            o = urlparse(m['url'])
+
+            mentions.append((m['username'], f"🐘{m['username']}@{o.netloc}"))
+
+        return mentions
+
+    @property
     def joined_tweet_parts(self):
         return "".join(self.tweet_parts)
 
@@ -147,6 +159,11 @@ class Toot:
             self.content = re.sub(media_regexp, "", self.content)
 
             self.content = re.sub(r'@(\w+)@twitter.com', '@\g<1>', self.content)
+
+            # fix up masto mentions
+            for mention in self.mentions:
+
+                self.content = re.sub(f'@{mention[0]}', f"{mention[1]}", self.content)
 
             self.content = self.content.strip()
 
