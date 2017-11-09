@@ -123,23 +123,24 @@ def options():
             tweet_mode='extended'  # Allow tweets longer than 140 raw characters
         )
 
-        bridge.twitter_last_id = twitter_api.GetUserTimeline()[0].id
+        if not bridge_found:
+            bridge.twitter_last_id = twitter_api.GetUserTimeline()[0].id
 
-        # get mastodon ID
-        api = mastodon_api(session['mastodon']['host'],
-                           access_code=session['mastodon']['access_code'])
+            # get mastodon ID
+            api = mastodon_api(session['mastodon']['host'],
+                               access_code=session['mastodon']['access_code'])
 
-        bridge.mastodon_account_id = api.account_verify_credentials()["id"]
+            bridge.mastodon_account_id = api.account_verify_credentials()["id"]
 
-        try:
-            statuses = api.account_statuses(bridge.mastodon_account_id)
-            if len(statuses) > 0:
-                bridge.mastodon_last_id = statuses[0]["id"]
-            else:
+            try:
+                statuses = api.account_statuses(bridge.mastodon_account_id)
+                if len(statuses) > 0:
+                    bridge.mastodon_last_id = statuses[0]["id"]
+                else:
+                    bridge.mastodon_last_id = 0
+
+            except MastodonAPIError:
                 bridge.mastodon_last_id = 0
-
-        except MastodonAPIError:
-            bridge.mastodon_last_id = 0
 
         app.logger.debug("Saving new settings")
 
