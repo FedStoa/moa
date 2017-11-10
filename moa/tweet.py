@@ -79,7 +79,7 @@ class Tweet:
 
     @property
     def is_reply(self):
-        return self.status.in_reply_to_status_id is not None
+        return self.status.in_reply_to_screen_name is not None
 
     @property
     def is_self_reply(self):
