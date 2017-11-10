@@ -203,7 +203,7 @@ class Toot:
                     possible_part = f"{current_part} {next_word}".lstrip()
 
                     if len(possible_part) > self.tweet_length - 3 :
-                        logger.info(f'Part is full: {current_part}')
+                        logger.debug(f'Part is full: {current_part}')
 
                         current_part = f"{current_part}…".lstrip()
                         self.tweet_parts.append(current_part)
