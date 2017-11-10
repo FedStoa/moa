@@ -1,5 +1,5 @@
 import sys, os
-from moa.app import app as application
+from app import app as application
 
 VENV = '/var/www/moa/.moa-venv'
 PYTHON_BIN = VENV + '/bin/python3'
