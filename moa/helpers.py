@@ -21,7 +21,7 @@ def send_tweet(tweet, reply_to, media_ids, twitter_api):
         logger.info(f'Tweeting "{tweet}"')
 
         if media_ids:
-            logger.info(f'With media {media_ids}')
+            logger.info(f'With media')
 
         try:
             reply_to = twitter_api.PostUpdate(tweet,
@@ -55,7 +55,7 @@ def send_toot(tweet, settings, mast_api, reply_to=None):
         logger.info(f'Tooting "{tweet.clean_content}"')
 
         if tweet.media_ids:
-            logger.info(f'With media {tweet.media_ids}')
+            logger.info(f'With media')
 
         try:
             post = mast_api.status_post(
