@@ -26,7 +26,8 @@ def send_tweet(tweet, reply_to, media_ids, twitter_api):
         try:
             reply_to = twitter_api.PostUpdate(tweet,
                                               media=media_ids,
-                                              in_reply_to_status_id=reply_to).id
+                                              in_reply_to_status_id=reply_to,
+                                              verify_status_length=False).id
         except TwitterError as e:
             logger.error(e.message)
 

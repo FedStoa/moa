@@ -26,7 +26,7 @@ class Toot:
     content = None
     tweet_parts = []
     url_length = 23
-    tweet_length = 140
+    tweet_length = 280
     attachments = []
 
     def __init__(self, toot_data, settings):
@@ -194,7 +194,7 @@ class Toot:
 
             current_part = ""
             words = self.clean_content.split(" ")
-            logger.debug(words)
+            # logger.debug(words)
 
             if self.settings.split_twitter_messages:
 
