@@ -58,14 +58,14 @@
             Settings
             <form method="POST" action="{{ url_for('options') }}">
                 <ul>
-                    <li>{{ form.enabled.label }}{{ form.enabled(checked=enabled) }}</li>
+                    <li>{{ form.enabled(checked=enabled) }}{{ form.enabled.label }}</li>
                     <hr>
-                    <li>{{ form.post_to_twitter.label }}{{ form.post_to_twitter }}</li>
-                    <li>{{ form.post_private_to_twitter.label }}{{ form.post_private_to_twitter }}</li>
-                    <li>{{ form.split_twitter_messages.label }}{{ form.split_twitter_messages }}</li>
-                    <li>{{ form.post_boosts_to_twitter.label }}{{ form.post_boosts_to_twitter }}</li>
+                    <li>{{ form.post_to_twitter }}{{ form.post_to_twitter.label }}</li>
+                    <li>{{ form.post_private_to_twitter }}{{ form.post_private_to_twitter.label }}</li>
+                    <li>{{ form.split_twitter_messages }}{{ form.split_twitter_messages.label }}</li>
+                    <li>{{ form.post_boosts_to_twitter }}{{ form.post_boosts_to_twitter.label }}</li>
                     <hr>
-                    <li>{{ form.post_to_mastodon.label }}{{ form.post_to_mastodon }}</li>
+                    <li>{{ form.post_to_mastodon }}{{ form.post_to_mastodon.label }}</li>
                     <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
                 </ul>
                 {{ form.csrf_token }}

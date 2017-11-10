@@ -9,7 +9,7 @@ class SettingsForm(FlaskForm):
     post_to_twitter = BooleanField('Post Public toots to Twitter?')
     post_private_to_twitter = BooleanField('Post Private toots to Twitter?')
     post_boosts_to_twitter = BooleanField('Post Boosts to Twitter?')
-    split_twitter_messages = BooleanField('Split long messages on Twitter?')
+    split_twitter_messages = BooleanField('Split long toots on Twitter?')
 
     post_to_mastodon = BooleanField('Post to Mastodon?')
     toot_visibility = RadioField('Toot visibility', choices=[
