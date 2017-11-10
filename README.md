@@ -7,8 +7,10 @@
 
 A Mastodon <-> Twitter Cross-poster
 
+https://moa.party
+
 ## Features
 * preserves image alt text
-* handles boosts/retweets 
+* handles boosts/retweets
 
-Lot's of code lifted from https://github.com/halcy/MastodonToTwitter
+Some code lifted from https://github.com/halcy/MastodonToTwitter
