@@ -23,13 +23,13 @@ logger = logging.getLogger('worker')
 
 
 class Toot:
-    content = None
-    tweet_parts = []
-    url_length = 23
-    tweet_length = 280
-    attachments = []
 
     def __init__(self, toot_data, settings):
+        self.content = None
+        self.tweet_parts = []
+        self.url_length = 23
+        self.tweet_length = 280
+        self.attachments = []
         self.data = toot_data
         self.settings = settings
 
@@ -42,6 +42,10 @@ class Toot:
         return self.data['visibility']
 
     @property
+    def in_reply_to_id(self):
+        return self.data['in_reply_to_id']
+
+    @property
     def raw_content(self):
 
         if self.is_boost:
@@ -51,6 +55,12 @@ class Toot:
 
     @property
     def is_reply(self):
+        _ = self.clean_content
+
+        # This is kind of funky
+        if self.content[0] == '🐘':
+            return True
+
         return self.data['in_reply_to_id'] is not None
 
     @property
@@ -99,7 +109,7 @@ class Toot:
     def should_skip(self):
 
         # Don't cross-post replies
-        if self.is_reply:
+        if self.is_reply and not self.is_self_reply:
             logger.info(f'Skipping reply.')
             return True
 
@@ -180,6 +190,8 @@ class Toot:
                     self.content = f"📢🐘 “{self.content}”\n{self.url}"
                 else:
                     self.content = f"📢🐘\n{self.url}\n"
+
+            logger.debug(self.content)
 
         return self.content
 

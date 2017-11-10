@@ -90,31 +90,20 @@ for bridge in bridges:
 
                 l.info(f"Working on toot {t.id}")
 
-                l.debug(pp.pformat(toot))
+                # l.debug(pp.pformat(toot))
 
                 if t.should_skip:
                     continue
 
                 t.split_toot()
+
                 if c.SEND:
                     t.download_attachments()
 
                 reply_to = None
                 media_ids = []
 
-                # Do normal posting for all but the last tweet where we need to upload media
-                for status in t.tweet_parts[:-1]:
-                    if c.SEND:
-                        reply_to = send_tweet(status, reply_to, media_ids, twitter_api)
-
-                        if reply_to != 0:
-                            m = Mapping()
-                            m.mastodon_id = t.id
-                            m.twitter_id = reply_to
-                            session.add(m)
-
-                status = t.tweet_parts[-1]
-
+                # Upload our attachments for the last tweet
                 for attachment in t.attachments:
 
                     file = attachment[0]
@@ -131,6 +120,29 @@ for bridge in bridges:
                     temp_file_read.close()
                     os.unlink(file)
 
+                if t.is_self_reply:
+
+                    # In the case where a toot has been broken into multiple tweets
+                    # we want the last one posted
+                    mapping = session.query(Mapping).filter_by(mastodon_id=t.in_reply_to_id).order_by(Mapping.created.desc()).first()
+
+                    if mapping:
+                        reply_to = mapping.twitter_id
+                        l.info(f"Replying to twitter status {reply_to} / masto status {t.in_reply_to_id}")
+
+                # Do normal posting for all but the last tweet where we need to upload media
+                for status in t.tweet_parts[:-1]:
+                    if c.SEND:
+                        reply_to = send_tweet(status, reply_to, None, twitter_api)
+
+                        if reply_to != 0:
+                            m = Mapping()
+                            m.mastodon_id = t.id
+                            m.twitter_id = reply_to
+                            session.add(m)
+
+                status = t.tweet_parts[-1]
+
                 if c.SEND:
                     reply_to = send_tweet(status, reply_to, media_ids, twitter_api)
 
@@ -145,6 +157,9 @@ for bridge in bridges:
         bridge.mastodon_last_id = mastodon_last_id
         bridge.twitter_last_id = twitter_last_id
 
+        if c.SEND:
+            session.commit()
+
     if bridge.settings.post_to_mastodon:
 
         if len(new_tweets) != 0:
@@ -155,7 +170,7 @@ for bridge in bridges:
 
                 l.info(f"Working on tweet {status.id}")
 
-                l.debug(pp.pformat(status.__dict__))
+                # l.debug(pp.pformat(status.__dict__))
 
                 tweet = Tweet(status, bridge.settings, twitter_api, mast_api)
 
@@ -192,8 +207,8 @@ for bridge in bridges:
             bridge.mastodon_last_id = mastodon_last_id
             bridge.twitter_last_id = twitter_last_id
 
-    if c.SEND:
-        session.commit()
+            if c.SEND:
+                session.commit()
 
 session.close()
 l.info("All done")

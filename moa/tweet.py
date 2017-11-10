@@ -11,12 +11,13 @@ logger = logging.getLogger('worker')
 
 
 class Tweet:
-    media_ids = []
-    attachments = []
-    __fetched_attachments = None
 
     def __init__(self, status, settings, api, masto_api):
 
+        self.media_ids = []
+        self.attachments = []
+        self.__fetched_attachments = None
+        self.__content = None
         self.status = status
         self.settings = settings
         self.api = api
@@ -98,53 +99,56 @@ class Tweet:
 
         quoted_text = None
 
-        if self.is_retweet:
-            content = self.status.retweeted_status.full_text
+        if not self.__content:
 
-        elif self.is_quoted:
+            if self.is_retweet:
+                content = self.status.retweeted_status.full_text
 
-            content = re.sub(r'https?://.*', '', self.status.full_text, flags=re.MULTILINE)
-            quoted_text = f"“{self.status.quoted_status.full_text}”"
+            elif self.is_quoted:
 
-            for url in self.status.quoted_status.urls:
-                # Unshorten URLs
-                quoted_text = re.sub(url.url, url.expanded_url, quoted_text)
+                content = re.sub(r'https?://.*', '', self.status.full_text, flags=re.MULTILINE)
+                quoted_text = f"“{self.status.quoted_status.full_text}”"
 
-            content = f"{content}\n\n{quoted_text}"
+                for url in self.status.quoted_status.urls:
+                    # Unshorten URLs
+                    quoted_text = re.sub(url.url, url.expanded_url, quoted_text)
 
-        else:
-            content = self.status.full_text
+                content = f"{content}\n\n{quoted_text}"
 
-        content = html.unescape(content)
-        mentions = re.findall(r'[@]\S*', content)
-
-        if mentions:
-            for mention in mentions:
-                # Replace all mentions for an equivalent to clearly signal their origin on Twitter
-                content = re.sub(mention, f"@{mention[1:]}@twitter.com", content)
-
-        for url in self.urls:
-            # Unshorten URLs
-            content = re.sub(url.url, url.expanded_url, content)
-
-        if self.is_retweet:
-            if len(content) > 0:
-                content = f"📢🐦 “{content}”\n{self.url}"
             else:
-                content = f"📢🐦\n{self.url}\n"
+                content = self.status.full_text
 
-        if self.is_quoted:
-            content = f"{content}\n{self.url}"
+            content = html.unescape(content)
+            mentions = re.findall(r'[@]\S*', content)
 
-        for attachment in self.media:
-            # Remove the t.co link to the media
-            content = re.sub(attachment.url, "", content)
+            if mentions:
+                for mention in mentions:
+                    # Replace all mentions for an equivalent to clearly signal their origin on Twitter
+                    content = re.sub(mention, f"@{mention[1:]}@twitter.com", content)
 
-        if len(content) == 0:
-            logger.info("Content is empty - adding unicode character.")
-            content = u"\u2063"
+            for url in self.urls:
+                # Unshorten URLs
+                content = re.sub(url.url, url.expanded_url, content)
 
-        return content
+            if self.is_retweet:
+                if len(content) > 0:
+                    content = f"📢🐦 “{content}”\n{self.url}"
+                else:
+                    content = f"📢🐦\n{self.url}\n"
+
+            if self.is_quoted:
+                content = f"{content}\n{self.url}"
+
+            for attachment in self.media:
+                # Remove the t.co link to the media
+                content = re.sub(attachment.url, "", content)
+
+            if len(content) == 0:
+                logger.info("Content is empty - adding unicode character.")
+                content = u"\u2063"
+
+            self.__content = content
+        return self.__content
 
     def transfer_attachments(self):
 
