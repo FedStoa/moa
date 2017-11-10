@@ -16,6 +16,10 @@ from moa.tweet import Tweet
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
 
+if c.SENTRY_DSN:
+    from raven import Client
+    client = Client(c.SENTRY_DSN)
+
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
 
