@@ -4,5 +4,5 @@ config.py
 /.idea
 /.moa-venv
 /moa/tmp/restart.txt
-/moa/logs/*.log
+/logs/*.log
 /moa.egg-info
