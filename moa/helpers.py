@@ -62,7 +62,8 @@ def send_toot(tweet, settings, mast_api, reply_to=None):
                 tweet.clean_content,
                 media_ids=tweet.media_ids,
                 visibility=settings.toot_visibility,
-                sensitive=tweet.sensitive)
+                sensitive=tweet.sensitive,
+                in_reply_to_id=reply_to)
 
             reply_to = post["id"]
 

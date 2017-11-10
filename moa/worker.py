@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from moa.helpers import send_tweet, send_toot
-from moa.models import Bridge
+from moa.models import Bridge, Mapping
 from moa.toot import Toot
 from moa.tweet import Tweet
 
@@ -70,7 +70,7 @@ for bridge in bridges:
         new_tweets = twitter_api.GetUserTimeline(
             since_id=bridge.twitter_last_id,
             include_rts=True,
-            exclude_replies=True)
+            exclude_replies=False)
         if len(new_tweets) != 0:
             twitter_last_id = new_tweets[0].id
             l.info(f"Twitter: {bridge.twitter_handle} -> Mastodon: {bridge.mastodon_user}")
@@ -107,6 +107,12 @@ for bridge in bridges:
                     if c.SEND:
                         reply_to = send_tweet(status, reply_to, media_ids, twitter_api)
 
+                        if reply_to != 0:
+                            m = Mapping()
+                            m.mastodon_id = t.id
+                            m.twitter_id = reply_to
+                            session.add(m)
+
                 status = t.tweet_parts[-1]
 
                 for attachment in t.attachments:
@@ -128,6 +134,12 @@ for bridge in bridges:
                 if c.SEND:
                     reply_to = send_tweet(status, reply_to, media_ids, twitter_api)
 
+                    if reply_to != 0:
+                        m = Mapping()
+                        m.mastodon_id = t.id
+                        m.twitter_id = reply_to
+                        session.add(m)
+
                 twitter_last_id = reply_to
 
         bridge.mastodon_last_id = mastodon_last_id
@@ -140,6 +152,8 @@ for bridge in bridges:
             new_tweets.reverse()
 
             for status in new_tweets:
+
+                l.info(f"Working on tweet {status.id}")
 
                 l.debug(pp.pformat(status.__dict__))
 
@@ -155,10 +169,23 @@ for bridge in bridges:
 
                 twitter_last_id = status.id
 
+                reply_to = None
+                if tweet.is_self_reply:
+                    mapping = session.query(Mapping).filter_by(twitter_id=status.in_reply_to_status_id).first()
+                    reply_to = mapping.mastodon_id
+                    l.info(f"Replying to mastodon status {reply_to}")
+
                 if c.SEND:
                     mastodon_last_id = send_toot(tweet,
                                                  bridge.settings,
-                                                 mast_api)
+                                                 mast_api,
+                                                 reply_to=reply_to)
+
+                    if mastodon_last_id != 0:
+                        m = Mapping()
+                        m.mastodon_id = mastodon_last_id
+                        m.twitter_id = status.id
+                        session.add(m)
 
             bridge.mastodon_last_id = mastodon_last_id
             bridge.twitter_last_id = twitter_last_id

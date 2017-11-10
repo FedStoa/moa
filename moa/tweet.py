@@ -47,7 +47,7 @@ class Tweet:
     @property
     def should_skip(self):
 
-        if self.is_reply:
+        if self.is_reply and not self.is_self_reply:
             logger.info(f'Skipping reply.')
             return True
 
@@ -80,6 +80,10 @@ class Tweet:
     @property
     def is_reply(self):
         return self.status.in_reply_to_status_id is not None
+
+    @property
+    def is_self_reply(self):
+        return self.status.in_reply_to_user_id == self.status.user.id
 
     @property
     def urls(self):

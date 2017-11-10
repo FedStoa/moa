@@ -46,6 +46,15 @@ class Bridge(Base):
         return f"Twitter: {self.twitter_handle}  Mastodon: {self.mastodon_user}"
 
 
+class Mapping(Base):
+
+    __tablename__ = 'mapping'
+    id = Column(Integer, primary_key=True)
+    mastodon_id = Column(BigInteger, default=0)
+    twitter_id = Column(BigInteger, default=0)
+    created = Column(DateTime, default=datetime.utcnow)
+
+
 class Settings:
     post_to_twitter = True
     post_private_to_twitter = False
