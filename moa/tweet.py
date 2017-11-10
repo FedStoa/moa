@@ -69,6 +69,10 @@ class Tweet:
         return self.status.retweeted
 
     @property
+    def is_quoted(self):
+        return self.status.quoted_status
+
+    @property
     def is_reply(self):
         return self.status.in_reply_to_status_id is not None
 
@@ -83,8 +87,17 @@ class Tweet:
     @property
     def clean_content(self):
 
+        quoted_text = None
+
         if self.is_retweet:
             content = self.status.retweeted_status.full_text
+
+        elif self.is_quoted:
+
+            content = re.sub(r'https?://.*', '', self.status.full_text, flags=re.MULTILINE)
+            quoted_text = f"“{self.status.quoted_status.full_text}”"
+            content = f"{content}\n\n{quoted_text}"
+
         else:
             content = self.status.full_text
 
