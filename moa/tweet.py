@@ -15,11 +15,12 @@ class Tweet:
     attachments = []
     __fetched_attachments = None
 
-    def __init__(self, status, settings, api):
+    def __init__(self, status, settings, api, masto_api):
 
         self.status = status
         self.settings = settings
         self.api = api
+        self.masto_api = masto_api
 
     @property
     def media(self):
@@ -65,7 +66,6 @@ class Tweet:
         elif self.is_quoted:
             user = self.status.quoted_status.user.screen_name
             status = self.status.quoted_status.id
-
 
         return f"{base}/{user}/status/{status}"
 
@@ -162,6 +162,6 @@ class Tweet:
             self.attachments.append((upload_file_name, attachment.ext_alt_text))
 
             logger.debug(f'Uploading {attachment.ext_alt_text}: {upload_file_name}')
-            self.media_ids.append(self.api.media_post(upload_file_name,
-                                                      description=attachment.ext_alt_text))
+            self.media_ids.append(self.masto_api.media_post(upload_file_name,
+                                                            description=attachment.ext_alt_text))
             os.unlink(upload_file_name)

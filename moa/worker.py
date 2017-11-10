@@ -139,7 +139,7 @@ for bridge in bridges:
 
                 l.debug(pp.pformat(status.__dict__))
 
-                tweet = Tweet(status, bridge.settings, twitter_api)
+                tweet = Tweet(status, bridge.settings, twitter_api, mast_api)
 
                 l.debug(tweet.clean_content)
 
