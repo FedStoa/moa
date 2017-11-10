@@ -62,7 +62,12 @@ class Tweet:
             user = self.status.retweeted_status.user.screen_name
             status = self.status.retweeted_status.id
 
-        return f"{base}/{user}/{status}"
+        elif self.is_quoted:
+            user = self.status.quoted_status.user.screen_name
+            status = self.status.quoted_status.id
+
+
+        return f"{base}/{user}/status/{status}"
 
     @property
     def is_retweet(self):
@@ -96,6 +101,11 @@ class Tweet:
 
             content = re.sub(r'https?://.*', '', self.status.full_text, flags=re.MULTILINE)
             quoted_text = f"“{self.status.quoted_status.full_text}”"
+
+            for url in self.status.quoted_status.urls:
+                # Unshorten URLs
+                quoted_text = re.sub(url.url, url.expanded_url, quoted_text)
+
             content = f"{content}\n\n{quoted_text}"
 
         else:
@@ -118,6 +128,9 @@ class Tweet:
                 content = f"📢🐦 “{content}”\n{self.url}"
             else:
                 content = f"📢🐦\n{self.url}\n"
+
+        if self.is_quoted:
+            content = f"{content}\n{self.url}"
 
         if len(content) == 0:
             content = u"\u2063"
