@@ -172,8 +172,10 @@ for bridge in bridges:
                 reply_to = None
                 if tweet.is_self_reply:
                     mapping = session.query(Mapping).filter_by(twitter_id=status.in_reply_to_status_id).first()
-                    reply_to = mapping.mastodon_id
-                    l.info(f"Replying to mastodon status {reply_to}")
+
+                    if mapping:
+                        reply_to = mapping.mastodon_id
+                        l.info(f"Replying to mastodon status {reply_to}")
 
                 if c.SEND:
                     mastodon_last_id = send_toot(tweet,
