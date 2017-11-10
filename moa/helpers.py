@@ -67,7 +67,7 @@ def send_toot(tweet, settings, mast_api, reply_to=None):
             reply_to = post["id"]
 
         except MastodonAPIError as e:
-            logger.error(e.message)
+            logger.error(e)
 
             if retry_counter < MASTODON_RETRIES:
                 retry_counter += 1

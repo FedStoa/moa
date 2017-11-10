@@ -132,12 +132,13 @@ class Tweet:
         if self.is_quoted:
             content = f"{content}\n{self.url}"
 
-        if len(content) == 0:
-            content = u"\u2063"
-
         for attachment in self.media:
             # Remove the t.co link to the media
             content = re.sub(attachment.url, "", content)
+
+        if len(content) == 0:
+            logger.info("Content is empty - adding unicode character.")
+            content = u"\u2063"
 
         return content
 
