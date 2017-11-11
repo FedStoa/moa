@@ -10,6 +10,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
     SEND = True
     SENTRY_DSN = ''
+    HEALTHCHECKS = ''
 
 
 class ProductionConfig(Config):

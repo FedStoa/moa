@@ -2,7 +2,7 @@ import importlib
 import logging
 import os
 import pprint as pp
-
+import requests
 import twitter
 from mastodon import Mastodon
 from sqlalchemy import create_engine
@@ -212,3 +212,6 @@ for bridge in bridges:
 
 session.close()
 l.info("All done")
+
+if c.HEALTHCHECKS:
+    requests.get(c.HEALTHCHECKS)
