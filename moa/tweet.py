@@ -198,9 +198,10 @@ class Tweet:
 
 
 def expand_handles(content):
-    mentions = re.findall(r'[@]\S*', content)
 
     if content:
+        mentions = re.findall(r'[@]\S*', content)
+
         if mentions:
             for mention in mentions:
                 # Replace all mentions for an equivalent to clearly signal their origin on Twitter
