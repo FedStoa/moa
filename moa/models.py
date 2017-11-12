@@ -57,13 +57,26 @@ class Mapping(Base):
 
 class Settings:
 
+    # These are defined in 2 places because the unpickled settings may be missing a property that's been added
+
+    post_to_twitter = True
+    post_private_to_twitter = False
+    split_twitter_messages = True
+    post_boosts_to_twitter = True
+
+    post_to_mastodon = True
+    post_rts_to_mastodon = True
+    toot_visibility = 'public'
+
     def __init__(self):
 
         self.post_to_twitter = True
         self.post_private_to_twitter = False
         self.split_twitter_messages = True
         self.post_boosts_to_twitter = True
+
         self.post_to_mastodon = True
+        self.post_rts_to_mastodon = True
         self.toot_visibility = 'public'
 
 

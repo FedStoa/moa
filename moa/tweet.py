@@ -52,6 +52,11 @@ class Tweet:
             logger.info(f'Skipping reply.')
             return True
 
+        if self.is_retweet and not self.settings.post_rts_to_mastodon:
+            logger.info(f'Skipping retweet.')
+
+            return True
+
         return False
 
     @property
