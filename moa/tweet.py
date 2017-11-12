@@ -57,9 +57,6 @@ class Tweet:
 
             return self.__fetched_attachments
 
-        else:
-            return []
-
     @property
     def should_skip(self):
 
@@ -179,6 +176,9 @@ class Tweet:
         return self.__content
 
     def transfer_attachments(self):
+
+        if not self.media:
+            return
 
         for attachment in self.media:
             # l.debug(pp.pformat(attachment.__dict__))
