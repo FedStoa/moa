@@ -113,7 +113,7 @@ class Tweet:
                     # Unshorten URLs
                     quoted_text = re.sub(url.url, url.expanded_url, quoted_text)
 
-                content = f"{content}\n\n{quoted_text}"
+                # content = f"{content}\n\n{quoted_text}"
 
             else:
                 content = self.status.full_text
@@ -136,8 +136,18 @@ class Tweet:
                 else:
                     content = f"📢🐦\n{self.url}\n"
 
-            if self.is_quoted:
-                content = f"{content}\n{self.url}"
+            elif self.is_quoted:
+                possible_content = f"{content}\n\n{quoted_text}\n{self.url}"
+
+                if len(possible_content) > 500:
+                    logger.info(f"Toot is too long: {len(possible_content)}")
+                    diff = len(possible_content) - 500 + 1
+                    quoted_text = quoted_text[:-diff]
+                    content = f"{content}\n\n{quoted_text}…\n{self.url}"
+                    logger.info(f"Length is now: {len(content)}")
+
+                else:
+                    content = possible_content
 
             for attachment in self.media:
                 # Remove the t.co link to the media
