@@ -200,7 +200,7 @@ class Tweet:
 def expand_handles(content):
 
     if content:
-        mentions = re.findall(r'[@][a-zA-Z0-9]*', content)
+        mentions = re.findall(r'[@][a-zA-Z0-9_]*', content)
 
         if mentions:
             for mention in mentions:
