@@ -65,7 +65,7 @@ for bridge in bridges:
         )
         if len(new_toots) != 0:
             l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
-            mastodon_last_id = int(new_toots[0]['id'])
+            bridge.mastodon_last_id = int(new_toots[0]['id'])
             l.info(f"{len(new_toots)} new toots found")
 
     if bridge.settings.post_to_mastodon:
@@ -75,7 +75,7 @@ for bridge in bridges:
             exclude_replies=False)
         if len(new_tweets) != 0:
             l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
-            twitter_last_id = new_tweets[0].id
+            bridge.twitter_last_id = new_tweets[0].id
             l.info(f"{len(new_tweets)} new tweets found")
 
     if bridge.settings.post_to_twitter and len(new_toots) != 0:
