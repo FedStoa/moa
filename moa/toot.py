@@ -202,20 +202,20 @@ class Toot:
             self.tweet_parts.append(self.clean_content)
 
         else:
-            logger.info(f'Toot bigger {self.tweet_length} characters, need to split...')
 
             current_part = ""
             words = self.clean_content.split(" ")
             # logger.debug(words)
 
             if self.settings.split_twitter_messages:
+                logger.info(f'Toot bigger {self.tweet_length} characters, need to split...')
 
                 for next_word in words:
 
                     possible_part = f"{current_part} {next_word}".lstrip()
 
                     if len(possible_part) > self.tweet_length - 3 :
-                        logger.debug(f'Part is full: {current_part}')
+                        logger.debug(f'Part is full: {len(current_part)} {current_part}')
 
                         current_part = f"{current_part}…".lstrip()
                         self.tweet_parts.append(current_part)
@@ -226,6 +226,7 @@ class Toot:
 
                 # Insert last part
                 if len(current_part.strip()) != 0:
+                    logger.debug(f'{len(current_part)} {current_part}')
                     self.tweet_parts.append(current_part.strip())
 
             else:
