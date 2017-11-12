@@ -42,6 +42,21 @@ class Tweet:
 
             return self.__fetched_attachments
 
+        elif self.is_retweet:
+
+            if not self.__fetched_attachments:
+                fetched_tweet = self.api.GetStatus(
+                    status_id=self.status.retweeted_status.id,
+                    trim_user=True,
+                    include_my_retweet=False,
+                    include_entities=True,
+                    include_ext_alt_text=True
+                )
+
+                self.__fetched_attachments = fetched_tweet.media
+
+            return self.__fetched_attachments
+
         else:
             return []
 
