@@ -26,9 +26,10 @@ class Tweet:
     @property
     def media(self):
 
-        if self.status.media:
+        if not self.__fetched_attachments:
 
-            if not self.__fetched_attachments:
+            if self.status.media:
+
                 # we can't get image alt text from the timeline call :/
                 fetched_tweet = self.api.GetStatus(
                     status_id=self.status.id,
@@ -40,11 +41,8 @@ class Tweet:
 
                 self.__fetched_attachments = fetched_tweet.media
 
-            return self.__fetched_attachments
+            elif self.is_retweet:
 
-        elif self.is_retweet:
-
-            if not self.__fetched_attachments:
                 fetched_tweet = self.api.GetStatus(
                     status_id=self.status.retweeted_status.id,
                     trim_user=True,
@@ -55,7 +53,10 @@ class Tweet:
 
                 self.__fetched_attachments = fetched_tweet.media
 
-            return self.__fetched_attachments
+            if not self.__fetched_attachments:
+                self.__fetched_attachments = []
+
+        return self.__fetched_attachments
 
     @property
     def should_skip(self):
@@ -176,9 +177,6 @@ class Tweet:
         return self.__content
 
     def transfer_attachments(self):
-
-        if not self.media:
-            return
 
         for attachment in self.media:
             # l.debug(pp.pformat(attachment.__dict__))
