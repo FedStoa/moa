@@ -196,13 +196,15 @@ class Tweet:
                                                             description=attachment.ext_alt_text))
             os.unlink(upload_file_name)
 
+
 def expand_handles(content):
     mentions = re.findall(r'[@]\S*', content)
 
-    if mentions:
-        for mention in mentions:
-            # Replace all mentions for an equivalent to clearly signal their origin on Twitter
-            content = re.sub(mention, f"@{mention[1:]}@twitter.com", content)
+    if content:
+        if mentions:
+            for mention in mentions:
+                # Replace all mentions for an equivalent to clearly signal their origin on Twitter
+                content = re.sub(mention, f"@{mention[1:]}@twitter.com", content)
 
     return content
 
