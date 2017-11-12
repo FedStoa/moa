@@ -118,8 +118,6 @@ class Tweet:
                     # Unshorten URLs
                     quoted_text = re.sub(url.url, url.expanded_url, quoted_text)
 
-                # content = f"{content}\n\n{quoted_text}"
-
             else:
                 content = self.status.full_text
 
@@ -137,9 +135,9 @@ class Tweet:
 
             if self.is_retweet:
                 if len(content) > 0:
-                    content = f"📢🐦 “{content}”\n{self.url}"
+                    content = f"RT @{self.status.retweeted_status.user.screen_name}@twitter.com\n“{content}”"
                 else:
-                    content = f"📢🐦\n{self.url}\n"
+                    content = f"RT @{self.status.retweeted_status.user.screen_name}@twitter.com\n"
 
             elif self.is_quoted:
                 possible_content = f"{content}\n\n{quoted_text}\n{self.url}"
