@@ -11,7 +11,6 @@ logger = logging.getLogger('worker')
 
 
 class Tweet:
-
     def __init__(self, status, settings, api, masto_api):
 
         self.media_ids = []
@@ -28,30 +27,23 @@ class Tweet:
 
         if not self.__fetched_attachments:
 
-            if self.status.media:
+            if self.is_retweet:
+                target_id = self.status.retweeted_status.id
 
-                # we can't get image alt text from the timeline call :/
-                fetched_tweet = self.api.GetStatus(
-                    status_id=self.status.id,
-                    trim_user=True,
-                    include_my_retweet=False,
-                    include_entities=True,
-                    include_ext_alt_text=True
-                )
+            elif self.is_quoted:
+                target_id = self.status.quoted_status.id
+            else:
+                target_id = self.status.id
 
-                self.__fetched_attachments = fetched_tweet.media
+            fetched_tweet = self.api.GetStatus(
+                status_id=target_id,
+                trim_user=True,
+                include_my_retweet=False,
+                include_entities=True,
+                include_ext_alt_text=True
+            )
 
-            elif self.is_retweet:
-
-                fetched_tweet = self.api.GetStatus(
-                    status_id=self.status.retweeted_status.id,
-                    trim_user=True,
-                    include_my_retweet=False,
-                    include_entities=True,
-                    include_ext_alt_text=True
-                )
-
-                self.__fetched_attachments = fetched_tweet.media
+            self.__fetched_attachments = fetched_tweet.media
 
             if not self.__fetched_attachments:
                 self.__fetched_attachments = []
@@ -108,12 +100,15 @@ class Tweet:
     def urls(self):
         if self.is_retweet:
             return self.status.retweeted_status.urls
+        elif self.is_quoted:
+            return self.status.quoted_status.urls
         else:
             return self.status.urls
 
     @property
     def sensitive(self):
         return bool(self.status.possibly_sensitive)
+
 
     @property
     def clean_content(self):
@@ -138,12 +133,9 @@ class Tweet:
                 content = self.status.full_text
 
             content = html.unescape(content)
-            mentions = re.findall(r'[@]\S*', content)
 
-            if mentions:
-                for mention in mentions:
-                    # Replace all mentions for an equivalent to clearly signal their origin on Twitter
-                    content = re.sub(mention, f"@{mention[1:]}@twitter.com", content)
+            content = expand_handles(content)
+            quoted_text = expand_handles(quoted_text)
 
             for url in self.urls:
                 # Unshorten URLs
@@ -203,3 +195,14 @@ class Tweet:
             self.media_ids.append(self.masto_api.media_post(upload_file_name,
                                                             description=attachment.ext_alt_text))
             os.unlink(upload_file_name)
+
+def expand_handles(content):
+    mentions = re.findall(r'[@]\S*', content)
+
+    if mentions:
+        for mention in mentions:
+            # Replace all mentions for an equivalent to clearly signal their origin on Twitter
+            content = re.sub(mention, f"@{mention[1:]}@twitter.com", content)
+
+    return content
+
