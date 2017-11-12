@@ -24,7 +24,7 @@ FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
 
 l = logging.getLogger('worker')
-l.setLevel(logging.INFO)
+l.setLevel(logging.DEBUG)
 
 l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
@@ -168,11 +168,9 @@ for bridge in bridges:
 
             l.info(f"Working on tweet {status.id}")
 
-            # l.debug(pp.pformat(status.__dict__))
+            l.debug(pp.pformat(status.__dict__))
 
             tweet = Tweet(status, bridge.settings, twitter_api, mast_api)
-
-            # l.debug(tweet.clean_content)
 
             if tweet.should_skip:
                 continue
