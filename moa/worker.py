@@ -2,6 +2,7 @@ import importlib
 import logging
 import os
 import pprint as pp
+
 import requests
 import twitter
 from mastodon import Mastodon
@@ -18,6 +19,7 @@ c = getattr(importlib.import_module('config'), moa_config)
 
 if c.SENTRY_DSN:
     from raven import Client
+
     client = Client(c.SENTRY_DSN)
 
 FORMAT = '%(asctime)-15s %(message)s'
@@ -84,7 +86,7 @@ for bridge in bridges:
 
         for toot in new_toots:
 
-            t = Toot(toot, bridge.settings)
+            t = Toot(toot, bridge.settings, twitter_api)
             t.url_length = url_length
 
             l.info(f"Working on toot {t.id}")
@@ -97,33 +99,18 @@ for bridge in bridges:
             t.split_toot()
 
             if c.SEND:
-                t.download_attachments()
+                t.transfer_attachments()
 
             reply_to = None
             media_ids = []
-
-            # Upload our attachments for the last tweet
-            for attachment in t.attachments:
-
-                file = attachment[0]
-                description = attachment[1]
-
-                temp_file_read = open(file, 'rb')
-                l.info(f'Uploading {description} {file}')
-                media_id = twitter_api.UploadMediaChunked(media=temp_file_read)
-
-                if description:
-                    twitter_api.PostMediaMetadata(media_id, alt_text=description)
-
-                media_ids.append(media_id)
-                temp_file_read.close()
-                os.unlink(file)
 
             if t.is_self_reply:
 
                 # In the case where a toot has been broken into multiple tweets
                 # we want the last one posted
-                mapping = session.query(Mapping).filter_by(mastodon_id=t.in_reply_to_id).order_by(Mapping.created.desc()).first()
+                mapping = session.query(Mapping).filter_by(mastodon_id=t.in_reply_to_id).order_by(
+                    Mapping.created.desc()
+                ).first()
 
                 if mapping:
                     reply_to = mapping.twitter_id
@@ -202,7 +189,6 @@ for bridge in bridges:
 
                 bridge.twitter_last_id = status.id
                 session.commit()
-
 
 session.close()
 l.info("All done")

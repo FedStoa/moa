@@ -24,7 +24,7 @@ logger = logging.getLogger('worker')
 
 class Toot:
 
-    def __init__(self, toot_data, settings):
+    def __init__(self, toot_data, settings, twitter_api):
         self.content = None
         self.tweet_parts = []
         self.url_length = 23
@@ -32,6 +32,7 @@ class Toot:
         self.attachments = []
         self.data = toot_data
         self.settings = settings
+        self.twitter_api = twitter_api
 
     @property
     def id(self):
@@ -196,6 +197,9 @@ class Toot:
         return self.content
 
     def split_toot(self):
+
+        self.tweet_parts = []
+
         expected_length = self.expected_status_length(self.clean_content)
 
         if expected_length < self.tweet_length:
@@ -234,7 +238,7 @@ class Toot:
                 space_for_suffix = len('… ') + self.url_length
                 self.tweet_parts.append(f"{current_part[:-space_for_suffix]}… {self.url}")
 
-    def download_attachments(self):
+    def transfer_attachments(self):
 
         for attachment in self.media_attachments:
             attachment_url = attachment["url"]
@@ -250,9 +254,16 @@ class Toot:
             upload_file_name = temp_file.name + file_extension
             os.rename(temp_file.name, upload_file_name)
 
-            self.attachments.append((upload_file_name, attachment['description']))
+            description = attachment['description']
+            self.attachments.append((upload_file_name, description))
 
-    # def cleanup(self):
-    #
-    #     for a in self.attachments:
-    #         os.unlink(a)
+            temp_file_read = open(upload_file_name, 'rb')
+            logger.info(f'Uploading {description} {upload_file_name}')
+            media_id = self.twitter_api.UploadMediaChunked(media=temp_file_read)
+
+            if description:
+                self.twitter_api.PostMediaMetadata(media_id, alt_text=description)
+
+            temp_file_read.close()
+            os.unlink(upload_file_name)
+
