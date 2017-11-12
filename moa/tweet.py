@@ -106,7 +106,10 @@ class Tweet:
 
     @property
     def urls(self):
-        return self.status.urls
+        if self.is_retweet:
+            return self.status.retweeted_status.urls
+        else:
+            return self.status.urls
 
     @property
     def sensitive(self):
