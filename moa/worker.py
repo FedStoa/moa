@@ -30,7 +30,7 @@ logging.basicConfig(format=FORMAT)
 l = logging.getLogger('worker')
 l.setLevel(logging.DEBUG)
 
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
