@@ -6,8 +6,10 @@ import pprint as pp
 import requests
 import twitter
 from mastodon import Mastodon
+from mastodon.Mastodon import MastodonAPIError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from twitter import TwitterError
 
 from moa.helpers import send_tweet, send_toot
 from moa.models import Bridge, Mapping
@@ -59,10 +61,16 @@ for bridge in bridges:
     )
 
     if bridge.settings.post_to_twitter:
-        new_toots = mast_api.account_statuses(
-            bridge.mastodon_account_id,
-            since_id=bridge.mastodon_last_id
-        )
+
+        try:
+            new_toots = mast_api.account_statuses(
+                bridge.mastodon_account_id,
+                since_id=bridge.mastodon_last_id
+            )
+        except MastodonAPIError as e:
+            l.error(e)
+            continue
+
         if len(new_toots) != 0:
             l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
             l.info(f"{len(new_toots)} new toots found")
@@ -71,10 +79,16 @@ for bridge in bridges:
                 bridge.mastodon_last_id = int(new_toots[0]['id'])
 
     if bridge.settings.post_to_mastodon:
-        new_tweets = twitter_api.GetUserTimeline(
-            since_id=bridge.twitter_last_id,
-            include_rts=True,
-            exclude_replies=False)
+
+        try:
+            new_tweets = twitter_api.GetUserTimeline(
+                since_id=bridge.twitter_last_id,
+                include_rts=True,
+                exclude_replies=False)
+        except TwitterError as e:
+            l.error(e)
+            continue
+
         if len(new_tweets) != 0:
             l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
             l.info(f"{len(new_tweets)} new tweets found")
