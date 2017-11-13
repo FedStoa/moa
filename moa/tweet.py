@@ -114,6 +114,36 @@ class Tweet:
         return bool(self.status.possibly_sensitive)
 
     @property
+    def mentions(self):
+
+        m = [u.screen_name for u in self.status.user_mentions]
+
+        if self.is_retweet:
+
+            m.append([u.screen_name for u in self.status.retweeted_status.user_mentions])
+
+        if self.is_quoted:
+
+            m.append([u.screen_name for u in self.status.quoted_status.mentions])
+
+        m = list(set(m))
+        logger.debug(m)
+
+        return m
+
+    def expand_handles(self, content):
+
+        if content:
+            # mentions = re.findall(r'[@][a-zA-Z0-9_]*', content)
+
+            if self.mentions:
+                for mention in self.mentions:
+                    # Replace all mentions for an equivalent to clearly signal their origin on Twitter
+                    content = re.sub(f"@{mention}", f"@{mention}@twitter.com", content)
+
+        return content
+
+    @property
     def clean_content(self):
 
         quoted_text = None
@@ -137,8 +167,8 @@ class Tweet:
 
             content = html.unescape(content)
 
-            content = expand_handles(content)
-            quoted_text = expand_handles(quoted_text)
+            content = self.expand_handles(content)
+            quoted_text = self.expand_handles(quoted_text)
 
             for url in self.urls:
                 # Unshorten URLs
@@ -199,16 +229,4 @@ class Tweet:
                                                             description=attachment.ext_alt_text))
             os.unlink(upload_file_name)
 
-
-def expand_handles(content):
-
-    if content:
-        mentions = re.findall(r'[@][a-zA-Z0-9_]*', content)
-
-        if mentions:
-            for mention in mentions:
-                # Replace all mentions for an equivalent to clearly signal their origin on Twitter
-                content = re.sub(mention, f"@{mention[1:]}@twitter.com", content)
-
-    return content
 
