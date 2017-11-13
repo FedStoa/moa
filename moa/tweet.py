@@ -53,7 +53,7 @@ class Tweet:
     @property
     def should_skip(self):
 
-        if self.is_reply and not self.is_self_reply:
+        if self.is_reply:
             logger.info(f'Skipping reply.')
             return True
 
@@ -90,7 +90,11 @@ class Tweet:
 
     @property
     def is_reply(self):
-        return self.status.in_reply_to_screen_name is not None
+
+        if self.status.in_reply_to_screen_name is not None:
+
+            if not self.is_self_reply or self.status.full_text[0] == '@':
+                return True
 
     @property
     def is_self_reply(self):
@@ -108,7 +112,6 @@ class Tweet:
     @property
     def sensitive(self):
         return bool(self.status.possibly_sensitive)
-
 
     @property
     def clean_content(self):
