@@ -118,16 +118,17 @@ class Tweet:
 
         m = [u.screen_name for u in self.status.user_mentions]
 
-        if self.is_retweet:
+        if self.is_retweet and self.status.retweeted_status.user_mentions:
 
             m.append([u.screen_name for u in self.status.retweeted_status.user_mentions])
 
-        if self.is_quoted:
+        if self.is_quoted and self.status.quoted_status.mentions:
 
             m.append([u.screen_name for u in self.status.quoted_status.mentions])
 
-        m = list(set(m))
         logger.debug(m)
+
+        m = list(set(m))
 
         return m
 
