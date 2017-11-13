@@ -65,8 +65,10 @@ for bridge in bridges:
         )
         if len(new_toots) != 0:
             l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
-            bridge.mastodon_last_id = int(new_toots[0]['id'])
             l.info(f"{len(new_toots)} new toots found")
+
+            if c.SEND:
+                bridge.mastodon_last_id = int(new_toots[0]['id'])
 
     if bridge.settings.post_to_mastodon:
         new_tweets = twitter_api.GetUserTimeline(
@@ -75,8 +77,10 @@ for bridge in bridges:
             exclude_replies=False)
         if len(new_tweets) != 0:
             l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
-            bridge.twitter_last_id = new_tweets[0].id
             l.info(f"{len(new_tweets)} new tweets found")
+
+            if c.SEND:
+                bridge.twitter_last_id = new_tweets[0].id
 
     if bridge.settings.post_to_twitter and len(new_toots) != 0:
         new_toots.reverse()
@@ -190,7 +194,11 @@ for bridge in bridges:
                 bridge.twitter_last_id = status.id
                 session.commit()
 
-    session.commit()
+            else:
+                l.info(tweet.clean_content)
+
+    if c.SEND:
+        session.commit()
 
 session.close()
 l.info("All done")
