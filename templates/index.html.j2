@@ -1,108 +1,69 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Moa</title>
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://moa.party" />
-    <meta property="og:title" content="Moa: Mastodon/Twitter Cross-poster" />
-    <meta property="og:description" content="Moa tweets your toots and vice versa" />
+{% extends "layout.html.j2" %}
+{% block body %}
 
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Moa: Mastodon/Twitter Cross-poster" />
-    <meta name="twitter:description" content="Moa tweets your toots and vice versa" />
-
-</head>
-<body>
-<div class="center">
-<pre>
- _ __ ___   ___   __ _
-| '_ ` _ \ / _ \ / _` |
-| | | | | | (_) | (_| |
-|_| |_| |_|\___/ \__,_| (Beta)
-</pre>
-
-    <p>Link your <a href="https://twitter.com">twitter</a> and <a href="https://joinmastodon.org">Mastodon</a> accounts.
-        No bamboozle.</p>
-
-    {% for message in get_flashed_messages() %}
-        <p class=message>{{ message }}</p>
-    {% endfor %}
-
-    {% block body %}
-
-        <p>
-            {#    Twitter    #}
-            {% if g.t_user %}
-                [&#x2714;] Twitter: <strong>{{ g.t_user.screen_name }}</strong>
-            {% else %}
-                <a href="{{ url_for('twitter_login') }}">[ ] Connect to Twitter</a>
-            {% endif %}
-
-        </p>
-
-        {#    Mastodon    #}
+    <p>
+        {#    Twitter    #}
         {% if g.t_user %}
-            {% if g.m_user %}
-                <p>[&#x2714;] Mastodon: <strong>{{ g.m_user.username }}@{{ g.m_user.host }}</strong></p>
-            {% else %}
-                <form action="{{ url_for('mastodon_login') }}" method="POST">
-                    [
-                    ] {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance', size=30) }}
-                    {{ form.csrf_token }}
-                    <input type=submit value="OK">
-                </form>
-            {% endif %}
+            [&#x2714;] Twitter: <strong>{{ g.t_user.screen_name }}</strong>
+        {% else %}
+            <a href="{{ url_for('twitter_login') }}">[ ] Connect to Twitter</a>
         {% endif %}
 
+    </p>
 
-        {#    Options    #}
-
-        {% if g.t_user and g.m_user %}
-
-            Settings
-            <form method="POST" action="{{ url_for('options') }}">
-                <ul>
-                    <li>{{ form.enabled(checked=enabled) }}{{ form.enabled.label }}</li>
-                    <hr>
-                    <li>{{ form.post_to_twitter }}{{ form.post_to_twitter.label }}</li>
-                    <li>{{ form.post_private_to_twitter }}{{ form.post_private_to_twitter.label }}</li>
-                    <li>{{ form.post_unlisted_to_twitter }}{{ form.post_unlisted_to_twitter.label }}</li>
-                    <li>{{ form.split_twitter_messages }}{{ form.split_twitter_messages.label }}</li>
-                    <li>{{ form.post_boosts_to_twitter }}{{ form.post_boosts_to_twitter.label }}</li>
-                    <hr>
-                    <li>{{ form.post_to_mastodon }}{{ form.post_to_mastodon.label }}</li>
-                    <li>{{ form.post_rts_to_mastodon }}{{ form.post_rts_to_mastodon.label }}</li>
-                    <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
-                </ul>
+    {#    Mastodon    #}
+    {% if g.t_user %}
+        {% if g.m_user %}
+            <p>[&#x2714;] Mastodon: <strong>{{ g.m_user.username }}@{{ g.m_user.host }}</strong></p>
+        {% else %}
+            <form action="{{ url_for('mastodon_login') }}" method="POST">
+                [
+                ] {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance', size=30) }}
                 {{ form.csrf_token }}
-                <input type="submit" value="Save">
+                <input type=submit value="OK">
             </form>
-            {% if found_settings %}
-                <form method="POST" action="{{ url_for('delete') }}">
-                    <input type="submit" value="Delete">
-                </form>
+        {% endif %}
+    {% endif %}
 
-            {% endif %}
+
+    {#    Options    #}
+
+    {% if g.t_user and g.m_user %}
+
+        Settings
+        <form method="POST" action="{{ url_for('options') }}">
+            <ul>
+                <li>{{ form.enabled(checked=enabled) }}{{ form.enabled.label }}</li>
+                <hr>
+                <li>{{ form.post_to_twitter }}{{ form.post_to_twitter.label }}</li>
+                <li>{{ form.post_private_to_twitter }}{{ form.post_private_to_twitter.label }}</li>
+                <li>{{ form.post_unlisted_to_twitter }}{{ form.post_unlisted_to_twitter.label }}</li>
+                <li>{{ form.split_twitter_messages }}{{ form.split_twitter_messages.label }}</li>
+                <li>{{ form.post_boosts_to_twitter }}{{ form.post_boosts_to_twitter.label }}</li>
+                <hr>
+                <li>{{ form.post_to_mastodon }}{{ form.post_to_mastodon.label }}</li>
+                <li>{{ form.post_rts_to_mastodon }}{{ form.post_rts_to_mastodon.label }}</li>
+                <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
+            </ul>
+            {{ form.csrf_token }}
+            <input type="submit" value="Save">
+        </form>
+        {% if found_settings %}
+            <form method="POST" action="{{ url_for('delete') }}">
+                <input type="submit" value="Delete">
+            </form>
 
         {% endif %}
 
-        {#    Logout    #}
+    {% endif %}
 
-        {% if g.t_user %}
-            <br><br>
-            <form action="{{ url_for('logout') }}" method="GET">
-                <input type="submit" value="Logout">
-            </form>
-        {% endif %}
+    {#    Logout    #}
 
-    {% endblock %}
+    {% if g.t_user %}
+        <br><br>
+        <form action="{{ url_for('logout') }}" method="GET">
+            <input type="submit" value="Logout">
+        </form>
+    {% endif %}
 
-    <hr>
-    Created by <a target="_new" href="https://pdx.social/@foozmeat">James Moore</a>.
-    Code available on <a target="_new" href="https://github.com/foozmeat/moa">Github</a>.
-
-</div>
-</body>
-</html>
+{% endblock %}
