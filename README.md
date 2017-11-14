@@ -64,3 +64,5 @@ server {
     root /var/www/moa/public;
 }
 ```
+
+![](static/madewpc.gif)

@@ -115,3 +115,9 @@ input[type="submit"]:first-letter {
 ul {
   padding-left: 20px;
 }
+
+.badge {
+    text-align: center;
+    margin: auto;
+    padding-top: 20px;
+}
