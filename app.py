@@ -10,6 +10,7 @@ from flask_oauthlib.client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
+from sqlalchemy import exc
 
 from moa.forms import SettingsForm, MastodonIDForm
 from moa.models import metadata, Bridge, MastodonHost, Settings
@@ -47,6 +48,11 @@ def before_request():
 
     if 'mastodon' in session:
         g.m_user = session['mastodon']
+
+    try:
+        db.engine.execute('SELECT 1 from bridge')
+    except exc.SQLAlchemyError as e:
+        return "Moa is unavailable at the moment", 503
 
     # app.logger.info(session)
 
