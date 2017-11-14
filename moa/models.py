@@ -61,6 +61,7 @@ class Settings:
 
     post_to_twitter = True
     post_private_to_twitter = False
+    post_unlisted_to_twitter = False
     split_twitter_messages = True
     post_boosts_to_twitter = True
 
@@ -72,6 +73,7 @@ class Settings:
 
         self.post_to_twitter = True
         self.post_private_to_twitter = False
+        post_unlisted_to_twitter = False
         self.split_twitter_messages = True
         self.post_boosts_to_twitter = True
 

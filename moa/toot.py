@@ -118,7 +118,7 @@ class Toot:
             logger.info(f'Skipping: Not Posting Private toots.')
             return True
 
-        if self.visibility == 'unlisted':
+        if self.visibility == 'unlisted' and not self.settings.post_unlisted_to_twitter:
             logger.info(f'Skipping: Not Posting Unlisted toots.')
             return True
 
