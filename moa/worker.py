@@ -4,9 +4,11 @@ import os
 import pprint as pp
 
 import requests
+import sys
 import twitter
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
+from pymysql import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from twitter import TwitterError
@@ -36,7 +38,14 @@ l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
 session = Session(engine)
 
+try:
+    session.execute('SELECT 1')
+except OperationalError as e:
+    l.error(e)
+    sys.exit()
+
 bridges = session.query(Bridge).filter_by(enabled=True)
+
 
 for bridge in bridges:
     # l.debug(bridge.settings.__dict__)
