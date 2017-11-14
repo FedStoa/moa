@@ -59,7 +59,7 @@ class Toot:
         _ = self.clean_content
 
         # This is kind of funky
-        if self.content[0] == '🐘':
+        if self.content[0] == '@':
             return True
 
         return self.data['in_reply_to_id'] is not None
@@ -136,9 +136,20 @@ class Toot:
 
             o = urlparse(m['url'])
 
-            mentions.append((m['username'], f"🐘{m['username']}@{o.netloc}"))
+            mentions.append((m['username'], f"@{m['username']}@{o.netloc}"))
 
         return mentions
+
+    @property
+    def boost_author(self):
+
+        if not self.is_boost:
+            return None
+
+        a = self.data['reblog']['account']
+        o = urlparse(a['url'])
+
+        return f"@{a['username']}@{o.netloc}"
 
     @property
     def joined_tweet_parts(self):
@@ -188,9 +199,9 @@ class Toot:
 
             if self.is_boost:
                 if len(self.content) > 0:
-                    self.content = f"📢🐘 “{self.content}”\n{self.url}"
+                    self.content = f"RT {self.boost_author}\n“{self.content}”\n{self.url}"
                 else:
-                    self.content = f"📢🐘\n{self.url}\n"
+                    self.content = f"RT {self.boost_author}\n{self.url}\n"
 
             logger.debug(self.content)
 
