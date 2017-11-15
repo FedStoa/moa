@@ -172,7 +172,7 @@ class Tweet:
                     content = f"RT @{self.status.retweeted_status.user.screen_name}@twitter.com\n"
 
             elif self.is_quoted:
-                possible_content = f"{content}\n\n{quoted_text}\n{self.url}"
+                possible_content = f"{content}\n---\n{quoted_text}\n{self.url}"
 
                 if len(possible_content) > 500:
                     logger.info(f"Toot is too long: {len(possible_content)}")
