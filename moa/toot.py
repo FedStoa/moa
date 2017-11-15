@@ -265,7 +265,7 @@ class Toot:
             upload_file_name = temp_file.name + file_extension
             os.rename(temp_file.name, upload_file_name)
 
-            description = attachment['description']
+            description = attachment.get('description', "")
             self.attachments.append((upload_file_name, description))
 
             temp_file_read = open(upload_file_name, 'rb')
