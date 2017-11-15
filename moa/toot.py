@@ -199,7 +199,7 @@ class Toot:
 
             if self.is_boost:
                 if len(self.content) > 0:
-                    self.content = f"RT {self.boost_author}\n“{self.content}”\n{self.url}"
+                    self.content = f"RT {self.boost_author}\n{self.content}\n{self.url}"
                 else:
                     self.content = f"RT {self.boost_author}\n{self.url}\n"
 
