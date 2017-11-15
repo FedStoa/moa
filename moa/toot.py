@@ -28,7 +28,7 @@ class Toot:
         self.content = None
         self.tweet_parts = []
         self.url_length = 23
-        self.tweet_length = 280
+        self.tweet_length = 275
         self.attachments = []
         self.data = toot_data
         self.settings = settings
