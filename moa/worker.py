@@ -127,10 +127,10 @@ for bridge in bridges:
 
             l.info(f"Working on toot {t.id}")
 
-            # l.debug(pp.pformat(toot))
-
             if t.should_skip:
                 continue
+
+            l.debug(pp.pformat(toot))
 
             t.split_toot()
 
@@ -191,14 +191,14 @@ for bridge in bridges:
 
             l.info(f"Working on tweet {status.id}")
 
-            l.debug(pp.pformat(status.__dict__))
-
             tweet = Tweet(status, bridge.settings, twitter_api, mast_api)
 
             worker_stat.add_tweet(tweet)
 
             if tweet.should_skip:
                 continue
+
+            l.debug(pp.pformat(status.__dict__))
 
             if c.SEND:
                 tweet.transfer_attachments()
