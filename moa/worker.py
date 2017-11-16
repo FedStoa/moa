@@ -2,7 +2,7 @@ import importlib
 import logging
 import os
 import pprint as pp
-
+import time
 import requests
 import sys
 import twitter
@@ -16,6 +16,9 @@ from moa.helpers import send_tweet, send_toot
 from moa.models import Bridge, Mapping
 from moa.toot import Toot
 from moa.tweet import Tweet
+
+start_time = time.time()
+item_counter = 0
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
@@ -90,6 +93,8 @@ for bridge in bridges:
             if c.SEND:
                 bridge.mastodon_last_id = int(new_toots[0]['id'])
 
+            item_counter += len(new_toots)
+
     if bridge.settings.post_to_mastodon:
 
         try:
@@ -107,6 +112,8 @@ for bridge in bridges:
 
             if c.SEND:
                 bridge.twitter_last_id = new_tweets[0].id
+
+            item_counter += len(new_tweets)
 
     if bridge.settings.post_to_twitter and len(new_toots) != 0:
         new_toots.reverse()
@@ -229,6 +236,14 @@ for bridge in bridges:
 if c.HEALTHCHECKS:
     requests.get(c.HEALTHCHECKS)
 
-l.info("All done")
-
 session.close()
+end_time = time.time()
+total_time = end_time - start_time
+m, s = divmod(total_time, 60)
+
+if item_counter > 0:
+    avg = total_time / item_counter
+else:
+    avg = 0
+
+l.info(f"All done -> Total time: {m:02.0f}:{s:02.0f} / {item_counter} items / {avg}s avg")
