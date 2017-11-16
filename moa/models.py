@@ -1,5 +1,6 @@
 from datetime import datetime
-from sqlalchemy import MetaData, Column, Integer, String, DateTime, BigInteger, ForeignKey, Boolean, PickleType
+from sqlalchemy import MetaData, Column, Integer, String, DateTime, BigInteger, ForeignKey, Boolean, PickleType, Float, \
+    event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -53,6 +54,50 @@ class Mapping(Base):
     mastodon_id = Column(BigInteger, default=0)
     twitter_id = Column(BigInteger, default=0)
     created = Column(DateTime, default=datetime.utcnow)
+
+
+class WorkerStat(Base):
+    __tablename__ = 'workerstat'
+    id = Column(Integer, primary_key=True)
+    created = Column(DateTime, default=datetime.utcnow)
+
+    tweets = Column(Integer, default=0)
+    toots = Column(Integer, default=0)
+
+    time = Column(Float, default=0.0)
+    avg = Column(Float, default=0.0)
+
+    worker = Column(Integer, nullable=False)
+
+    def __init__(self, worker=1):
+
+        self.tweets = 0
+        self.toots = 0
+        self.worker = worker
+
+    @property
+    def formatted_time(self):
+
+        m, s = divmod(self.time, 60)
+        return f"{m:02.0f}:{s:02.0f}"
+
+    @property
+    def items(self):
+        return self.tweets + self.toots
+
+    def add_toot(self, toot):
+        self.toots += 1
+
+    def add_tweet(self, tweet):
+        self.tweets += 1
+
+
+@event.listens_for(WorkerStat.time, 'set')
+def receive_time_set(target, value, oldvalue, initiator):
+    if target.items > 0:
+        target.avg = value / target.items
+    else:
+        target.avg = 0
 
 
 class Settings:

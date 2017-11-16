@@ -13,12 +13,12 @@ from sqlalchemy.orm import Session
 from twitter import TwitterError
 
 from moa.helpers import send_tweet, send_toot
-from moa.models import Bridge, Mapping
+from moa.models import Bridge, Mapping, WorkerStat
 from moa.toot import Toot
 from moa.tweet import Tweet
 
 start_time = time.time()
-item_counter = 0
+worker_stat = WorkerStat()
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
@@ -93,8 +93,6 @@ for bridge in bridges:
             if c.SEND:
                 bridge.mastodon_last_id = int(new_toots[0]['id'])
 
-            item_counter += len(new_toots)
-
     if bridge.settings.post_to_mastodon:
 
         try:
@@ -113,8 +111,6 @@ for bridge in bridges:
             if c.SEND:
                 bridge.twitter_last_id = new_tweets[0].id
 
-            item_counter += len(new_tweets)
-
     if bridge.settings.post_to_twitter and len(new_toots) != 0:
         new_toots.reverse()
 
@@ -124,6 +120,9 @@ for bridge in bridges:
         for toot in new_toots:
 
             t = Toot(toot, bridge.settings, twitter_api)
+
+            worker_stat.add_toot(t)
+
             t.url_length = url_length
 
             l.info(f"Working on toot {t.id}")
@@ -196,6 +195,8 @@ for bridge in bridges:
 
             tweet = Tweet(status, bridge.settings, twitter_api, mast_api)
 
+            worker_stat.add_tweet(tweet)
+
             if tweet.should_skip:
                 continue
 
@@ -236,14 +237,11 @@ for bridge in bridges:
 if c.HEALTHCHECKS:
     requests.get(c.HEALTHCHECKS)
 
-session.close()
 end_time = time.time()
-total_time = end_time - start_time
-m, s = divmod(total_time, 60)
+worker_stat.time = end_time - start_time
 
-if item_counter > 0:
-    avg = total_time / item_counter
-else:
-    avg = 0
+l.info(f"All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg")
 
-l.info(f"All done -> Total time: {m:02.0f}:{s:02.0f} / {item_counter} items / {avg}s avg")
+session.add(worker_stat)
+session.commit()
+session.close()
