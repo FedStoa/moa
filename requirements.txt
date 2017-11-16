@@ -18,11 +18,14 @@ idna==2.6                 # via requests
 itsdangerous==0.24        # via flask
 jinja2==2.10              # via flask
 markupsafe==1.0           # via jinja2
+numpy==1.13.3             # via pandas
 oauthlib==2.0.6           # via flask-oauthlib, requests-oauthlib
+pandas==0.21.0
+pygal==2.4.0
 pymysql==0.7.11
-python-dateutil==2.6.1
+python-dateutil==2.6.1    # via pandas
 python-twitter==3.3
-pytz==2017.3
+pytz==2017.3              # via pandas
 raven[flask]==6.3.0
 requests-oauthlib==0.8.0  # via flask-oauthlib, python-twitter
 requests==2.18.4          # via python-twitter, requests-oauthlib

@@ -1,0 +1,8 @@
+{% extends "layout.html.j2" %}
+{% block body %}
+
+    <img src="{{ url_for('time_graph') }}" alt="moa time stats">
+
+    <img src="{{ url_for('count_graph') }}" alt="moa count stats">
+
+{% endblock %}

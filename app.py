@@ -2,6 +2,8 @@ from datetime import datetime
 from pathlib import Path
 
 import os
+
+import pygal
 import twitter
 from flask import Flask
 from flask import g, session, request, url_for, flash
@@ -11,9 +13,9 @@ from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
 from sqlalchemy import exc
-
+import pandas as pd
 from moa.forms import SettingsForm, MastodonIDForm
-from moa.models import metadata, Bridge, MastodonHost, Settings
+from moa.models import metadata, Bridge, MastodonHost, Settings, WorkerStat
 
 app = Flask(__name__)
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
@@ -316,8 +318,60 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route('/stats')
+def stats():
+    return render_template('stats.html.j2')
+
+
+@app.route('/stats/times.svg')
+def time_graph():
+
+    stats_query = db.session.query(WorkerStat)
+
+    df = pd.read_sql(stats_query.statement, stats_query.session.bind)
+    df.set_index(['id'], inplace=True)
+
+    dates = df['created'].tolist()
+    times = df['time'].tolist()
+    avg = df['avg'].tolist()
+
+    # app.logger.info(df)
+    app.logger.info(dates)
+
+    chart = pygal.Line()
+    chart.x_labels = dates
+    chart.add('Times', times)
+    chart.add('Avg', avg)
+
+    return chart.render_response()
+
+
+@app.route('/stats/counts.svg')
+def count_graph():
+
+    stats_query = db.session.query(WorkerStat)
+
+    df = pd.read_sql(stats_query.statement, stats_query.session.bind)
+    df.set_index(['id'], inplace=True)
+
+    dates = df['created'].tolist()
+    toots = df['toots'].tolist()
+    tweets = df['tweets'].tolist()
+
+    app.logger.info(df)
+    app.logger.info(dates)
+
+    chart = pygal.StackedBar()
+    chart.x_labels = dates
+    chart.add('Tweets', tweets)
+    chart.add('Toots', toots)
+
+    return chart.render_response()
+
+
 @app.errorhandler(404)
 def page_not_found(e):
+
     return render_template('404.html'), 404
 
 
