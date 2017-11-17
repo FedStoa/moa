@@ -337,12 +337,15 @@ def time_graph():
     r = df.resample('h').mean()
 
     times = r['time'].tolist()
-    avg = r['avg'].tolist()
+    # avg = r['avg'].tolist()
 
-    chart = pygal.Line(title="Worker run times in the last 24 hours", y_title="seconds", human_readable=True, stroke_style={'width': 5}, style=LightGreenStyle)
+    chart = pygal.Line(title="Worker run time (s) in the last 24 hours",
+                       stroke_style={'width': 5},
+                       style=LightGreenStyle,
+                       show_legend=False )
 
     chart.add('Total time', times)
-    chart.add('Avg time', avg)
+    # chart.add('Avg time', avg)
 
     return chart.render_response()
 
@@ -362,9 +365,12 @@ def count_graph():
     toots = r['toots'].tolist()
     tweets = r['tweets'].tolist()
 
-    chart = pygal.StackedBar(title="# of Incoming Messages in the last 24 hours", human_readable=True, style=LightGreenStyle)
-    chart.add('Tweets', tweets)
+    chart = pygal.StackedBar(title="# of Incoming Messages in the last 24 hours",
+                             human_readable=True,
+                             style=LightGreenStyle,
+                             legend_at_bottom=True)
     chart.add('Toots', toots)
+    chart.add('Tweets', tweets)
 
     return chart.render_response()
 
@@ -391,7 +397,10 @@ def user_graph():
     users = r['cum_sum'].tolist()
     # app.logger.info(users)
 
-    chart = pygal.Line(title="# of Users (all time)", stroke_style={'width': 5}, style=LightGreenStyle)
+    chart = pygal.Line(title="# of Users (all time)",
+                       stroke_style={'width': 5},
+                       style=LightGreenStyle,
+                       show_legend=False)
     chart.add('Users', users)
 
     return chart.render_response()
