@@ -342,9 +342,10 @@ def time_graph():
     chart = pygal.Line(title="Worker run time (s) in the last 24 hours",
                        stroke_style={'width': 5},
                        style=LightGreenStyle,
-                       show_legend=False )
+                       show_legend=False,
+                       interpolate='cubic')
 
-    chart.add('Total time', times)
+    chart.add('Total time', times, fill=True, show_dots=False)
     # chart.add('Avg time', avg)
 
     return chart.render_response()
@@ -400,8 +401,9 @@ def user_graph():
     chart = pygal.Line(title="# of Users (all time)",
                        stroke_style={'width': 5},
                        style=LightGreenStyle,
-                       show_legend=False)
-    chart.add('Users', users)
+                       show_legend=False,
+                       interpolate='cubic')
+    chart.add('Users', users, fill=True, show_dots=False)
 
     return chart.render_response()
 
