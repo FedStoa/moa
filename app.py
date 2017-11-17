@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
-from pathlib import Path
-
 import os
+from datetime import datetime, timedelta
 
+import pandas as pd
 import pygal
 import twitter
 from flask import Flask
@@ -12,8 +11,9 @@ from flask_oauthlib.client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
-from sqlalchemy import exc, func
-import pandas as pd
+from pygal.style import LightGreenStyle
+from sqlalchemy import exc
+
 from moa.forms import SettingsForm, MastodonIDForm
 from moa.models import metadata, Bridge, MastodonHost, Settings, WorkerStat
 
@@ -339,7 +339,7 @@ def time_graph():
     times = r['time'].tolist()
     avg = r['avg'].tolist()
 
-    chart = pygal.Line(title="Worker run times in the last 24 hours", y_title="seconds", human_readable=True, stroke_style={'width': 5})
+    chart = pygal.Line(title="Worker run times in the last 24 hours", y_title="seconds", human_readable=True, stroke_style={'width': 5}, style=LightGreenStyle)
 
     chart.add('Total time', times)
     chart.add('Avg time', avg)
@@ -362,7 +362,7 @@ def count_graph():
     toots = r['toots'].tolist()
     tweets = r['tweets'].tolist()
 
-    chart = pygal.StackedBar(title="# of Incoming Messages in the last 24 hours", human_readable=True)
+    chart = pygal.StackedBar(title="# of Incoming Messages in the last 24 hours", human_readable=True, style=LightGreenStyle)
     chart.add('Tweets', tweets)
     chart.add('Toots', toots)
 
@@ -391,7 +391,7 @@ def user_graph():
     users = r['cum_sum'].tolist()
     # app.logger.info(users)
 
-    chart = pygal.Line(title="# of Users (all time)", stroke_style={'width': 5})
+    chart = pygal.Line(title="# of Users (all time)", stroke_style={'width': 5}, style=LightGreenStyle)
     chart.add('Users', users)
 
     return chart.render_response()
