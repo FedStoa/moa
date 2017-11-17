@@ -369,6 +369,34 @@ def count_graph():
     return chart.render_response()
 
 
+@app.route('/stats/users.svg')
+def user_graph():
+
+    stats_query = db.session.query(Bridge).with_entities(Bridge.created)
+
+    df = pd.read_sql(stats_query.statement, stats_query.session.bind)
+    df.set_index(['created'], inplace=True)
+    df['count'] = 1
+
+    # app.logger.info(df)
+
+    # df.groupby(level=0).sum()
+
+    r = df.resample('d').sum()
+    r = r.fillna(0)
+    r['cum_sum'] = r['count'].cumsum()
+
+    # app.logger.info(r)
+
+    users = r['cum_sum'].tolist()
+    # app.logger.info(users)
+
+    chart = pygal.Line(title="# of Users (all time)", stroke_style={'width': 5})
+    chart.add('Users', users)
+
+    return chart.render_response()
+
+
 @app.errorhandler(404)
 def page_not_found(e):
 
