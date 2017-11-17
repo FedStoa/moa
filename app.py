@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import os
@@ -12,7 +12,7 @@ from flask_oauthlib.client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError
-from sqlalchemy import exc
+from sqlalchemy import exc, func
 import pandas as pd
 from moa.forms import SettingsForm, MastodonIDForm
 from moa.models import metadata, Bridge, MastodonHost, Settings, WorkerStat
@@ -326,7 +326,8 @@ def stats():
 @app.route('/stats/times.svg')
 def time_graph():
 
-    stats_query = db.session.query(WorkerStat).with_entities(WorkerStat.created, WorkerStat.time, WorkerStat.avg)
+    since = datetime.now() - timedelta(hours=24)
+    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created, WorkerStat.time, WorkerStat.avg)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
 
@@ -338,7 +339,7 @@ def time_graph():
     times = r['time'].tolist()
     avg = r['avg'].tolist()
 
-    chart = pygal.Line(title="Run times", y_title="seconds", human_readable=True, stroke_style={'width': 5}, x_label_rotation=20)
+    chart = pygal.Line(title="Worker run times in the last 24 hours", y_title="seconds", human_readable=True, stroke_style={'width': 5})
 
     chart.add('Total time', times)
     chart.add('Avg time', avg)
@@ -349,7 +350,8 @@ def time_graph():
 @app.route('/stats/counts.svg')
 def count_graph():
 
-    stats_query = db.session.query(WorkerStat).with_entities(WorkerStat.created, WorkerStat.toots, WorkerStat.tweets)
+    since = datetime.now() - timedelta(hours=24)
+    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created, WorkerStat.toots, WorkerStat.tweets)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
     df.set_index(['created'], inplace=True)
@@ -360,7 +362,7 @@ def count_graph():
     toots = r['toots'].tolist()
     tweets = r['tweets'].tolist()
 
-    chart = pygal.StackedBar(title="# of Messages in the last 24 hours",human_readable=True, x_label_rotation=20)
+    chart = pygal.StackedBar(title="# of Incoming Messages in the last 24 hours", human_readable=True)
     chart.add('Tweets', tweets)
     chart.add('Toots', toots)
 
