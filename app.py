@@ -326,22 +326,22 @@ def stats():
 @app.route('/stats/times.svg')
 def time_graph():
 
-    stats_query = db.session.query(WorkerStat)
+    stats_query = db.session.query(WorkerStat).with_entities(WorkerStat.created, WorkerStat.time, WorkerStat.avg)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
-    df.set_index(['id'], inplace=True)
 
-    dates = df['created'].tolist()
-    times = df['time'].tolist()
-    avg = df['avg'].tolist()
+    df.set_index(['created'], inplace=True)
 
-    # app.logger.info(df)
-    app.logger.info(dates)
+    df.groupby(level=0).mean()
+    r = df.resample('h').mean()
 
-    chart = pygal.Line()
-    chart.x_labels = dates
-    chart.add('Times', times)
-    chart.add('Avg', avg)
+    times = r['time'].tolist()
+    avg = r['avg'].tolist()
+
+    chart = pygal.Line(title="Run times", y_title="seconds", human_readable=True, stroke_style={'width': 5}, x_label_rotation=20)
+
+    chart.add('Total time', times)
+    chart.add('Avg time', avg)
 
     return chart.render_response()
 
@@ -349,20 +349,18 @@ def time_graph():
 @app.route('/stats/counts.svg')
 def count_graph():
 
-    stats_query = db.session.query(WorkerStat)
+    stats_query = db.session.query(WorkerStat).with_entities(WorkerStat.created, WorkerStat.toots, WorkerStat.tweets)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
-    df.set_index(['id'], inplace=True)
+    df.set_index(['created'], inplace=True)
 
-    dates = df['created'].tolist()
-    toots = df['toots'].tolist()
-    tweets = df['tweets'].tolist()
+    df.groupby(level=0).sum()
+    r = df.resample('h').sum()
 
-    app.logger.info(df)
-    app.logger.info(dates)
+    toots = r['toots'].tolist()
+    tweets = r['tweets'].tolist()
 
-    chart = pygal.StackedBar()
-    chart.x_labels = dates
+    chart = pygal.StackedBar(title="# of Messages in the last 24 hours",human_readable=True, x_label_rotation=20)
     chart.add('Tweets', tweets)
     chart.add('Toots', toots)
 
