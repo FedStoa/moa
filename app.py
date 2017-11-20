@@ -335,6 +335,7 @@ def time_graph():
 
     df.groupby(level=0).mean()
     r = df.resample('h').mean()
+    r = r.fillna(0)
 
     times = r['time'].tolist()
     # avg = r['avg'].tolist()
@@ -362,6 +363,7 @@ def count_graph():
 
     df.groupby(level=0).sum()
     r = df.resample('h').sum()
+    r = r.fillna(0)
 
     toots = r['toots'].tolist()
     tweets = r['tweets'].tolist()
