@@ -157,7 +157,7 @@ class Toot:
 
     def expected_status_length(self, string):
         replaced_chars = 0
-        status_length = len(string)
+        status_length = len(string.encode('utf-8'))
         match = re.findall(URL_REGEXP, string)
         if len(match) >= 1:
             replaced_chars = len(''.join(map(lambda x: x[0], match)))
@@ -228,9 +228,10 @@ class Toot:
                 for next_word in words:
 
                     possible_part = f"{current_part} {next_word}".lstrip()
+                    length = len(possible_part.encode('utf-8'))
 
-                    if len(possible_part) > self.tweet_length - 3 :
-                        logger.debug(f'Part is full: {len(current_part)} {current_part}')
+                    if length > self.tweet_length - 3:
+                        logger.debug(f'Part is full: {length} {current_part}')
 
                         current_part = f"{current_part}…".lstrip()
                         self.tweet_parts.append(current_part)
@@ -240,8 +241,9 @@ class Toot:
                         current_part = possible_part
 
                 # Insert last part
-                if len(current_part.strip()) != 0:
-                    logger.debug(f'{len(current_part)} {current_part}')
+                length = len(current_part.strip().encode('utf-8'))
+                if length != 0:
+                    logger.debug(f'{length} {current_part}')
                     self.tweet_parts.append(current_part.strip())
 
             else:
