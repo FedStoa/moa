@@ -76,6 +76,7 @@ for bridge in bridges:
     )
 
     if bridge.settings.post_to_twitter:
+        new_toots = []
 
         try:
             new_toots = mast_api.account_statuses(
@@ -94,7 +95,7 @@ for bridge in bridges:
                 bridge.mastodon_last_id = int(new_toots[0]['id'])
 
     if bridge.settings.post_to_mastodon:
-
+        new_tweets = []
         try:
             new_tweets = twitter_api.GetUserTimeline(
                 since_id=bridge.twitter_last_id,
