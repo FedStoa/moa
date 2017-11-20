@@ -7,7 +7,7 @@ import requests
 import sys
 import twitter
 from mastodon import Mastodon
-from mastodon.Mastodon import MastodonAPIError
+from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 from twitter import TwitterError
@@ -84,6 +84,10 @@ for bridge in bridges:
                 since_id=bridge.mastodon_last_id
             )
         except MastodonAPIError as e:
+            l.error(e)
+            continue
+
+        except MastodonNetworkError as e:
             l.error(e)
             continue
 
