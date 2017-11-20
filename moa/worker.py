@@ -135,7 +135,8 @@ for bridge in bridges:
             t.split_toot()
 
             if c.SEND:
-                t.transfer_attachments()
+                if not t.transfer_attachments():
+                    continue
 
             reply_to = None
             media_ids = []
@@ -201,7 +202,8 @@ for bridge in bridges:
             l.debug(pp.pformat(status.__dict__))
 
             if c.SEND:
-                tweet.transfer_attachments()
+                if not tweet.transfer_attachments():
+                    continue
 
             reply_to = None
             if tweet.is_self_reply:

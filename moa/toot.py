@@ -7,7 +7,7 @@ import logging
 
 import os
 import requests
-from twitter import twitter_utils
+from twitter import twitter_utils, TwitterError
 
 URL_REGEXP = re.compile((
                             r'('
@@ -270,11 +270,17 @@ class Toot:
 
             temp_file_read = open(upload_file_name, 'rb')
             logger.info(f'Uploading {description} {upload_file_name}')
-            media_id = self.twitter_api.UploadMediaChunked(media=temp_file_read)
 
-            if description:
-                self.twitter_api.PostMediaMetadata(media_id, alt_text=description)
+            try:
+                media_id = self.twitter_api.UploadMediaChunked(media=temp_file_read)
+
+                if description:
+                    self.twitter_api.PostMediaMetadata(media_id, alt_text=description)
+
+            except TwitterError as e:
+                logger.error(e)
+                return False
 
             temp_file_read.close()
             os.unlink(upload_file_name)
-
+            return True

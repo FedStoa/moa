@@ -6,6 +6,7 @@ import re
 import tempfile
 
 import requests
+from mastodon.Mastodon import MastodonAPIError
 
 logger = logging.getLogger('worker')
 
@@ -216,8 +217,15 @@ class Tweet:
             self.attachments.append((upload_file_name, attachment.ext_alt_text))
 
             logger.debug(f'Uploading {attachment.ext_alt_text}: {upload_file_name}')
-            self.media_ids.append(self.masto_api.media_post(upload_file_name,
-                                                            description=attachment.ext_alt_text))
+
+            try:
+                self.media_ids.append(self.masto_api.media_post(upload_file_name,
+                                                                description=attachment.ext_alt_text))
+            except MastodonAPIError as e:
+                logger.error(e)
+                return False
+
             os.unlink(upload_file_name)
 
+        return True
 
