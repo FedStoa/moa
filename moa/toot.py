@@ -285,4 +285,4 @@ class Toot:
 
             temp_file_read.close()
             os.unlink(upload_file_name)
-            return True
+        return True
