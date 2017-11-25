@@ -75,7 +75,7 @@ for bridge in bridges:
         tweet_mode='extended'  # Allow tweets longer than 140 raw characters
     )
 
-    if bridge.settings.post_to_twitter:
+    if bridge.settings.post_to_twitter_enabled:
         new_toots = []
 
         try:
@@ -116,7 +116,7 @@ for bridge in bridges:
             if c.SEND:
                 bridge.twitter_last_id = new_tweets[0].id
 
-    if bridge.settings.post_to_twitter and len(new_toots) != 0:
+    if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
         new_toots.reverse()
 
         url_length = max(twitter_api.GetShortUrlLength(False), twitter_api.GetShortUrlLength(True)) + 1
@@ -132,10 +132,10 @@ for bridge in bridges:
 
             l.info(f"Working on toot {t.id}")
 
+            # l.debug(pp.pformat(toot))
+
             if t.should_skip:
                 continue
-
-            l.debug(pp.pformat(toot))
 
             t.split_toot()
 

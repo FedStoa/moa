@@ -125,6 +125,14 @@ class Toot:
         if self.is_boost and not self.settings.post_boosts_to_twitter:
             logger.info(f'Skipping: not posting boosts')
             return True
+        elif self.is_boost and self.settings.post_boosts_to_twitter:
+            # If it's a boost and boosts are allowed then post it even
+            # if public toots aren't allowed
+            pass
+        else:
+            if self.visibility == 'public' and not self.settings.post_to_twitter:
+                logger.info(f'Skipping: Not Posting Public toots.')
+                return True
 
         return False
 
@@ -203,7 +211,7 @@ class Toot:
                 else:
                     self.content = f"RT {self.boost_author}\n{self.url}\n"
 
-            logger.debug(self.content)
+            # logger.debug(self.content)
 
         return self.content
 
@@ -285,7 +293,7 @@ class Toot:
                     self.twitter_api.PostMediaMetadata(media_id, alt_text=description)
 
             except TwitterError as e:
-                logger.error(e)
+                logger.error(f"Twitter upload: {e.message}")
                 return False
 
             temp_file_read.close()

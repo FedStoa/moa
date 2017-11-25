@@ -116,7 +116,7 @@ class Settings:
 
     def __init__(self):
 
-        self.post_to_twitter = True
+        self.post_to_twitter = True  # This means post public toots
         self.post_private_to_twitter = False
         post_unlisted_to_twitter = False
         self.split_twitter_messages = True
@@ -125,6 +125,13 @@ class Settings:
         self.post_to_mastodon = True
         self.post_rts_to_mastodon = True
         self.toot_visibility = 'public'
+
+    @property
+    def post_to_twitter_enabled(self):
+        return self.post_to_twitter or \
+               self.post_private_to_twitter or \
+               self.post_unlisted_to_twitter or \
+               self.post_boosts_to_twitter
 
 
 if __name__ == '__main__':
