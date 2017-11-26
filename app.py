@@ -402,8 +402,7 @@ def user_graph():
     chart = pygal.Line(title="# of Users (all time)",
                        stroke_style={'width': 5},
                        style=LightGreenStyle,
-                       show_legend=False,
-                       interpolate='cubic')
+                       show_legend=False)
     chart.add('Users', users, fill=True, show_dots=False)
 
     return chart.render_response()
