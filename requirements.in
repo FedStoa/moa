@@ -2,7 +2,7 @@ Flask
 Flask-OAuthlib
 flask_sqlalchemy
 Flask-WTF
--e git+https://github.com/foozmeat/Mastodon.py#egg=Mastodon.py
+Mastodon.py
 pandas
 pygal
 python-twitter
