@@ -6,3 +6,4 @@ config.py
 /moa/tmp/restart.txt
 /logs/*
 /moa.egg-info
+/.moa_venv
