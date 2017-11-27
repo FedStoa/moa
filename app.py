@@ -156,9 +156,12 @@ def options():
         if not bridge_found:
             db.session.add(bridge)
 
-    flash("Settings Saved.")
-
-    db.session.commit()
+        flash("Settings Saved.")
+        db.session.commit()
+    else:
+        for e in form.errors.items():
+            flash(e[1][0])
+        return redirect(url_for('index'))
 
     return redirect(url_for('index'))
 

@@ -1,15 +1,19 @@
 class Settings:
     # These are defined in 2 places because the unpickled settings may be missing a property that's been added
 
+    # Masto -> Twitter
     post_to_twitter = True
     post_private_to_twitter = False
     post_unlisted_to_twitter = False
     split_twitter_messages = True
     post_boosts_to_twitter = True
 
+    # Twitter -> Masto
     post_to_mastodon = True
     post_rts_to_mastodon = True
     toot_visibility = 'public'
+    tweets_behind_cw = False
+    tweet_cw_text = "From birdsite"
 
     def __init__(self):
         self.post_to_twitter = True  # This means post public toots
@@ -21,6 +25,8 @@ class Settings:
         self.post_to_mastodon = True # This means post non-RT tweets
         self.post_rts_to_mastodon = True
         self.toot_visibility = 'public'
+        self.tweets_behind_cw = False
+        self.tweet_cw_text = "From birdsite"
 
     @property
     def post_to_twitter_enabled(self):

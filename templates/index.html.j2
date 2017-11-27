@@ -44,6 +44,8 @@
                 <li>{{ form.post_to_mastodon }}{{ form.post_to_mastodon.label }}</li>
                 <li>{{ form.post_rts_to_mastodon }}{{ form.post_rts_to_mastodon.label }}</li>
                 <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
+                <li>{{ form.tweets_behind_cw }}{{ form.tweets_behind_cw.label }}</li>
+                <ul><li>{{ form.tweet_cw_text.label }}{{ form.tweet_cw_text }}</li></ul>
             </ul>
             {{ form.csrf_token }}
             <input type="submit" value="Save">
