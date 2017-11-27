@@ -3,7 +3,6 @@ from sqlalchemy import MetaData, Column, Integer, String, DateTime, BigInteger, 
     event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from .settings import Settings
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
@@ -106,6 +105,7 @@ if __name__ == '__main__':
     import os
     import importlib
     from sqlalchemy import create_engine
+    from moa.settings import Settings
 
     moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
     config = getattr(importlib.import_module('config'), moa_config)
