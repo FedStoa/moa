@@ -15,7 +15,8 @@ from pygal.style import LightGreenStyle
 from sqlalchemy import exc
 
 from moa.forms import SettingsForm, MastodonIDForm
-from moa.models import metadata, Bridge, MastodonHost, Settings, WorkerStat
+from moa.models import metadata, Bridge, MastodonHost, WorkerStat
+from moa.settings import Settings
 
 app = Flask(__name__)
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
