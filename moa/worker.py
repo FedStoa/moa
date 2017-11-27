@@ -86,9 +86,15 @@ for bridge in bridges:
         except MastodonAPIError as e:
             l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
             l.error(e)
+
+            if 'revoked' in repr(e):
+                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.enabled = False
+
             continue
 
         except MastodonNetworkError as e:
+            l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
             l.error(e)
             continue
 
@@ -106,8 +112,15 @@ for bridge in bridges:
                 since_id=bridge.twitter_last_id,
                 include_rts=True,
                 exclude_replies=False)
+
         except TwitterError as e:
+            l.error(f"Working on twitter user {bridge.twitter_handle}")
             l.error(e)
+
+            if e.message[0]['code'] == 89:
+                l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
+                bridge.enabled = False
+
             continue
 
         if len(new_tweets) != 0:
