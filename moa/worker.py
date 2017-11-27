@@ -219,10 +219,7 @@ for bridge in bridges:
                     l.info(f"Replying to mastodon status {reply_to}")
 
             if c.SEND:
-                mastodon_last_id = send_toot(tweet,
-                                             bridge.settings,
-                                             mast_api,
-                                             reply_to=reply_to)
+                mastodon_last_id = tweet.send_toot(reply_to=reply_to)
 
                 if mastodon_last_id:
                     m = Mapping()

@@ -4,11 +4,14 @@ import mimetypes
 import os
 import re
 import tempfile
+import time
 
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 
 logger = logging.getLogger('worker')
+MASTODON_RETRIES = 3
+MASTODON_RETRY_DELAY = 20
 
 
 class Tweet:
@@ -245,3 +248,38 @@ class Tweet:
 
         return True
 
+    def send_toot(self, reply_to=None):
+        retry_counter = 0
+        post_success = False
+        spoiler_text = self.settings.tweet_cw_text if self.settings.tweets_behind_cw else ""
+
+        while not post_success and retry_counter < MASTODON_RETRIES:
+            logger.info(f'Tooting "{self.clean_content}"')
+
+            if self.media_ids:
+                logger.info(f'With media')
+
+            try:
+                post = self.masto_api.status_post(
+                    self.clean_content,
+                    media_ids=self.media_ids,
+                    visibility=self.settings.toot_visibility,
+                    sensitive=self.sensitive,
+                    in_reply_to_id=reply_to,
+                    spoiler_text=spoiler_text)
+
+                reply_to = post["id"]
+                post_success = True
+
+            except MastodonAPIError as e:
+                logger.error(e)
+
+                if retry_counter < MASTODON_RETRIES:
+                    retry_counter += 1
+                    time.sleep(MASTODON_RETRY_DELAY)
+
+        if retry_counter == MASTODON_RETRIES:
+            logger.error("Retry limit reached.")
+            return None
+
+        return reply_to
