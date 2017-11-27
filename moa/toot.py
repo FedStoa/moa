@@ -24,7 +24,7 @@ logger = logging.getLogger('worker')
 
 class Toot:
 
-    def __init__(self, toot_data, settings, twitter_api):
+    def __init__(self, toot_data, settings, twitter_api=None):
         self.content = None
         self.tweet_parts = []
         self.url_length = 23

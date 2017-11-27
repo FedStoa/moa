@@ -7,3 +7,4 @@ config.py
 /logs/*
 /moa.egg-info
 /.moa_venv
+/scratch.ipynb
