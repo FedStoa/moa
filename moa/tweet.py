@@ -6,7 +6,7 @@ import re
 import tempfile
 
 import requests
-from mastodon.Mastodon import MastodonAPIError
+from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 
 logger = logging.getLogger('worker')
 
@@ -234,6 +234,10 @@ class Tweet:
                 self.media_ids.append(self.masto_api.media_post(upload_file_name,
                                                                 description=attachment.ext_alt_text))
             except MastodonAPIError as e:
+                logger.error(e)
+                return False
+
+            except MastodonNetworkError as e:
                 logger.error(e)
                 return False
 
