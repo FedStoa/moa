@@ -98,7 +98,7 @@ for bridge in bridges:
             if c.SEND:
                 bridge.mastodon_last_id = int(new_toots[0]['id'])
 
-    if bridge.settings.post_to_mastodon:
+    if bridge.settings.post_to_mastodon_enabled:
         new_tweets = []
         try:
             new_tweets = twitter_api.GetUserTimeline(
@@ -189,7 +189,7 @@ for bridge in bridges:
                 bridge.mastodon_last_id = t.id
                 session.commit()
 
-    if bridge.settings.post_to_mastodon and len(new_tweets) != 0:
+    if bridge.settings.post_to_mastodon_enabled and len(new_tweets) != 0:
 
         new_tweets.reverse()
 

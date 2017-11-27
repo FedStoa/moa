@@ -14,11 +14,11 @@ class Settings:
     def __init__(self):
         self.post_to_twitter = True  # This means post public toots
         self.post_private_to_twitter = False
-        post_unlisted_to_twitter = False
+        self.post_unlisted_to_twitter = False
         self.split_twitter_messages = True
         self.post_boosts_to_twitter = True
 
-        self.post_to_mastodon = True
+        self.post_to_mastodon = True # This means post non-RT tweets
         self.post_rts_to_mastodon = True
         self.toot_visibility = 'public'
 
@@ -28,6 +28,11 @@ class Settings:
                self.post_private_to_twitter or \
                self.post_unlisted_to_twitter or \
                self.post_boosts_to_twitter
+
+    @property
+    def post_to_mastodon_enabled(self):
+        return self.post_to_mastodon or \
+               self.post_rts_to_mastodon
 
 
 if __name__ == '__main__':

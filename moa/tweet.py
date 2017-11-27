@@ -60,7 +60,14 @@ class Tweet:
 
         if self.is_retweet and not self.settings.post_rts_to_mastodon:
             logger.info(f'Skipping retweet.')
+            return True
 
+        elif self.is_retweet and self.settings.post_rts_to_mastodon:
+            # Posting retweets
+            pass
+
+        elif not self.settings.post_to_mastodon:
+            logger.info(f'Skipping regular tweets.')
             return True
 
         return False
