@@ -274,8 +274,8 @@ class Toot:
             file_extension = mimetypes.guess_extension(attachment_file.headers['Content-type'])
 
             # ffs
-            if file_extension == 'jpe':
-                file_extension = 'jpg'
+            if file_extension == '.jpe':
+                file_extension = '.jpg'
 
             upload_file_name = temp_file.name + file_extension
             os.rename(temp_file.name, upload_file_name)
