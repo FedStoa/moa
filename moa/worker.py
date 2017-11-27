@@ -84,7 +84,7 @@ for bridge in bridges:
                 since_id=bridge.mastodon_last_id
             )
         except MastodonAPIError as e:
-            print(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
+            l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
             l.error(e)
             continue
 
