@@ -3,6 +3,7 @@ from sqlalchemy import MetaData, Column, Integer, String, DateTime, BigInteger, 
     event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from .settings import Settings
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
