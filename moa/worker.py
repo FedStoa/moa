@@ -12,7 +12,7 @@ from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 from twitter import TwitterError
 
-from moa.helpers import send_tweet, send_toot
+from moa.helpers import send_tweet
 from moa.models import Bridge, Mapping, WorkerStat
 from moa.toot import Toot
 from moa.tweet import Tweet
