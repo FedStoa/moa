@@ -133,7 +133,11 @@ def options():
         )
 
         if not bridge_found:
-            bridge.twitter_last_id = twitter_api.GetUserTimeline()[0].id
+            tl = twitter_api.GetUserTimeline()
+            if len(tl) > 0:
+                bridge.twitter_last_id = tl[0].id
+            else:
+                bridge.twitter_last_id = 0
 
             # get mastodon ID
             api = mastodon_api(session['mastodon']['host'],
