@@ -146,7 +146,7 @@ for bridge in bridges:
 
             l.info(f"Working on toot {t.id}")
 
-            # l.debug(pp.pformat(toot))
+            l.debug(pp.pformat(toot))
 
             if t.should_skip:
                 continue
