@@ -196,12 +196,11 @@ class Toot:
             # Trim out media URLs
             self.content = re.sub(media_regexp, "", self.content)
 
-            self.content = re.sub(r'@(\w+)@twitter.com', '@\g<1>', self.content)
-
             # fix up masto mentions
             for mention in self.mentions:
+                self.content = re.sub(f'@({mention[0]})(?!@)', f"{mention[1]}", self.content)
 
-                self.content = re.sub(f'@{mention[0]}', f"{mention[1]}", self.content)
+            self.content = re.sub(r'@(\w+)@twitter.com', '@\g<1>', self.content)
 
             self.content = self.content.strip()
 
