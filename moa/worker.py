@@ -158,7 +158,6 @@ for bridge in bridges:
                     continue
 
             reply_to = None
-            media_ids = []
 
             if t.is_self_reply:
 
@@ -190,7 +189,7 @@ for bridge in bridges:
             status = t.tweet_parts[-1]
 
             if c.SEND:
-                twitter_last_id = send_tweet(status, reply_to, media_ids, twitter_api)
+                twitter_last_id = send_tweet(status, reply_to, t.media_ids, twitter_api)
 
                 if twitter_last_id:
                     m = Mapping()

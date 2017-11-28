@@ -33,6 +33,7 @@ class Toot:
         self.data = toot_data
         self.settings = settings
         self.twitter_api = twitter_api
+        self.media_ids = []
 
     @property
     def id(self):
@@ -290,6 +291,8 @@ class Toot:
 
                 if description:
                     self.twitter_api.PostMediaMetadata(media_id, alt_text=description)
+
+                self.media_ids.append(media_id)
 
             except TwitterError as e:
                 logger.error(f"Twitter upload: {e.message}")
