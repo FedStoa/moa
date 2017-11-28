@@ -46,3 +46,11 @@ class TestToots(unittest.TestCase):
         toot = Toot(toot_double_mention, settings)
 
         self.assertEqual(toot.clean_content, "test 1 @moa_party@pdx.social\ntest 2 @moa_party")
+
+    def test_cw(self):
+
+        settings = Settings()
+
+        toot = Toot(toot_with_cw, settings)
+
+        self.assertEqual(toot.clean_content, "CW: This is the spoiler text\n\nThis is the secret stuff")

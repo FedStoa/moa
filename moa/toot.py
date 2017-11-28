@@ -205,6 +205,9 @@ class Toot:
 
             self.content = self.content.strip()
 
+            if self.spoiler_text:
+                self.content = f"CW: {self.spoiler_text}\n\n{self.content}"
+
             if self.is_boost:
                 if len(self.content) > 0:
                     self.content = f"RT {self.boost_author}\n{self.content}\n{self.url}"
