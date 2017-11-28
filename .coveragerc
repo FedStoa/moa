@@ -1,0 +1,15 @@
+[run]
+branch = true
+omit =
+    .moa_venv/*
+    
+[report]
+show_missing = True
+skip_covered = True
+
+exclude_lines =
+  pragma: no cover
+  __str__
+
+[html]
+directory=/tmp/html-coverage

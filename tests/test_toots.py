@@ -1,9 +1,8 @@
 import unittest
 
 from tests.toot_samples import *
-from tests.tweet_samples import *
-from toot import Toot
-from settings import Settings
+from moa.toot import Toot
+from moa.settings import Settings
 
 
 class TestToots(unittest.TestCase):

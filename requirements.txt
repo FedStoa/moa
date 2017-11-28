@@ -8,6 +8,7 @@ blinker==1.4              # via raven
 certifi==2017.11.5        # via requests
 chardet==3.0.4            # via requests
 click==6.7                # via flask
+coverage==4.4.2
 flask-oauthlib==0.9.4
 flask-sqlalchemy==2.3.2
 flask-wtf==0.14.2

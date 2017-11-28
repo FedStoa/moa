@@ -8,3 +8,4 @@ config.py
 /moa.egg-info
 /.moa_venv
 /scratch.ipynb
+/.coverage
