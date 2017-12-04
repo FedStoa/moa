@@ -60,7 +60,7 @@ class Toot:
         _ = self.clean_content
 
         # This is kind of funky
-        if self.content[0] == '@':
+        if len(self.content) > 0 and self.content[0] == '@':
             return True
 
         return self.data['in_reply_to_id'] is not None
