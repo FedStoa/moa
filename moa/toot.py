@@ -9,6 +9,10 @@ import os
 import requests
 from twitter import twitter_utils, TwitterError
 
+MY_TLDS = [
+    "shop"
+]
+
 URL_REGEXP = re.compile((
                             r'('
                             r'(?!(https?://|www\.)?\.|ftps?://|([0-9]+\.){{1,3}}\d+)'  # exclude urls that start with "."
@@ -16,8 +20,7 @@ URL_REGEXP = re.compile((
                             r'(?:{0}\b|'  # all tlds
                             r'(?:[:0-9]))'  # port numbers & close off TLDs
                             r'(?:[\w+\/]?[a-z0-9!\*\'\(\);:&=\+\$/%#\[\]\-_\.,~?])*'  # path/query params
-                            r')').format(r'\b|'.join(twitter_utils.TLDS)), re.U | re.I | re.X)
-
+                            r')').format(r'\b|'.join(twitter_utils.TLDS + MY_TLDS)), re.U | re.I | re.X)
 
 logger = logging.getLogger('worker')
 
@@ -165,12 +168,13 @@ class Toot:
         return "".join(self.tweet_parts)
 
     def expected_status_length(self, string):
-        replaced_chars = 0
+
         status_length = len(string.encode('utf-8'))
         match = re.findall(URL_REGEXP, string)
         if len(match) >= 1:
             replaced_chars = len(''.join(map(lambda x: x[0], match)))
             status_length = status_length - replaced_chars + (self.url_length * len(match))
+            # logger.debug(f"{len(string)} {string} {status_length}")
         return status_length
 
     @property
@@ -234,15 +238,17 @@ class Toot:
             # logger.debug(words)
 
             if self.settings.split_twitter_messages:
-                logger.info(f'Toot bigger {self.tweet_length} characters, need to split...')
+                logger.info(f'Toot bigger than {self.tweet_length} characters, need to split...')
 
                 for next_word in words:
 
                     possible_part = f"{current_part} {next_word}".lstrip()
-                    length = len(possible_part.encode('utf-8'))
+                    length = self.expected_status_length(possible_part)
+
+                    # logger.debug(f"length of possible part is {length}")
 
                     if length > self.tweet_length - 3:
-                        logger.debug(f'Part is full: {length} {current_part}')
+                        logger.debug(f'Part is full ({self.expected_status_length(current_part)}):{current_part}')
 
                         current_part = f"{current_part}…".lstrip()
                         self.tweet_parts.append(current_part)
