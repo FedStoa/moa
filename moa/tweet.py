@@ -11,7 +11,7 @@ from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 
 logger = logging.getLogger('worker')
 MASTODON_RETRIES = 3
-MASTODON_RETRY_DELAY = 20
+MASTODON_RETRY_DELAY = 5
 
 
 class Tweet:
@@ -277,6 +277,10 @@ class Tweet:
                 if retry_counter < MASTODON_RETRIES:
                     retry_counter += 1
                     time.sleep(MASTODON_RETRY_DELAY)
+
+            except MastodonNetworkError as e:
+                # assume this is transient
+                pass
 
         if retry_counter == MASTODON_RETRIES:
             logger.error("Retry limit reached.")
