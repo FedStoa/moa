@@ -78,7 +78,6 @@ for bridge in bridges:
     if bridge.settings.post_to_twitter_enabled:
         new_toots = []
 
-        l.info(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
         try:
             new_toots = mast_api.account_statuses(
                 bridge.mastodon_account_id,
@@ -95,6 +94,7 @@ for bridge in bridges:
             continue
 
         except MastodonNetworkError as e:
+            l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
             l.error(e)
             continue
 
@@ -112,9 +112,9 @@ for bridge in bridges:
                 since_id=bridge.twitter_last_id,
                 include_rts=True,
                 exclude_replies=False)
-            l.info(f"Working on twitter user {bridge.twitter_handle}")
 
         except TwitterError as e:
+            l.error(f"Working on twitter user {bridge.twitter_handle}")
             l.error(e)
             if e.message[0]['code'] == 89:
                 l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
