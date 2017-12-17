@@ -4,18 +4,16 @@ from datetime import datetime, timedelta
 import pandas as pd
 import pygal
 import twitter
-from flask import Flask
-from flask import g, session, request, url_for, flash
-from flask import redirect, render_template
+from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from flask_oauthlib.client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
-from mastodon.Mastodon import MastodonAPIError
+from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from pygal.style import LightGreenStyle
 from sqlalchemy import exc
 
-from moa.forms import SettingsForm, MastodonIDForm
-from moa.models import metadata, Bridge, MastodonHost, WorkerStat
+from moa.forms import MastodonIDForm, SettingsForm
+from moa.models import Bridge, MastodonHost, WorkerStat, metadata
 from moa.settings import Settings
 
 app = Flask(__name__)
@@ -24,6 +22,7 @@ app.config.from_object(config)
 
 if app.config['SENTRY_DSN']:
     from raven.contrib.flask import Sentry
+
     sentry = Sentry(app, dsn=app.config['SENTRY_DSN'])
 
 db = SQLAlchemy(metadata=metadata)
@@ -123,6 +122,10 @@ def options():
         bridge.mastodon_user = session['mastodon']['username']
         bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
 
+        if not bridge.mastodon_host:
+            flash(f"There was a problem connectin to {session['mastodon']['host']}")
+            return redirect(url_for('index'))
+
         # get twitter ID
         twitter_api = twitter.Api(
             consumer_key=app.config['TWITTER_CONSUMER_KEY'],
@@ -180,11 +183,13 @@ def delete():
         ).first()
 
         if bridge:
-            app.logger.info(f"Deleting settings for {session['mastodon']['username']} {session['twitter']['screen_name']}")
+            app.logger.info(
+                f"Deleting settings for {session['mastodon']['username']} {session['twitter']['screen_name']}")
             db.session.delete(bridge)
             db.session.commit()
 
     return redirect(url_for('logout'))
+
 
 # Twitter
 #
@@ -219,21 +224,26 @@ def get_or_create_host(hostname):
     mastodonhost = db.session.query(MastodonHost).filter_by(hostname=hostname).first()
 
     if not mastodonhost:
-        client_id, client_secret = Mastodon.create_app(
-            "Moa",
-            scopes=["read", "write"],
-            api_base_url=f"https://{hostname}",
-            website="https://moa.party/",
-            redirect_uris=url_for("mastodon_oauthorized", _external=True)
 
-        )
-        app.logger.info(f"New host created for {hostname} {client_id} {client_secret}")
+        try:
+            client_id, client_secret = Mastodon.create_app(
+                "Moa",
+                scopes=["read", "write"],
+                api_base_url=f"https://{hostname}",
+                website="https://moa.party/",
+                redirect_uris=url_for("mastodon_oauthorized", _external=True)
+            )
 
-        mastodonhost = MastodonHost(hostname=hostname,
-                                    client_id=client_id,
-                                    client_secret=client_secret)
-        db.session.add(mastodonhost)
-        db.session.commit()
+            app.logger.info(f"New host created for {hostname} {client_id} {client_secret}")
+
+            mastodonhost = MastodonHost(hostname=hostname,
+                                        client_id=client_id,
+                                        client_secret=client_secret)
+            db.session.add(mastodonhost)
+            db.session.commit()
+        except MastodonNetworkError as e:
+            app.logger.error(e)
+            return None
 
     app.logger.debug(f"Using Mastodon Host: {mastodonhost.hostname}")
 
@@ -243,15 +253,17 @@ def get_or_create_host(hostname):
 def mastodon_api(hostname, access_code=None):
     mastodonhost = get_or_create_host(hostname)
 
-    api = Mastodon(
-        client_id=mastodonhost.client_id,
-        client_secret=mastodonhost.client_secret,
-        api_base_url=f"https://{mastodonhost.hostname}",
-        access_token=access_code,
-        debug_requests=False
-    )
+    if mastodonhost:
+        api = Mastodon(
+            client_id=mastodonhost.client_id,
+            client_secret=mastodonhost.client_secret,
+            api_base_url=f"https://{mastodonhost.hostname}",
+            access_token=access_code,
+            debug_requests=False
+        )
 
-    return api
+        return api
+    return None
 
 
 @app.route('/mastodon_login', methods=['POST'])
@@ -274,16 +286,19 @@ def mastodon_login():
 
         api = mastodon_api(host)
 
-        return redirect(
-            api.auth_request_url(
-                scopes=['read', 'write'],
-                redirect_uris=url_for("mastodon_oauthorized", _external=True)
+        if api:
+            return redirect(
+                api.auth_request_url(
+                    scopes=['read', 'write'],
+                    redirect_uris=url_for("mastodon_oauthorized", _external=True)
+                )
             )
-        )
+        else:
+            flash(f"There was a problem connecting to the mastodon server.")
     else:
-
         flash("Invalid Mastodon ID")
-        return redirect(url_for('index'))
+
+    return redirect(url_for('index'))
 
 
 @app.route('/mastodon_oauthorized')
@@ -333,9 +348,10 @@ def stats():
 
 @app.route('/stats/times.svg')
 def time_graph():
-
     since = datetime.now() - timedelta(hours=24)
-    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created, WorkerStat.time, WorkerStat.avg)
+    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
+                                                                                                WorkerStat.time,
+                                                                                                WorkerStat.avg)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
 
@@ -361,9 +377,10 @@ def time_graph():
 
 @app.route('/stats/counts.svg')
 def count_graph():
-
     since = datetime.now() - timedelta(hours=24)
-    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created, WorkerStat.toots, WorkerStat.tweets)
+    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
+                                                                                                WorkerStat.toots,
+                                                                                                WorkerStat.tweets)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
     df.set_index(['created'], inplace=True)
@@ -387,7 +404,6 @@ def count_graph():
 
 @app.route('/stats/users.svg')
 def user_graph():
-
     stats_query = db.session.query(Bridge).with_entities(Bridge.created)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
@@ -418,10 +434,8 @@ def user_graph():
 
 @app.errorhandler(404)
 def page_not_found(e):
-
     return render_template('404.html'), 404
 
 
 if __name__ == '__main__':
-
     app.run()
