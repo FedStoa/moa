@@ -112,11 +112,10 @@ for bridge in bridges:
                 since_id=bridge.twitter_last_id,
                 include_rts=True,
                 exclude_replies=False)
+            l.info(f"Working on twitter user {bridge.twitter_handle}")
 
         except TwitterError as e:
-            l.error(f"Working on twitter user {bridge.twitter_handle}")
             l.error(e)
-
             if e.message[0]['code'] == 89:
                 l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
                 bridge.enabled = False
@@ -133,7 +132,16 @@ for bridge in bridges:
     if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
         new_toots.reverse()
 
-        url_length = max(twitter_api.GetShortUrlLength(False), twitter_api.GetShortUrlLength(True)) + 1
+        try:
+            url_length = max(twitter_api.GetShortUrlLength(False), twitter_api.GetShortUrlLength(True)) + 1
+
+        except TwitterError as e:
+            if e.message[0]['code'] == 89:
+                l.warning(f"Disabling bridge for twitter user @{bridge.twitter_handle}")
+                bridge.enabled = False
+
+                continue
+
         l.debug(f"URL length: {url_length}")
 
         for toot in new_toots:
