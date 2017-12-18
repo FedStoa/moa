@@ -9,3 +9,4 @@ config.py
 /.moa_venv
 /scratch.ipynb
 /.coverage
+/moa.db

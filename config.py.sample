@@ -7,7 +7,7 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TWITTER_CONSUMER_KEY = ''
     TWITTER_CONSUMER_SECRET = ''
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///moa.db'
     SEND = True
     SENTRY_DSN = ''
     HEALTHCHECKS = ''
