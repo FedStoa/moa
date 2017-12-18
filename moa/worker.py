@@ -131,6 +131,7 @@ for bridge in bridges:
 
     if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
         new_toots.reverse()
+        url_length = 0
 
         try:
             url_length = max(twitter_api.GetShortUrlLength(False), twitter_api.GetShortUrlLength(True)) + 1

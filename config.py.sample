@@ -11,6 +11,11 @@ class Config(object):
     SEND = True
     SENTRY_DSN = ''
     HEALTHCHECKS = ''
+    MAIL_SERVER = ''
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = ''
+    MAIL_PASSWORD = ''
 
 
 class ProductionConfig(Config):

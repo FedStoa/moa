@@ -4,12 +4,13 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-blinker==1.4              # via raven
+blinker==1.4              # via flask-mail, raven
 certifi==2017.11.5        # via requests
 chardet==3.0.4            # via requests
 click==6.7                # via flask
 coverage==4.4.2
 decorator==4.1.2          # via mastodon.py
+flask-mail==0.9.1
 flask-oauthlib==0.9.4
 flask-sqlalchemy==2.3.2
 flask-wtf==0.14.2

@@ -5,6 +5,7 @@ import pandas as pd
 import pygal
 import twitter
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
+from flask_mail import Message, Mail
 from flask_oauthlib.client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from mastodon import Mastodon
@@ -19,6 +20,7 @@ from moa.settings import Settings
 app = Flask(__name__)
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
 app.config.from_object(config)
+mail = Mail(app)
 
 if app.config['SENTRY_DSN']:
     from raven.contrib.flask import Sentry
@@ -162,6 +164,19 @@ def options():
 
         if not bridge_found:
             db.session.add(bridge)
+
+            body = render_template('new_user_email.txt.j2', bridge=bridge)
+
+            msg = Message(subject="New moa.party user",
+                          body=body,
+                          sender="hello@jmoore.me",
+                          recipients=["hello@jmoore.me"])
+
+            try:
+                mail.send(msg)
+
+            except Exception as e:
+                app.logger.error(e)
 
         flash("Settings Saved.")
         db.session.commit()

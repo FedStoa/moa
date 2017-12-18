@@ -9,3 +9,4 @@ pygal
 python-twitter
 PyMySQL
 raven[flask]
+Flask-Mail
