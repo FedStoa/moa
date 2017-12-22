@@ -81,7 +81,8 @@ for bridge in bridges:
         try:
             new_toots = mast_api.account_statuses(
                 bridge.mastodon_account_id,
-                since_id=bridge.mastodon_last_id
+                since_id=bridge.mastodon_last_id,
+                request_timeout=15
             )
         except MastodonAPIError as e:
             l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")

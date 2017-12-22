@@ -20,12 +20,12 @@ idna==2.6                 # via requests
 itsdangerous==0.24        # via flask
 jinja2==2.10              # via flask
 markupsafe==1.0           # via jinja2
-mastodon.py==1.2.0
+mastodon.py==1.2.1
 numpy==1.13.3             # via pandas
 oauthlib==2.0.6           # via flask-oauthlib, requests-oauthlib
 pandas==0.21.1
 pygal==2.4.0
-pymysql==0.7.11
+pymysql==0.8.0
 python-dateutil==2.6.1    # via mastodon.py, pandas
 python-twitter==3.3
 pytz==2017.3              # via mastodon.py, pandas
