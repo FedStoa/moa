@@ -64,7 +64,8 @@ for bridge in bridges:
         client_secret=mastodonhost.client_secret,
         api_base_url=f"https://{mastodonhost.hostname}",
         access_token=bridge.mastodon_access_code,
-        debug_requests=False
+        debug_requests=False,
+        request_timeout=15
     )
 
     twitter_api = twitter.Api(
@@ -81,8 +82,7 @@ for bridge in bridges:
         try:
             new_toots = mast_api.account_statuses(
                 bridge.mastodon_account_id,
-                since_id=bridge.mastodon_last_id,
-                request_timeout=15
+                since_id=bridge.mastodon_last_id
             )
         except MastodonAPIError as e:
             l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
