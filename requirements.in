@@ -5,6 +5,7 @@ flask_sqlalchemy
 Flask-WTF
 Mastodon.py
 pandas
+pip-tools
 pygal
 python-twitter
 PyMySQL

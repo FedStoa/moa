@@ -3,6 +3,8 @@ import logging
 import os
 import pprint as pp
 import time
+from json import JSONDecodeError
+
 import requests
 import sys
 import twitter
@@ -117,9 +119,11 @@ for bridge in bridges:
         except TwitterError as e:
             l.error(f"Working on twitter user {bridge.twitter_handle}")
             l.error(e)
-            if e.message[0]['code'] == 89:
-                l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
-                bridge.enabled = False
+
+            if len(e) > 0:
+                if e.message[0]['code'] == 89:
+                    l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
+                    bridge.enabled = False
 
             continue
 
