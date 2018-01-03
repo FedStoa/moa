@@ -120,7 +120,7 @@ for bridge in bridges:
             l.error(f"Working on twitter user {bridge.twitter_handle}")
             l.error(e)
 
-            if len(e) > 0:
+            if len(e.message) > 0:
                 if e.message[0]['code'] == 89:
                     l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
                     bridge.enabled = False
