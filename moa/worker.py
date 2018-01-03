@@ -3,7 +3,7 @@ import logging
 import os
 import pprint as pp
 import time
-from random import shuffle
+from sqlalchemy.sql.expression import func
 import requests
 import sys
 import twitter
@@ -50,8 +50,7 @@ except exc.SQLAlchemyError as e:
 
 session = Session(engine)
 
-bridges = session.query(Bridge).filter_by(enabled=True)
-shuffle(bridges)
+bridges = session.query(Bridge).filter_by(enabled=True).order_by(func.rand())
 
 for bridge in bridges:
     # l.debug(bridge.settings.__dict__)
