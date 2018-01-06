@@ -12,7 +12,7 @@ from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 from twitter import TwitterError
-
+from requests import ConnectionError
 from moa.helpers import send_tweet
 from moa.models import Bridge, Mapping, WorkerStat
 from moa.toot import Toot
@@ -124,6 +124,9 @@ for bridge in bridges:
                     l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
                     bridge.enabled = False
 
+            continue
+
+        except ConnectionError as e:
             continue
 
         if len(new_tweets) != 0:
