@@ -14,13 +14,13 @@ MY_TLDS = [
 ]
 
 URL_REGEXP = re.compile((
-                            r'('
-                            r'(?!(https?://|www\.)?\.|ftps?://|([0-9]+\.){{1,3}}\d+)'  # exclude urls that start with "."
-                            r'(?:https?://|www\.)*(?!.*@)(?:[\w+-_]+[.])'  # beginning of url
-                            r'(?:{0}\b|'  # all tlds
-                            r'(?:[:0-9]))'  # port numbers & close off TLDs
-                            r'(?:[\w+\/]?[a-z0-9!\*\'\(\);:&=\+\$/%#\[\]\-_\.,~?])*'  # path/query params
-                            r')').format(r'\b|'.join(twitter_utils.TLDS + MY_TLDS)), re.U | re.I | re.X)
+    r'('
+    r'(?!(https?://|www\.)?\.|ftps?://|([0-9]+\.){{1,3}}\d+)'  # exclude urls that start with "."
+    r'(?:https?://|www\.)*(?!.*@)(?:[\w+-_]+[.])'  # beginning of url
+    r'(?:\w+'  # all tlds
+    r'(?:[:0-9]*))'  # port numbers & close off TLDs
+    r'(?:[/]?[?][a-z0-9!*\'();:&=+$/%#\[\]\-_.,~?]*)*'  # path/query params
+    r')'), re.U | re.I | re.X)
 
 logger = logging.getLogger('worker')
 
@@ -31,7 +31,7 @@ class Toot:
         self.content = None
         self.tweet_parts = []
         self.url_length = 23
-        self.tweet_length = 275
+        self.tweet_length = 272  # be conservative so we dont split too near the end
         self.attachments = []
         self.data = toot_data
         self.settings = settings
