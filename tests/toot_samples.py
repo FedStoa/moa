@@ -547,3 +547,51 @@ toot_with_many_urls = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/acc
                        'uri': 'https://wandering.shop/users/kacealexander/statuses/99113667863200595',
                        'url': 'https://wandering.shop/@kacealexander/99113667863200595',
                        'visibility': 'public'}
+
+toot_with_bogus_url = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/accounts/3681/statuses',
+                                          '_pagination_method': 'GET',
+                                          'since_id': 99292682141195094},
+                     'account': {'acct': 'baldur',
+                                 'avatar': 'https://toot.cafe/system/accounts/avatars/000/003/681/original/530e123abb09c828.jpg',
+                                 'avatar_static': 'https://toot.cafe/system/accounts/avatars/000/003/681/original/530e123abb09c828.jpg',
+                                 'created_at': datetime.datetime(2017, 4, 8, 16, 21, 37, 969000, tzinfo=tzutc()),
+                                 'display_name': 'Baldur Bjarnason',
+                                 'followers_count': 379,
+                                 'following_count': 157,
+                                 'header': 'https://toot.cafe/headers/original/missing.png',
+                                 'header_static': 'https://toot.cafe/headers/original/missing.png',
+                                 'id': 3681,
+                                 'locked': False,
+                                 'note': '<p>Tech Lead at Rebus Foundation. Lapsed Interactive '
+                                         'Media Academic. Webby Tech Stuff and webby book '
+                                         'stuff.</p>',
+                                 'statuses_count': 3016,
+                                 'url': 'https://toot.cafe/@baldur',
+                                 'username': 'baldur'},
+                     'application': {'name': 'Web', 'website': None},
+                     'content': '<p>The OS updates for Meltdown don&apos;t protect userland '
+                                'exploits. So the browsers are all updating mitigations like '
+                                'reducing the resolution of performance.now() and disabling '
+                                'SharedArrayBuffers.</p><p>None of these efforts actually prevent '
+                                'attacks.</p>',
+                     'created_at': datetime.datetime(2018, 1, 4, 17, 14, 52, 348000, tzinfo=tzutc()),
+                     'emojis': [],
+                     'favourited': False,
+                     'favourites_count': 0,
+                     'id': 99292682141195094,
+                     'in_reply_to_account_id': None,
+                     'in_reply_to_id': None,
+                     'language': 'en',
+                     'media_attachments': [],
+                     'mentions': [],
+                     'muted': False,
+                     'pinned': False,
+                     'reblog': None,
+                     'reblogged': False,
+                     'reblogs_count': 0,
+                     'sensitive': True,
+                     'spoiler_text': 'Meltdown/Spectre for web devs',
+                     'tags': [],
+                     'uri': 'https://toot.cafe/users/baldur/statuses/99292682141195094',
+                     'url': 'https://toot.cafe/@baldur/99292682141195094',
+                     'visibility': 'public'}

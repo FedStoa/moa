@@ -7,11 +7,12 @@ from moa.settings import Settings
 
 class TestToots(unittest.TestCase):
 
+    def setUp(self):
+        self.settings = Settings()
+
     def test_boost(self):
 
-        settings = Settings()
-
-        toot = Toot(boost, settings)
+        toot = Toot(boost, self.settings)
 
         self.assertEqual(toot.is_boost, True)
         self.assertEqual(toot.is_reply, False)
@@ -21,9 +22,7 @@ class TestToots(unittest.TestCase):
 
     def test_twitter_mention(self):
 
-        settings = Settings()
-
-        toot = Toot(twitter_mention, settings)
+        toot = Toot(twitter_mention, self.settings)
 
         self.assertEqual(toot.is_boost, False)
         self.assertEqual(toot.is_reply, False)
@@ -32,24 +31,25 @@ class TestToots(unittest.TestCase):
 
     def test_mention(self):
 
-        settings = Settings()
-
-        toot = Toot(toot_with_mention, settings)
+        toot = Toot(toot_with_mention, self.settings)
 
         self.assertEqual(toot.clean_content, "mentioning @foozmeat@pdx.social here")
 
     def test_double_mention(self):
 
-        settings = Settings()
-
-        toot = Toot(toot_double_mention, settings)
+        toot = Toot(toot_double_mention, self.settings)
 
         self.assertEqual(toot.clean_content, "test 1 @moa_party@pdx.social\ntest 2 @moa_party")
 
     def test_cw(self):
 
-        settings = Settings()
-
-        toot = Toot(toot_with_cw, settings)
-
+        toot = Toot(toot_with_cw, self.settings)
         self.assertEqual(toot.clean_content, "CW: This is the spoiler text\n\nThis is the secret stuff")
+
+    def test_length(self):
+        toot = Toot(toot_with_bogus_url, self.settings)
+        print(toot.clean_content)
+        expected_length = toot.expected_status_length(toot.clean_content)
+        print(expected_length)
+
+        self.assertEqual(expected_length, 281)
