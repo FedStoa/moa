@@ -5,11 +5,11 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 blinker==1.4              # via flask-mail, raven
-certifi==2017.11.5        # via requests
+certifi==2018.1.18        # via requests
 chardet==3.0.4            # via requests
 click==6.7                # via flask, pip-tools
 coverage==4.4.2
-decorator==4.1.2          # via mastodon.py
+decorator==4.2.1          # via mastodon.py
 first==2.0.1              # via pip-tools
 flask-mail==0.9.1
 flask-oauthlib==0.9.4
@@ -22,20 +22,20 @@ itsdangerous==0.24        # via flask
 jinja2==2.10              # via flask
 markupsafe==1.0           # via jinja2
 mastodon.py==1.2.1
-numpy==1.13.3             # via pandas
+numpy==1.14.0             # via pandas
 oauthlib==2.0.6           # via flask-oauthlib, requests-oauthlib
-pandas==0.21.1
+pandas==0.22.0
 pip-tools==1.11.0
 pygal==2.4.0
 pymysql==0.8.0
 python-dateutil==2.6.1    # via mastodon.py, pandas
 python-twitter==3.3
 pytz==2017.3              # via mastodon.py, pandas
-raven[flask]==6.4.0
+raven[flask]==6.5.0
 requests-oauthlib==0.8.0  # via flask-oauthlib, python-twitter
 requests==2.18.4          # via mastodon.py, python-twitter, requests-oauthlib
 six==1.11.0               # via mastodon.py, pip-tools, python-dateutil
-sqlalchemy==1.1.15        # via flask-sqlalchemy
+sqlalchemy==1.2.1         # via flask-sqlalchemy
 urllib3==1.22             # via requests
-werkzeug==0.13            # via flask
+werkzeug==0.14.1          # via flask
 wtforms==2.1              # via flask-wtf
