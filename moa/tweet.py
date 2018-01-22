@@ -209,11 +209,34 @@ class Tweet:
     def transfer_attachments(self):
 
         for attachment in self.media:
-            # l.debug(pp.pformat(attachment.__dict__))
+            # logger.debug(attachment.__dict__)
 
-            attachment_url = attachment.media_url
+            type = attachment.type
+            attachment_url = None
 
-            logger.debug(f'Downloading {attachment.ext_alt_text} {attachment_url}')
+            if type in ['video', 'animated_gif']:
+
+                index = 0
+                max = len(attachment.video_info['variants']) - 1
+
+                while not attachment_url:
+                    logger.info(f"Examining attachment variant {index}")
+                    attachment_url = attachment.video_info['variants'][index]['url']
+
+                    response = requests.head(attachment_url)
+                    size = int(response.headers['content-length'])
+
+                    if size > (8 * 1024 * 1024):
+                        attachment_url = None
+                        index += 1
+
+                        if index > max:
+                            continue
+
+            else:
+                attachment_url = attachment.media_url
+
+            logger.info(f'Downloading {attachment.ext_alt_text} {attachment.type} {attachment_url}')
             attachment_file = requests.get(attachment_url, stream=True)
             attachment_file.raw.decode_content = True
             temp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -236,6 +259,8 @@ class Tweet:
             try:
                 self.media_ids.append(self.masto_api.media_post(upload_file_name,
                                                                 description=attachment.ext_alt_text))
+                os.unlink(upload_file_name)
+
             except MastodonAPIError as e:
                 logger.error(e)
                 return False
@@ -243,8 +268,6 @@ class Tweet:
             except MastodonNetworkError as e:
                 logger.error(e)
                 return False
-
-            os.unlink(upload_file_name)
 
         return True
 
