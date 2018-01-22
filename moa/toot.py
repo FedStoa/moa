@@ -113,6 +113,10 @@ class Toot:
     @property
     def should_skip(self):
 
+        if self.visibility == 'direct':
+            logger.info(f'Skipping DM.')
+            return True
+
         # Don't cross-post replies
         if self.is_reply and not self.is_self_reply:
             logger.info(f'Skipping reply.')
