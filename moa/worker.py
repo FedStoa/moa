@@ -2,17 +2,19 @@ import importlib
 import logging
 import os
 import pprint as pp
-import time
-from sqlalchemy.sql.expression import func
-import requests
 import sys
+import time
+
+import requests
 import twitter
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
+from requests import ConnectionError
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import func
 from twitter import TwitterError
-from requests import ConnectionError
+
 from moa.helpers import send_tweet
 from moa.models import Bridge, Mapping, WorkerStat
 from moa.toot import Toot
