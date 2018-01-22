@@ -5,6 +5,8 @@ import os
 import re
 import tempfile
 import time
+from os.path import splitext
+from urllib.parse import urlparse
 
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
@@ -216,12 +218,25 @@ class Tweet:
 
             if type in ['video', 'animated_gif']:
 
+                variants = attachment.video_info['variants'].copy()
+                variants.reverse()
+
+                # logger.debug(variants)
+
                 index = 0
-                max = len(attachment.video_info['variants']) - 1
+                max = len(variants) - 1
 
                 while not attachment_url:
                     logger.info(f"Examining attachment variant {index}")
-                    attachment_url = attachment.video_info['variants'][index]['url']
+
+                    if not variants[index].get('bitrate', None):
+                        attachment_url = None
+                        index += 1
+
+                        if index > max:
+                            continue
+
+                    attachment_url = variants[index]['url']
 
                     response = requests.head(attachment_url)
                     size = int(response.headers['content-length'])
@@ -243,7 +258,10 @@ class Tweet:
             temp_file.write(attachment_file.raw.read())
             temp_file.close()
 
-            file_extension = mimetypes.guess_extension(attachment_file.headers['Content-type'])
+            path = urlparse(attachment_url).path
+            file_extension = splitext(path)[1]
+
+            # file_extension = mimetypes.guess_extension(attachment_file.headers['Content-type'])
 
             # ffs
             if file_extension == '.jpe':
