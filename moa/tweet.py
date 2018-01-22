@@ -226,10 +226,12 @@ class Tweet:
                 index = 0
                 max = len(variants) - 1
 
-                while not attachment_url:
+                while not attachment_url and index <= max:
                     logger.info(f"Examining attachment variant {index}")
 
-                    if not variants[index].get('bitrate', None):
+                    if not 'bitrate' in variants[index]:
+                        logger.info(f"Missing bitrate")
+
                         attachment_url = None
                         index += 1
 
@@ -242,6 +244,7 @@ class Tweet:
                     size = int(response.headers['content-length'])
 
                     if size > (8 * 1024 * 1024):
+                        logger.info(f"Too large")
                         attachment_url = None
                         index += 1
 
@@ -250,6 +253,9 @@ class Tweet:
 
             else:
                 attachment_url = attachment.media_url
+
+            if not attachment_url:
+                return False
 
             logger.info(f'Downloading {attachment.ext_alt_text} {attachment.type} {attachment_url}')
             attachment_file = requests.get(attachment_url, stream=True)
