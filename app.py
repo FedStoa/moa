@@ -447,6 +447,11 @@ def user_graph():
     return chart.render_response()
 
 
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html.j2')
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
