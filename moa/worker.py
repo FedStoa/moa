@@ -82,64 +82,74 @@ for bridge in bridges:
         tweet_mode='extended'  # Allow tweets longer than 140 raw characters
     )
 
-    if bridge.settings.post_to_twitter_enabled:
-        new_toots = []
+    #
+    # Fetch from Mastodon
+    #
 
-        try:
-            new_toots = mast_api.account_statuses(
-                bridge.mastodon_account_id,
-                since_id=bridge.mastodon_last_id
-            )
-        except MastodonAPIError as e:
-            l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
-            l.error(e)
+    new_toots = []
 
-            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found']):
-                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+    try:
+        new_toots = mast_api.account_statuses(
+            bridge.mastodon_account_id,
+            since_id=bridge.mastodon_last_id
+        )
+    except MastodonAPIError as e:
+        l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
+        l.error(e)
+
+        if any(x in repr(e) for x in ['revoked', 'invalid', 'not found']):
+            l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+            bridge.enabled = False
+
+        continue
+
+    except MastodonNetworkError as e:
+        l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
+        l.error(e)
+        continue
+
+    if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
+        l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
+        l.info(f"{len(new_toots)} new toots found")
+
+    if c.SEND and len(new_toots) != 0:
+        bridge.mastodon_last_id = int(new_toots[0]['id'])
+
+    #
+    # Fetch from Twitter
+    #
+
+    new_tweets = []
+    try:
+        new_tweets = twitter_api.GetUserTimeline(
+            since_id=bridge.twitter_last_id,
+            include_rts=True,
+            exclude_replies=False)
+
+    except TwitterError as e:
+        l.error(f"Working on twitter user {bridge.twitter_handle}")
+        l.error(e)
+
+        if len(e.message) > 0:
+            if e.message[0]['code'] == 89:
+                l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
                 bridge.enabled = False
 
-            continue
+        continue
 
-        except MastodonNetworkError as e:
-            l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
-            l.error(e)
-            continue
+    except ConnectionError as e:
+        continue
 
-        if len(new_toots) != 0:
-            l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
-            l.info(f"{len(new_toots)} new toots found")
+    if bridge.settings.post_to_mastodon_enabled and len(new_tweets) != 0:
+        l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
+        l.info(f"{len(new_tweets)} new tweets found")
 
-            if c.SEND:
-                bridge.mastodon_last_id = int(new_toots[0]['id'])
+    if c.SEND and len(new_tweets) != 0:
+        bridge.twitter_last_id = new_tweets[0].id
 
-    if bridge.settings.post_to_mastodon_enabled:
-        new_tweets = []
-        try:
-            new_tweets = twitter_api.GetUserTimeline(
-                since_id=bridge.twitter_last_id,
-                include_rts=True,
-                exclude_replies=False)
-
-        except TwitterError as e:
-            l.error(f"Working on twitter user {bridge.twitter_handle}")
-            l.error(e)
-
-            if len(e.message) > 0:
-                if e.message[0]['code'] == 89:
-                    l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
-                    bridge.enabled = False
-
-            continue
-
-        except ConnectionError as e:
-            continue
-
-        if len(new_tweets) != 0:
-            l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
-            l.info(f"{len(new_tweets)} new tweets found")
-
-            if c.SEND:
-                bridge.twitter_last_id = new_tweets[0].id
+    #
+    # Post to Twitter
+    #
 
     if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
         new_toots.reverse()
@@ -224,6 +234,10 @@ for bridge in bridges:
                 bridge.mastodon_last_id = t.id
                 session.commit()
 
+    #
+    # Post to Mastodon
+    #
+
     if bridge.settings.post_to_mastodon_enabled and len(new_tweets) != 0:
 
         new_tweets.reverse()
@@ -280,7 +294,7 @@ if c.HEALTHCHECKS:
 end_time = time.time()
 worker_stat.time = end_time - start_time
 
-l.info(f"------------------------All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg")
+l.info(f"----------- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg -------------")
 
 session.add(worker_stat)
 session.commit()
