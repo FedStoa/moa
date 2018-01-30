@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <title>Moa</title>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://moa.party" />
-    <meta property="og:title" content="Moa: Mastodon/Twitter Cross-poster" />
-    <meta property="og:description" content="Moa tweets your toots and vice versa" />
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https://moa.party"/>
+    <meta property="og:title" content="Moa: Mastodon/Twitter Cross-poster"/>
+    <meta property="og:description" content="Moa tweets your toots and vice versa"/>
 
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Moa: Mastodon/Twitter Cross-poster" />
-    <meta name="twitter:description" content="Moa tweets your toots and vice versa" />
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content="Moa: Mastodon/Twitter Cross-poster"/>
+    <meta name="twitter:description" content="Moa tweets your toots and vice versa"/>
 
 </head>
 <body>
@@ -26,6 +26,8 @@
     <p>Link your <a href="https://twitter.com">twitter</a> and <a href="https://joinmastodon.org">Mastodon</a> accounts.
         No bamboozle.</p>
 
+    <p id="cookiecheck" class="message" style="display: none;">Please allow cookies for this site or it won't work properly.</p>
+
     {% for message in get_flashed_messages() %}
         <p class=message>{{ message }}</p>
     {% endfor %}
@@ -36,7 +38,7 @@
     <p>Created by <a target="_new" href="https://pdx.social/@foozmeat">James Moore</a>.
         Code available on <a target="_new" href="https://github.com/foozmeat/moa">Github</a>.</p>
     <p>Get Updates on <a href="https://pdx.social/@moa_party">Mastodon</a> or <a href="https://twitter.com/moa_party">twitter</a>.
-    <a href="{{ url_for('privacy') }}">Privacy Policy</a>.</p>
+        <a href="{{ url_for('privacy') }}">Privacy Policy</a>.</p>
 
 </div>
 <div class="badge">
@@ -45,5 +47,11 @@
     </a>
 </div>
 
+<script>
+    if (!navigator.cookieEnabled) {
+        var el = document.getElementById('cookiecheck');
+        el.style.display = "block";
+    }
+</script>
 </body>
 </html>
