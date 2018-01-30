@@ -239,7 +239,6 @@ class Toot:
 
             current_part = ""
             words = self.clean_content.split(" ")
-            # logger.debug(words)
 
             if self.settings.split_twitter_messages:
                 logger.info(f'Toot bigger than {self.tweet_length} characters, need to split...')
@@ -269,8 +268,12 @@ class Toot:
 
             else:
                 logger.info('Truncating toot')
-                space_for_suffix = len('… ') + self.url_length
-                self.tweet_parts.append(f"{current_part[:-space_for_suffix]}… {self.url}")
+                suffix = f"…\n{self.url}"
+                tweet_length = self.tweet_length - len(suffix)
+                truncated_text = self.clean_content[:tweet_length] + suffix
+
+                logger.debug(f"Truncated Text length is {len(truncated_text)}")
+                self.tweet_parts.append(truncated_text)
 
     def transfer_attachments(self):
 

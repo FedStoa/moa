@@ -1,3 +1,4 @@
+import logging
 import unittest
 
 from tests.toot_samples import *
@@ -9,6 +10,12 @@ class TestToots(unittest.TestCase):
 
     def setUp(self):
         self.settings = Settings()
+
+        FORMAT = '%(asctime)-15s %(message)s'
+        logging.basicConfig(format=FORMAT)
+
+        self.l = logging.getLogger('worker')
+        self.l.setLevel(logging.DEBUG)
 
     def test_boost(self):
 
@@ -48,8 +55,15 @@ class TestToots(unittest.TestCase):
 
     def test_length(self):
         toot = Toot(toot_with_bogus_url, self.settings)
-        print(toot.clean_content)
+        # print(toot.clean_content)
         expected_length = toot.expected_status_length(toot.clean_content)
-        print(expected_length)
+        # print(expected_length)
 
         self.assertEqual(expected_length, 281)
+
+    def test_truncation(self):
+        self.settings.split_twitter_messages = False
+        toot = Toot(toot_incorrectly_truncated, self.settings)
+        toot.split_toot()
+
+        self.assertEqual('Has anyone written a story where the Amish play a crucial role in future society because they deliberately choose which technology they let in to their communities, and can therefore be safe “wake-up zones” for those cry…\nhttps://wandering.shop/@phildini/99434181894510181', toot.tweet_parts[0])
