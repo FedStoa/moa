@@ -211,6 +211,7 @@ for bridge in bridges:
 
             if c.SEND:
                 twitter_last_id = send_tweet(status, reply_to, t.media_ids, twitter_api)
+                l.info(f"Tweet ID: {twitter_last_id}")
 
                 if twitter_last_id:
                     m = Mapping()
@@ -254,6 +255,7 @@ for bridge in bridges:
 
             if c.SEND:
                 mastodon_last_id = tweet.send_toot(reply_to=reply_to)
+                l.info(f"Toot ID: {mastodon_last_id}")
 
                 if mastodon_last_id:
                     m = Mapping()
@@ -278,7 +280,7 @@ if c.HEALTHCHECKS:
 end_time = time.time()
 worker_stat.time = end_time - start_time
 
-l.info(f"All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg")
+l.info(f"------------------------All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg")
 
 session.add(worker_stat)
 session.commit()

@@ -229,7 +229,7 @@ class Tweet:
                 while not attachment_url and index <= max:
                     logger.info(f"Examining attachment variant {index}")
 
-                    if not 'bitrate' in variants[index]:
+                    if 'bitrate' not in variants[index]:
                         logger.info(f"Missing bitrate")
 
                         attachment_url = None
