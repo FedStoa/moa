@@ -359,7 +359,7 @@ def logout():
 @app.route('/stats')
 def stats():
 
-    hours = request.args.get('code', 24)
+    hours = request.args.get('hours', 24)
 
     return render_template('stats.html.j2',
                            hours=hours)
@@ -368,7 +368,7 @@ def stats():
 @app.route('/stats/times.svg')
 def time_graph():
 
-    hours = request.args.get('code', 24)
+    hours = request.args.get('hours', 24)
 
     since = datetime.now() - timedelta(hours=hours)
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
@@ -399,7 +399,7 @@ def time_graph():
 
 @app.route('/stats/counts.svg')
 def count_graph():
-    hours = request.args.get('code', 24)
+    hours = request.args.get('hours', 24)
 
     since = datetime.now() - timedelta(hours=hours)
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
