@@ -368,7 +368,7 @@ def stats():
 @app.route('/stats/times.svg')
 def time_graph():
 
-    hours = request.args.get('hours', 24)
+    hours = int(request.args.get('hours', 24))
 
     since = datetime.now() - timedelta(hours=hours)
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
@@ -386,7 +386,7 @@ def time_graph():
     times = r['time'].tolist()
     # avg = r['avg'].tolist()
 
-    chart = pygal.Line(title="Worker run time (s) in the last 24 hours",
+    chart = pygal.Line(title=f"Worker run time (s) in the last {hours} hours",
                        stroke_style={'width': 5},
                        style=LightGreenStyle,
                        show_legend=False)
@@ -399,7 +399,7 @@ def time_graph():
 
 @app.route('/stats/counts.svg')
 def count_graph():
-    hours = request.args.get('hours', 24)
+    hours = int(request.args.get('hours', 24))
 
     since = datetime.now() - timedelta(hours=hours)
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
@@ -416,7 +416,7 @@ def count_graph():
     toots = r['toots'].tolist()
     tweets = r['tweets'].tolist()
 
-    chart = pygal.StackedBar(title="# of Incoming Messages in the last 24 hours",
+    chart = pygal.StackedBar(title=f"# of Incoming Messages in the last {hours} hours",
                              human_readable=True,
                              style=LightGreenStyle,
                              legend_at_bottom=True)
