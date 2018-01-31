@@ -2,6 +2,7 @@ coverage
 Flask
 Flask-OAuthlib
 flask_sqlalchemy
+Flask-Migrate
 Flask-WTF
 Mastodon.py
 pandas
@@ -11,3 +12,4 @@ python-twitter
 PyMySQL
 raven[flask]
 Flask-Mail
+-egit+https://github.com/foozmeat/python-instagram.git#egg=instagram

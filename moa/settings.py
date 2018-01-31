@@ -15,6 +15,9 @@ class Settings:
     tweets_behind_cw = False
     tweet_cw_text = "From birdsite"
 
+    instagram_post_to_twitter = True
+    instagram_post_to_mastodon = True
+
     def __init__(self):
         self.post_to_twitter = True  # This means post public toots
         self.post_private_to_twitter = False
@@ -27,6 +30,9 @@ class Settings:
         self.toot_visibility = 'public'
         self.tweets_behind_cw = False
         self.tweet_cw_text = "From birdsite"
+
+        self.instagram_post_to_twitter = True
+        self.instagram_post_to_mastodon = True
 
     @property
     def post_to_twitter_enabled(self):

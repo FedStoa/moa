@@ -39,6 +39,11 @@ class Bridge(Base):
 
     enabled = Column(Boolean, nullable=False, default=False)
 
+    instagram_access_code = Column(String(80))
+    instagram_last_id = Column(BigInteger, default=0)
+    instagram_account_id = Column(BigInteger, default=0)
+    instagram_handle = Column(String(30))
+
     settings = Column(PickleType)
 
     created = Column(DateTime, default=datetime.utcnow)

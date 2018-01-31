@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, StringField, RadioField
+from wtforms import BooleanField, RadioField, StringField
 from wtforms.validators import DataRequired, Email, Length
 
 
@@ -21,7 +21,11 @@ class SettingsForm(FlaskForm):
     ])
     tweets_behind_cw = BooleanField('Post Tweets behind a Content Warning?')
     tweet_cw_text = StringField('Content Warning text: ',
-                                validators=[Length(min=1,message="Content Warning text can't be empty")])
+                                validators=[Length(min=1, message="Content Warning text can't be empty")])
+
+    instagram_enabled = BooleanField('Import posts from Instagram?')
+    instagram_post_to_twitter = BooleanField('Post to Twitter?')
+    instagram_post_to_mastodon = BooleanField('Post to Mastodon??')
 
 
 class MastodonIDForm(FlaskForm):

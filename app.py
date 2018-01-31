@@ -8,6 +8,8 @@ from flask import Flask, flash, g, redirect, render_template, request, session, 
 from flask_mail import Message, Mail
 from flask_oauthlib.client import OAuth
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from pygal.style import LightGreenStyle
@@ -28,6 +30,8 @@ if app.config['SENTRY_DSN']:
     sentry = Sentry(app, dsn=app.config['SENTRY_DSN'])
 
 db = SQLAlchemy(metadata=metadata)
+migrate = Migrate(app, db)
+
 db.init_app(app)
 oauth = OAuth(app)
 

@@ -46,10 +46,19 @@
                 <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
                 <li>{{ form.tweets_behind_cw }}{{ form.tweets_behind_cw.label }}</li>
                 <ul><li>{{ form.tweet_cw_text.label }}{{ form.tweet_cw_text }}</li></ul>
+                <hr>
+                <li>{{ form.instagram_enabled }}{{ form.instagram_enabled.label }}</li>
+                <ul>
+                    <li>{{ form.instagram_post_to_twitter }}{{ form.instagram_post_to_twitter.label }}</li>
+                    <li>{{ form.instagram_post_to_mastodon }}{{ form.instagram_post_to_mastodon.label }}</li>
+
+                </ul>
+
             </ul>
             {{ form.csrf_token }}
             <input type="submit" value="Save">
         </form>
+
         {% if found_settings %}
             <form method="POST" action="{{ url_for('delete') }}">
                 <input type="submit" value="Delete">
