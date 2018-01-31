@@ -125,7 +125,7 @@ def options():
         bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
 
         if not bridge.mastodon_host:
-            flash(f"There was a problem connectin to {session['mastodon']['host']}")
+            flash(f"There was a problem connecting to {session['mastodon']['host']}")
             return redirect(url_for('index'))
 
         # get twitter ID
@@ -358,12 +358,19 @@ def logout():
 
 @app.route('/stats')
 def stats():
-    return render_template('stats.html.j2')
+
+    hours = request.args.get('code', 24)
+
+    return render_template('stats.html.j2',
+                           hours=hours)
 
 
 @app.route('/stats/times.svg')
 def time_graph():
-    since = datetime.now() - timedelta(hours=24)
+
+    hours = request.args.get('code', 24)
+
+    since = datetime.now() - timedelta(hours=hours)
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
                                                                                                 WorkerStat.time,
                                                                                                 WorkerStat.avg)
@@ -392,7 +399,9 @@ def time_graph():
 
 @app.route('/stats/counts.svg')
 def count_graph():
-    since = datetime.now() - timedelta(hours=24)
+    hours = request.args.get('code', 24)
+
+    since = datetime.now() - timedelta(hours=hours)
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
                                                                                                 WorkerStat.toots,
                                                                                                 WorkerStat.tweets)
