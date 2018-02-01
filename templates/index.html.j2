@@ -4,7 +4,7 @@
     <p>
         {#    Twitter    #}
         {% if g.t_user %}
-            [&#x2714;] Twitter: <strong>{{ g.t_user.screen_name }}</strong>
+            Twitter: <strong>{{ g.t_user.screen_name }}</strong>
         {% else %}
             <a href="{{ url_for('twitter_login') }}">[ ] Connect to Twitter</a>
         {% endif %}
@@ -14,7 +14,7 @@
     {#    Mastodon    #}
     {% if g.t_user %}
         {% if g.m_user %}
-            <p>[&#x2714;] Mastodon: <strong>{{ g.m_user.username }}@{{ g.m_user.host }}</strong></p>
+            <p>Mastodon: <strong>{{ g.m_user.username }}@{{ g.m_user.host }}</strong></p>
         {% else %}
             <form action="{{ url_for('mastodon_login') }}" method="POST">
                 [
@@ -24,13 +24,21 @@
             </form>
         {% endif %}
     {% endif %}
+    {% if g.bridge.instagram_access_code %}
+        <p>Instagram: <strong>{{ g.bridge.instagram_handle }}</strong></p>
+
+    {% else %}
+        <form method="POST" action="{{ url_for('instagram_activate') }}">
+            <input type="submit" value="Add Instagram">
+        </form>
+    {% endif %}
+
 
 
     {#    Options    #}
 
     {% if g.t_user and g.m_user %}
 
-        Settings
         <form method="POST" action="{{ url_for('options') }}">
             <ul>
                 <li>{{ form.enabled(checked=enabled) }}{{ form.enabled.label }}</li>
@@ -45,14 +53,14 @@
                 <li>{{ form.post_rts_to_mastodon }}{{ form.post_rts_to_mastodon.label }}</li>
                 <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
                 <li>{{ form.tweets_behind_cw }}{{ form.tweets_behind_cw.label }}</li>
-                <ul><li>{{ form.tweet_cw_text.label }}{{ form.tweet_cw_text }}</li></ul>
-                <hr>
-                <li>{{ form.instagram_enabled }}{{ form.instagram_enabled.label }}</li>
                 <ul>
+                    <li>{{ form.tweet_cw_text.label }}{{ form.tweet_cw_text }}</li>
+                </ul>
+                {% if g.bridge.instagram_access_code %}
+                    <hr>
                     <li>{{ form.instagram_post_to_twitter }}{{ form.instagram_post_to_twitter.label }}</li>
                     <li>{{ form.instagram_post_to_mastodon }}{{ form.instagram_post_to_mastodon.label }}</li>
-
-                </ul>
+                {% endif %}
 
             </ul>
             {{ form.csrf_token }}
@@ -65,6 +73,7 @@
             </form>
 
         {% endif %}
+
 
     {% endif %}
 

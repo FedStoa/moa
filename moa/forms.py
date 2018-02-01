@@ -24,8 +24,8 @@ class SettingsForm(FlaskForm):
                                 validators=[Length(min=1, message="Content Warning text can't be empty")])
 
     instagram_enabled = BooleanField('Import posts from Instagram?')
-    instagram_post_to_twitter = BooleanField('Post to Twitter?')
-    instagram_post_to_mastodon = BooleanField('Post to Mastodon??')
+    instagram_post_to_twitter = BooleanField('Post Instagrams to Twitter?')
+    instagram_post_to_mastodon = BooleanField('Post Instagrams to Mastodon?')
 
 
 class MastodonIDForm(FlaskForm):

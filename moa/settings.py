@@ -15,8 +15,8 @@ class Settings:
     tweets_behind_cw = False
     tweet_cw_text = "From birdsite"
 
-    instagram_post_to_twitter = True
-    instagram_post_to_mastodon = True
+    instagram_post_to_twitter = False
+    instagram_post_to_mastodon = False
 
     def __init__(self):
         self.post_to_twitter = True  # This means post public toots
@@ -31,8 +31,8 @@ class Settings:
         self.tweets_behind_cw = False
         self.tweet_cw_text = "From birdsite"
 
-        self.instagram_post_to_twitter = True
-        self.instagram_post_to_mastodon = True
+        self.instagram_post_to_twitter = False
+        self.instagram_post_to_mastodon = False
 
     @property
     def post_to_twitter_enabled(self):

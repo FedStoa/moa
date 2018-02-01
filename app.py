@@ -19,6 +19,9 @@ from moa.forms import MastodonIDForm, SettingsForm
 from moa.models import Bridge, MastodonHost, WorkerStat, metadata
 from moa.settings import Settings
 
+from instagram.client import InstagramAPI
+from instagram.helper import datetime_to_timestamp
+
 app = Flask(__name__)
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
 app.config.from_object(config)
@@ -50,6 +53,7 @@ twitter_oauth = oauth.remote_app(
 def before_request():
     g.t_user = None
     g.m_user = None
+    g.bridge = None
 
     if 'twitter' in session:
         g.t_user = session['twitter']
@@ -83,6 +87,7 @@ def index():
             found_settings = True
             settings = bridge.settings
             enabled = bridge.enabled
+            g.bridge = bridge
             app.logger.debug(f"Existing settings found: {enabled} {settings.__dict__}")
 
     form = SettingsForm(obj=settings)
@@ -340,7 +345,7 @@ def mastodon_oauthorized():
             redirect_uri=url_for("mastodon_oauthorized", _external=True)
         )
 
-        app.logger.info(f"Access code {access_code}")
+        # app.logger.info(f"Access code {access_code}")
 
         api.access_code = access_code
 
@@ -349,6 +354,64 @@ def mastodon_oauthorized():
             'access_code': access_code,
             'username': api.account_verify_credentials()["username"]
         }
+
+    return redirect(url_for('index'))
+
+
+@app.route('/instagram_activate', methods=["POST"])
+def instagram_activate():
+
+    client_id = app.config['INSTAGRAM_CLIENT_ID']
+    client_secret = app.config['INSTAGRAM_SECRET']
+    redirect_uri = url_for('instagram_oauthorized', _external=True)
+    app.logger.info(redirect_uri)
+
+    scope = ["basic"]
+    api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+    redirect_uri = api.get_authorize_login_url(scope = scope)
+
+    return redirect(redirect_uri)
+
+
+@app.route('/instagram_oauthorized')
+def instagram_oauthorized():
+
+    code = request.args.get('code', None)
+
+    if 'twitter' in session and 'mastodon' in session and code:
+
+        client_id = app.config['INSTAGRAM_CLIENT_ID']
+        client_secret = app.config['INSTAGRAM_SECRET']
+        redirect_uri = url_for('instagram_oauthorized', _external=True)
+        api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+        access_token = api.exchange_code_for_access_token(code)
+
+        # look up settings
+        bridge = db.session.query(Bridge).filter_by(
+            mastodon_user=session['mastodon']['username'],
+            twitter_handle=session['twitter']['screen_name'],
+        ).first()
+
+        print(access_token)
+
+        bridge.instagram_access_code = access_token[0]
+
+        print(bridge.instagram_access_code)
+
+        data = access_token[1]
+        bridge.instagram_account_id = data['id']
+        bridge.instagram_handle = data['username']
+
+        user_api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=client_secret)
+
+        latest_media, _ = user_api.user_recent_media(user_id=bridge.instagram_account_id, count=1)
+
+        bridge.instagram_last_id = datetime_to_timestamp(latest_media[0].created_time)
+
+        db.session.commit()
+
+    else:
+        flash("Instagram authorization failed")
 
     return redirect(url_for('index'))
 
