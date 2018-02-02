@@ -8,12 +8,14 @@ import time
 import requests
 from twitter import TwitterError
 
+from moa.message import Message
 from moa.models import Mapping
 from moa.poster import Poster
 
 logger = logging.getLogger('worker')
 TWITTER_RETRIES = 3
 TWITTER_RETRY_DELAY = 5
+TWEET_LENGTH = 272  # be conservative so we don't split too near the end
 
 
 class TwitterPoster(Poster):
@@ -25,15 +27,15 @@ class TwitterPoster(Poster):
         self.api = api
         self.bridge = bridge
 
-    def post_toot(self, post) -> bool:
+    def post(self, post: Message) -> bool:
 
-        logger.info(f"Working on toot {post.id}")
-        logger.debug(pp.pformat(post.data))
+        logger.info(f"Working on {post.type} {post.id}")
+        logger.debug(pp.pformat(post.dump_data()))
 
         if post.should_skip:
             return False
 
-        post.prepare_for_post()
+        post.prepare_for_post(length=TWEET_LENGTH)
 
         if self.send:
 
@@ -66,18 +68,22 @@ class TwitterPoster(Poster):
                     self.bridge.twitter_last_id = reply_to
                     logger.info(f"Tweet ID: {reply_to}")
 
-                    m = Mapping()
-                    m.mastodon_id = post.id
-                    m.twitter_id = reply_to
-                    self.session.add(m)
+                    if post.type == "Toot":
+                        m = Mapping()
+                        m.mastodon_id = post.id
+                        m.twitter_id = reply_to
+                        self.session.add(m)
                 else:
                     return False
 
-                self.bridge.mastodon_last_id = post.id
+                if post.type == "Toot":
+                    self.bridge.mastodon_last_id = post.id
 
                 self.session.commit()
 
-        return True
+            return True
+        else:
+            return False
 
     def send_tweet(self, status_text, reply_to, media_ids):
         retry_counter = 0
@@ -125,10 +131,11 @@ class TwitterPoster(Poster):
 
         return reply_to
 
-    def transfer_attachments(self, post):
+    def transfer_attachments(self, post: Message):
+        # logger.debug(post.media_attachments)
 
         for attachment in post.media_attachments:
-            attachment_url = attachment["url"]
+            attachment_url = attachment.get("url")
 
             logger.info(f'Downloading {attachment_url}')
             attachment_file = requests.get(attachment_url, stream=True)
@@ -147,7 +154,7 @@ class TwitterPoster(Poster):
             os.rename(temp_file.name, upload_file_name)
 
             description = attachment.get('description', "")
-            self.attachments.append((upload_file_name, description))
+            # self.attachments.append((upload_file_name, description))
 
             temp_file_read = open(upload_file_name, 'rb')
             logger.info(f'Uploading {description} {upload_file_name}')
@@ -158,7 +165,7 @@ class TwitterPoster(Poster):
                 if description:
                     self.api.PostMediaMetadata(media_id, alt_text=description)
 
-                self.media_ids.append(media_id)
+                post.media_ids.append(media_id)
 
             except TwitterError as e:
                 logger.error(f"Twitter upload: {e.message}")

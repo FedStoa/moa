@@ -76,6 +76,7 @@ class WorkerStat(Base):
     def __init__(self, worker=1):
         self.tweets = 0
         self.toots = 0
+        self.instas = 0
         self.worker = worker
 
     @property

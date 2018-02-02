@@ -26,14 +26,14 @@ logger = logging.getLogger('worker')
 
 class Toot(Message):
 
-    def __init__(self, toot_data, settings):
+    def __init__(self, settings, toot_data):
 
-        super().__init__(settings)
+        super().__init__(settings, toot_data)
 
         self.content = None
         self.url_length = 24
-        self.tweet_length = 272  # be conservative so we dont split too near the end
-        self.data = toot_data
+        self.tweet_length = 272  # be conservative so we don't split too near the end
+        self.type = 'Toot'
 
     @property
     def id(self):
@@ -146,7 +146,6 @@ class Toot(Message):
 
         mentions = []
         for m in self.data['mentions']:
-
             o = urlparse(m['url'])
 
             mentions.append((m['username'], f"@{m['username']}@{o.netloc}"))
@@ -274,4 +273,3 @@ class Toot(Message):
 
                 logger.debug(f"Truncated Text length is {len(truncated_text)}")
                 self.message_parts.append(truncated_text)
-

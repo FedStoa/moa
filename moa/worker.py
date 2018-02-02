@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
 from twitter import TwitterError
 
+from moa.insta import Insta
 from moa.models import Bridge, Mapping, WorkerStat
 from moa.twitter_poster import TwitterPoster
 from moa.toot import Toot
@@ -167,7 +168,7 @@ for bridge in bridges:
                 new_instas.append(media)
 
         if c.SEND and len(new_instas) != 0:
-            bridge.instagram_last_id = datetime_to_timestamp(new_toots[0].created_time)
+            bridge.instagram_last_id = datetime_to_timestamp(new_instas[0].created_time)
             new_instas.reverse()
 
 
@@ -176,19 +177,30 @@ for bridge in bridges:
     # Post to Twitter
     #
 
-    if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
+    if bridge.settings.post_to_twitter_enabled and len(new_toots) > 0:
         new_toots.reverse()
 
         poster = TwitterPoster(c.SEND, session, twitter_api, bridge)
 
         for toot in new_toots:
 
-            t = Toot(toot, bridge.settings)
+            t = Toot(bridge.settings, toot)
 
-            result = poster.post_toot(t)
+            result = poster.post(t)
 
             if result:
                 worker_stat.add_toot()
+
+    if bridge.settings.instagram_post_to_twitter and len(new_instas) > 0:
+
+        poster = TwitterPoster(c.SEND, session, twitter_api, bridge)
+
+        for data in new_instas:
+
+            insta = Insta(bridge.settings, data)
+            result = poster.post(insta)
+            if result:
+                worker_stat.add_insta()
 
 
     #
@@ -244,9 +256,7 @@ for bridge in bridges:
 
     if len(new_instas) > 0 and bridge.settings.instagram_post_to_mastodon:
 
-        for insta in new_instas:
-
-            l.info(f"Working on insta {insta.id}")
+        pass
 
     if c.SEND:
         session.commit()
@@ -258,7 +268,7 @@ end_time = time.time()
 worker_stat.time = end_time - start_time
 
 l.info(
-    f"----------- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg -------------")
+    f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg")
 
 session.add(worker_stat)
 session.commit()
