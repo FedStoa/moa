@@ -10,7 +10,6 @@ Base = declarative_base(metadata=metadata)
 
 
 class MastodonHost(Base):
-
     __tablename__ = 'mastodon_host'
 
     id = Column(Integer, primary_key=True)
@@ -22,7 +21,6 @@ class MastodonHost(Base):
 
 
 class Bridge(Base):
-
     __tablename__ = 'bridge'
 
     id = Column(Integer, primary_key=True)
@@ -54,7 +52,6 @@ class Bridge(Base):
 
 
 class Mapping(Base):
-
     __tablename__ = 'mapping'
     id = Column(Integer, primary_key=True)
     mastodon_id = Column(BigInteger, default=0)
@@ -69,6 +66,7 @@ class WorkerStat(Base):
 
     tweets = Column(Integer, default=0)
     toots = Column(Integer, default=0)
+    instas = Column(Integer, default=0)
 
     time = Column(Float, default=0.0)
     avg = Column(Float, default=0.0)
@@ -76,14 +74,12 @@ class WorkerStat(Base):
     worker = Column(Integer, nullable=False)
 
     def __init__(self, worker=1):
-
         self.tweets = 0
         self.toots = 0
         self.worker = worker
 
     @property
     def formatted_time(self):
-
         m, s = divmod(self.time, 60)
         return f"{m:02.0f}:{s:02.0f}"
 
@@ -91,11 +87,14 @@ class WorkerStat(Base):
     def items(self):
         return self.tweets + self.toots
 
-    def add_toot(self, toot):
+    def add_toot(self):
         self.toots += 1
 
-    def add_tweet(self, tweet):
+    def add_tweet(self):
         self.tweets += 1
+
+    def add_insta(self):
+        self.instas += 1
 
 
 @event.listens_for(WorkerStat.time, 'set')

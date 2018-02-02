@@ -7,6 +7,8 @@ import time
 
 import requests
 import twitter
+from instagram import InstagramAPI
+from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from requests import ConnectionError
@@ -15,8 +17,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
 from twitter import TwitterError
 
-from moa.helpers import send_tweet
 from moa.models import Bridge, Mapping, WorkerStat
+from moa.twitter_poster import TwitterPoster
 from moa.toot import Toot
 from moa.tweet import Tweet
 
@@ -43,7 +45,6 @@ l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
 engine.connect()
 
-
 try:
     engine.execute('SELECT 1 from bridge')
 except exc.SQLAlchemyError as e:
@@ -66,20 +67,20 @@ for bridge in bridges:
     mastodonhost = bridge.mastodon_host
 
     mast_api = Mastodon(
-        client_id=mastodonhost.client_id,
-        client_secret=mastodonhost.client_secret,
-        api_base_url=f"https://{mastodonhost.hostname}",
-        access_token=bridge.mastodon_access_code,
-        debug_requests=False,
-        request_timeout=15
+            client_id=mastodonhost.client_id,
+            client_secret=mastodonhost.client_secret,
+            api_base_url=f"https://{mastodonhost.hostname}",
+            access_token=bridge.mastodon_access_code,
+            debug_requests=False,
+            request_timeout=15
     )
 
     twitter_api = twitter.Api(
-        consumer_key=c.TWITTER_CONSUMER_KEY,
-        consumer_secret=c.TWITTER_CONSUMER_SECRET,
-        access_token_key=bridge.twitter_oauth_token,
-        access_token_secret=bridge.twitter_oauth_secret,
-        tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+            consumer_key=c.TWITTER_CONSUMER_KEY,
+            consumer_secret=c.TWITTER_CONSUMER_SECRET,
+            access_token_key=bridge.twitter_oauth_token,
+            access_token_secret=bridge.twitter_oauth_secret,
+            tweet_mode='extended'  # Allow tweets longer than 140 raw characters
     )
 
     #
@@ -90,8 +91,8 @@ for bridge in bridges:
 
     try:
         new_toots = mast_api.account_statuses(
-            bridge.mastodon_account_id,
-            since_id=bridge.mastodon_last_id
+                bridge.mastodon_account_id,
+                since_id=bridge.mastodon_last_id
         )
     except MastodonAPIError as e:
         l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
@@ -122,9 +123,9 @@ for bridge in bridges:
     new_tweets = []
     try:
         new_tweets = twitter_api.GetUserTimeline(
-            since_id=bridge.twitter_last_id,
-            include_rts=True,
-            exclude_replies=False)
+                since_id=bridge.twitter_last_id,
+                include_rts=True,
+                exclude_replies=False)
 
     except TwitterError as e:
         l.error(f"Working on twitter user {bridge.twitter_handle}")
@@ -148,91 +149,47 @@ for bridge in bridges:
         bridge.twitter_last_id = new_tweets[0].id
 
     #
+    # Instagram
+    #
+
+    new_instas = []
+
+    if bridge.instagram_access_code:
+        api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=c.INSTAGRAM_SECRET)
+
+        recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
+
+        for media in recent_media:
+
+            ts = datetime_to_timestamp(media.created_time)
+
+            if ts > bridge.instagram_last_id:
+                new_instas.append(media)
+
+        if c.SEND and len(new_instas) != 0:
+            bridge.instagram_last_id = datetime_to_timestamp(new_toots[0].created_time)
+            new_instas.reverse()
+
+
+
+    #
     # Post to Twitter
     #
 
     if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
         new_toots.reverse()
-        url_length = 0
 
-        try:
-            url_length = max(twitter_api.GetShortUrlLength(False), twitter_api.GetShortUrlLength(True)) + 1
-
-        except TwitterError as e:
-            if e.message[0]['code'] == 89:
-                l.warning(f"Disabling bridge for twitter user @{bridge.twitter_handle}")
-                bridge.enabled = False
-
-                continue
-
-        l.debug(f"URL length: {url_length}")
+        poster = TwitterPoster(c.SEND, session, twitter_api, bridge)
 
         for toot in new_toots:
 
-            t = Toot(toot, bridge.settings, twitter_api)
+            t = Toot(toot, bridge.settings)
 
-            worker_stat.add_toot(t)
+            result = poster.post_toot(t)
 
-            t.url_length = url_length
+            if result:
+                worker_stat.add_toot()
 
-            l.info(f"Working on toot {t.id}")
-
-            l.debug(pp.pformat(toot))
-
-            if t.should_skip:
-                continue
-
-            t.split_toot()
-
-            if c.SEND:
-                if not t.transfer_attachments():
-                    continue
-
-            reply_to = None
-
-            if t.is_self_reply:
-
-                # In the case where a toot has been broken into multiple tweets
-                # we want the last one posted
-                mapping = session.query(Mapping).filter_by(mastodon_id=t.in_reply_to_id).order_by(
-                    Mapping.created.desc()
-                ).first()
-
-                if mapping:
-                    reply_to = mapping.twitter_id
-                    l.info(f"Replying to twitter status {reply_to} / masto status {t.in_reply_to_id}")
-
-            # Do normal posting for all but the last tweet where we need to upload media
-            for status in t.tweet_parts[:-1]:
-                if c.SEND:
-                    reply_to = send_tweet(status, reply_to, None, twitter_api)
-
-                    if reply_to:
-                        m = Mapping()
-                        m.mastodon_id = t.id
-                        m.twitter_id = reply_to
-                        session.add(m)
-
-                        bridge.mastodon_last_id = t.id
-
-                        session.commit()
-
-            status = t.tweet_parts[-1]
-
-            if c.SEND:
-                twitter_last_id = send_tweet(status, reply_to, t.media_ids, twitter_api)
-                l.info(f"Tweet ID: {twitter_last_id}")
-
-                if twitter_last_id:
-                    m = Mapping()
-                    m.mastodon_id = t.id
-                    m.twitter_id = reply_to
-                    session.add(m)
-
-                    bridge.twitter_last_id = twitter_last_id
-
-                bridge.mastodon_last_id = t.id
-                session.commit()
 
     #
     # Post to Mastodon
@@ -248,7 +205,7 @@ for bridge in bridges:
 
             tweet = Tweet(status, bridge.settings, twitter_api, mast_api)
 
-            worker_stat.add_tweet(tweet)
+            worker_stat.add_tweet()
 
             if tweet.should_skip:
                 continue
@@ -285,6 +242,12 @@ for bridge in bridges:
             else:
                 l.info(tweet.clean_content)
 
+    if len(new_instas) > 0 and bridge.settings.instagram_post_to_mastodon:
+
+        for insta in new_instas:
+
+            l.info(f"Working on insta {insta.id}")
+
     if c.SEND:
         session.commit()
 
@@ -294,7 +257,8 @@ if c.HEALTHCHECKS:
 end_time = time.time()
 worker_stat.time = end_time - start_time
 
-l.info(f"----------- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg -------------")
+l.info(
+    f"----------- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg -------------")
 
 session.add(worker_stat)
 session.commit()

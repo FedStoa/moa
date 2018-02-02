@@ -1,13 +1,12 @@
 import html
-import mimetypes
 import re
-import tempfile
 from urllib.parse import urlparse
 import logging
 
 import os
 import requests
-from twitter import twitter_utils, TwitterError
+
+from moa.message import Message
 
 MY_TLDS = [
     "shop"
@@ -25,18 +24,16 @@ URL_REGEXP = re.compile((
 logger = logging.getLogger('worker')
 
 
-class Toot:
+class Toot(Message):
 
-    def __init__(self, toot_data, settings, twitter_api=None):
+    def __init__(self, toot_data, settings):
+
+        super().__init__(settings)
+
         self.content = None
-        self.tweet_parts = []
-        self.url_length = 23
+        self.url_length = 24
         self.tweet_length = 272  # be conservative so we dont split too near the end
-        self.attachments = []
         self.data = toot_data
-        self.settings = settings
-        self.twitter_api = twitter_api
-        self.media_ids = []
 
     @property
     def id(self):
@@ -169,7 +166,7 @@ class Toot:
 
     @property
     def joined_tweet_parts(self):
-        return "".join(self.tweet_parts)
+        return "".join(self.message_parts)
 
     def expected_status_length(self, string):
 
@@ -226,14 +223,17 @@ class Toot:
 
         return self.content
 
+    def prepare_for_post(self):
+        self.split_toot()
+
     def split_toot(self):
 
-        self.tweet_parts = []
+        self.message_parts = []
 
         expected_length = self.expected_status_length(self.clean_content)
 
         if expected_length < self.tweet_length:
-            self.tweet_parts.append(self.clean_content)
+            self.message_parts.append(self.clean_content)
 
         else:
 
@@ -254,7 +254,7 @@ class Toot:
                         logger.debug(f'Part is full ({self.expected_status_length(current_part)}):{current_part}')
 
                         current_part = f"{current_part}…".lstrip()
-                        self.tweet_parts.append(current_part)
+                        self.message_parts.append(current_part)
                         current_part = next_word
 
                     else:
@@ -264,7 +264,7 @@ class Toot:
                 length = len(current_part.strip().encode('utf-8'))
                 if length != 0:
                     logger.debug(f'{length} {current_part}')
-                    self.tweet_parts.append(current_part.strip())
+                    self.message_parts.append(current_part.strip())
 
             else:
                 logger.info('Truncating toot')
@@ -273,47 +273,5 @@ class Toot:
                 truncated_text = self.clean_content[:tweet_length] + suffix
 
                 logger.debug(f"Truncated Text length is {len(truncated_text)}")
-                self.tweet_parts.append(truncated_text)
+                self.message_parts.append(truncated_text)
 
-    def transfer_attachments(self):
-
-        for attachment in self.media_attachments:
-            attachment_url = attachment["url"]
-
-            logger.info(f'Downloading {attachment_url}')
-            attachment_file = requests.get(attachment_url, stream=True)
-            attachment_file.raw.decode_content = True
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_file.write(attachment_file.raw.read())
-            temp_file.close()
-
-            file_extension = mimetypes.guess_extension(attachment_file.headers['Content-type'])
-
-            # ffs
-            if file_extension == '.jpe':
-                file_extension = '.jpg'
-
-            upload_file_name = temp_file.name + file_extension
-            os.rename(temp_file.name, upload_file_name)
-
-            description = attachment.get('description', "")
-            self.attachments.append((upload_file_name, description))
-
-            temp_file_read = open(upload_file_name, 'rb')
-            logger.info(f'Uploading {description} {upload_file_name}')
-
-            try:
-                media_id = self.twitter_api.UploadMediaChunked(media=temp_file_read)
-
-                if description:
-                    self.twitter_api.PostMediaMetadata(media_id, alt_text=description)
-
-                self.media_ids.append(media_id)
-
-            except TwitterError as e:
-                logger.error(f"Twitter upload: {e.message}")
-                return False
-
-            temp_file_read.close()
-            os.unlink(upload_file_name)
-        return True

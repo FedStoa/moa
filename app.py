@@ -406,7 +406,10 @@ def instagram_oauthorized():
 
         latest_media, _ = user_api.user_recent_media(user_id=bridge.instagram_account_id, count=1)
 
-        bridge.instagram_last_id = datetime_to_timestamp(latest_media[0].created_time)
+        if len(latest_media) > 0:
+            bridge.instagram_last_id = datetime_to_timestamp(latest_media[0].created_time)
+        else:
+            bridge.instagram_last_id = 0
 
         db.session.commit()
 
