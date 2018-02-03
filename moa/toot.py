@@ -2,10 +2,6 @@ import html
 import re
 from urllib.parse import urlparse
 import logging
-
-import os
-import requests
-
 from moa.message import Message
 
 MY_TLDS = [
@@ -32,8 +28,10 @@ class Toot(Message):
 
         self.content = None
         self.url_length = 24
-        self.tweet_length = 272  # be conservative so we don't split too near the end
         self.type = 'Toot'
+
+    def dump_data(self):
+        return self.data
 
     @property
     def id(self):
@@ -222,16 +220,16 @@ class Toot(Message):
 
         return self.content
 
-    def prepare_for_post(self):
-        self.split_toot()
+    def prepare_for_post(self, length=1):
+        self.split_toot(length)
 
-    def split_toot(self):
+    def split_toot(self, max_length):
 
         self.message_parts = []
 
         expected_length = self.expected_status_length(self.clean_content)
 
-        if expected_length < self.tweet_length:
+        if expected_length < max_length:
             self.message_parts.append(self.clean_content)
 
         else:
@@ -240,7 +238,7 @@ class Toot(Message):
             words = self.clean_content.split(" ")
 
             if self.settings.split_twitter_messages:
-                logger.info(f'Toot bigger than {self.tweet_length} characters, need to split...')
+                logger.info(f'Toot bigger than {max_length} characters, need to split...')
 
                 for next_word in words:
 
@@ -249,7 +247,7 @@ class Toot(Message):
 
                     # logger.debug(f"length of possible part is {length}")
 
-                    if length > self.tweet_length - 3:
+                    if length > max_length - 3:
                         logger.debug(f'Part is full ({self.expected_status_length(current_part)}):{current_part}')
 
                         current_part = f"{current_part}…".lstrip()
@@ -268,7 +266,7 @@ class Toot(Message):
             else:
                 logger.info('Truncating toot')
                 suffix = f"…\n{self.url}"
-                tweet_length = self.tweet_length - len(suffix)
+                tweet_length = max_length - len(suffix)
                 truncated_text = self.clean_content[:tweet_length] + suffix
 
                 logger.debug(f"Truncated Text length is {len(truncated_text)}")

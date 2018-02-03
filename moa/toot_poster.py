@@ -1,19 +1,24 @@
+import logging
+import os
+import pprint as pp
+import tempfile
+import time
 from os.path import splitext
+from typing import Optional
 from urllib.parse import urlparse
 
-import os
+import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 
 from message import Message
+from models import Mapping
 from poster import Poster
-import logging
-import requests
-import tempfile
 
 logger = logging.getLogger('worker')
 
 MASTODON_RETRIES = 3
 MASTODON_RETRY_DELAY = 5
+MASTODON_TOOT_LENGTH = 495
 
 
 class TootPoster(Poster):
@@ -25,27 +30,68 @@ class TootPoster(Poster):
         self.bridge = bridge
 
     def post(self, post: Message) -> bool:
-        pass
+        logger.info(f"Working on {post.type} {post.id}")
+        logger.debug(pp.pformat(post.dump_data()))
 
-    def send_toot(self, status_text, reply_to, media_ids):
+        if post.should_skip:
+            return False
+
+        post.prepare_for_post(length=MASTODON_TOOT_LENGTH)
+
+        if self.send:
+
+            self.transfer_attachments(post)
+
+            reply_to = None
+            if post.is_self_reply:
+                mapping = self.session.query(Mapping).filter_by(twitter_id=post.in_reply_to_id).first()
+
+                if mapping:
+                    reply_to = mapping.mastodon_id
+                    logger.info(f"Replying to mastodon status {reply_to}")
+
+            if self.send:
+                mastodon_last_id = self.send_toot(post.message_parts[0],
+                                                  reply_to,
+                                                  media_ids=self.media_ids,
+                                                  sensitive=post.sensitive)
+                logger.info(f"Toot ID: {mastodon_last_id}")
+
+                if mastodon_last_id:
+                    m = Mapping()
+                    m.mastodon_id = mastodon_last_id
+                    m.twitter_id = post.id
+                    self.session.add(m)
+
+                    self.bridge.mastodon_last_id = mastodon_last_id
+
+                self.bridge.twitter_last_id = post.id
+                self.session.commit()
+
+            else:
+                logger.info(post.clean_content)
+
+        return True
+
+    def send_toot(self, status_text: str, reply_to: int, media_ids=None, sensitive=False) -> Optional[int]:
         retry_counter = 0
         post_success = False
-        spoiler_text = self.settings.tweet_cw_text if self.settings.tweets_behind_cw else ""
+        spoiler_text = self.bridge.settings.tweet_cw_text if self.bridge.settings.tweets_behind_cw else ""
 
         while not post_success and retry_counter < MASTODON_RETRIES:
-            logger.info(f'Tooting "{self.clean_content}"')
+            logger.info(f'Tooting "{status_text}"')
 
-            if self.media_ids:
+            if media_ids:
                 logger.info(f'With media')
 
             try:
-                post = self.masto_api.status_post(
-                    self.clean_content,
-                    media_ids=self.media_ids,
-                    visibility=self.settings.toot_visibility,
-                    sensitive=self.sensitive,
-                    in_reply_to_id=reply_to,
-                    spoiler_text=spoiler_text)
+                post = self.api.status_post(
+                        status_text,
+                        media_ids=media_ids,
+                        visibility=self.bridge.settings.toot_visibility,
+                        sensitive=sensitive,
+                        in_reply_to_id=reply_to,
+                        spoiler_text=spoiler_text)
 
                 reply_to = post["id"]
                 post_success = True
@@ -57,7 +103,7 @@ class TootPoster(Poster):
                     retry_counter += 1
                     time.sleep(MASTODON_RETRY_DELAY)
 
-            except MastodonNetworkError as e:
+            except MastodonNetworkError:
                 # assume this is transient
                 pass
 
@@ -67,19 +113,23 @@ class TootPoster(Poster):
 
         return reply_to
 
+    def transfer_attachments(self, post: Message) -> bool:
 
-    def transfer_attachments(self, post: Message):
+        logger.debug(post.media_attachments)
 
         for attachment in post.media_attachments:
 
-            logger.info(f'Downloading {attachment.description}  {attachment.url}')
-            attachment_file = requests.get(attachment.url, stream=True)
+            attachment_url = attachment.get("url")
+            attachment_desc = attachment.get("description")
+
+            logger.info(f"Downloading {attachment_desc}  {attachment_url}")
+            attachment_file = requests.get(attachment_url, stream=True)
             attachment_file.raw.decode_content = True
             temp_file = tempfile.NamedTemporaryFile(delete=False)
             temp_file.write(attachment_file.raw.read())
             temp_file.close()
 
-            path = urlparse(attachment.url).path
+            path = urlparse(attachment_url).path
             file_extension = splitext(path)[1]
 
             # file_extension = mimetypes.guess_extension(attachment_file.headers['Content-type'])
@@ -93,10 +143,10 @@ class TootPoster(Poster):
 
             # self.attachments.append((upload_file_name, attachment.ext_alt_text))
 
-            logger.debug(f'Uploading {attachment.description}: {upload_file_name}')
+            logger.debug(f'Uploading {attachment_desc}: {upload_file_name}')
 
             try:
-                post.media_ids.append(self.api.media_post(upload_file_name,description=attachment.description))
+                self.media_ids.append(self.api.media_post(upload_file_name, description=attachment_desc))
                 os.unlink(upload_file_name)
 
             except MastodonAPIError as e:
@@ -108,4 +158,3 @@ class TootPoster(Poster):
                 return False
 
         return True
-

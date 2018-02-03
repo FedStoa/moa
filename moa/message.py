@@ -1,41 +1,53 @@
+from typing import Any
+
+from settings import Settings
+
+
 class Message:
     class Meta:
         abstract = True
 
-    def __init__(self, settings, data):
+    def __init__(self, settings: Settings, data: Any) -> None:
         self.message_parts = []
         self.settings = settings
-        self.media_ids = []
         self.data = data
         self.type = 'Message'
 
     def prepare_for_post(self, length=1):
-        pass
+        raise Exception("Needs Implementation")
+
+    @property
+    def id(self) -> int:
+        raise Exception("Needs Implementation")
 
     @property
     def is_self_reply(self) -> bool:
-        return False
+        raise Exception("Needs Implementation")
 
     @property
     def should_skip(self) -> bool:
-        return False
+        raise Exception("Needs Implementation")
 
     @property
     def in_reply_to_id(self):
-        return None
+        raise Exception("Needs Implementation")
 
     @property
     def media_attachments(self):
         """ Array of { 'url': 'blah', 'description': 'blah'} """
-        return []
+        raise Exception("Needs Implementation")
 
     def dump_data(self):
-        return self.data
+        raise Exception("Needs Implementation")
 
     @property
     def url(self):
-        return None
+        raise Exception("Needs Implementation")
 
     @property
     def clean_content(self):
-        return ""
+        raise Exception("Needs Implementation")
+
+    @property
+    def sensitive(self):
+        raise Exception("Needs Implementation")

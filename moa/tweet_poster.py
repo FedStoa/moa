@@ -4,6 +4,7 @@ import os
 import pprint as pp
 import tempfile
 import time
+from typing import Optional
 
 import requests
 from twitter import TwitterError
@@ -18,7 +19,7 @@ TWITTER_RETRY_DELAY = 5
 TWEET_LENGTH = 272  # be conservative so we don't split too near the end
 
 
-class TwitterPoster(Poster):
+class TweetPoster(Poster):
 
     def __init__(self, send, session, api, bridge):
 
@@ -48,7 +49,7 @@ class TwitterPoster(Poster):
                 # In the case where a toot has been broken into multiple tweets
                 # we want the last one posted
                 mapping = self.session.query(Mapping).filter_by(mastodon_id=post.in_reply_to_id).order_by(
-                    Mapping.created.desc()).first()
+                        Mapping.created.desc()).first()
 
                 if mapping:
                     reply_to = mapping.twitter_id
@@ -59,10 +60,10 @@ class TwitterPoster(Poster):
 
                 # Do normal posting for all but the last tweet where we need to upload media
                 if index == last_id:
-                    reply_to = self.send_tweet(status, reply_to, post.media_ids)
+                    reply_to = self.send_tweet(status, reply_to, self.media_ids)
 
                 else:
-                    reply_to = self.send_tweet(status, reply_to, None)
+                    reply_to = self.send_tweet(status, reply_to)
 
                 if reply_to:
                     self.bridge.twitter_last_id = reply_to
@@ -85,7 +86,7 @@ class TwitterPoster(Poster):
         else:
             return False
 
-    def send_tweet(self, status_text, reply_to, media_ids):
+    def send_tweet(self, status_text, reply_to, media_ids=None) -> Optional[int]:
         retry_counter = 0
         post_success = False
 
@@ -93,7 +94,7 @@ class TwitterPoster(Poster):
 
             logger.info(f'Tweeting "{status_text}"')
 
-            if media_ids:
+            if self.media_ids:
                 logger.info(f'With media')
 
             try:
@@ -165,7 +166,7 @@ class TwitterPoster(Poster):
                 if description:
                     self.api.PostMediaMetadata(media_id, alt_text=description)
 
-                post.media_ids.append(media_id)
+                self.media_ids.append(media_id)
 
             except TwitterError as e:
                 logger.error(f"Twitter upload: {e.message}")

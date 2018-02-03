@@ -1,15 +1,8 @@
 import html
 import logging
-import mimetypes
-import os
 import re
-import tempfile
-import time
-from os.path import splitext
-from urllib.parse import urlparse
 
 import requests
-from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 
 from message import Message
 
@@ -17,12 +10,21 @@ logger = logging.getLogger('worker')
 
 
 class Tweet(Message):
-    def __init__(self, settings, data):
+    def __init__(self, settings, data, api):
 
         super().__init__(settings, data)
 
         self.__fetched_attachments = None
         self.__content = None
+        self.api = api
+        self.type = 'Tweet'
+
+    @property
+    def id(self) -> int:
+        return self.data.id
+
+    def dump_data(self):
+        return self.data.__dict__
 
     @property
     def media(self):
@@ -104,6 +106,10 @@ class Tweet(Message):
 
             if not self.is_self_reply or self.data.full_text[0] == '@':
                 return True
+
+    @property
+    def in_reply_to_id(self):
+        return self.data.in_reply_to_status_id
 
     @property
     def is_self_reply(self):
@@ -203,6 +209,10 @@ class Tweet(Message):
 
             self.__content = content
         return self.__content
+
+    def prepare_for_post(self, length=1):
+
+        self.message_parts.append(self.clean_content)
 
     @property
     def media_attachments(self):

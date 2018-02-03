@@ -1,7 +1,6 @@
 import importlib
 import logging
 import os
-import pprint as pp
 import sys
 import time
 
@@ -18,10 +17,11 @@ from sqlalchemy.sql.expression import func
 from twitter import TwitterError
 
 from moa.insta import Insta
-from moa.models import Bridge, Mapping, WorkerStat
-from moa.tweet_poster import TwitterPoster
+from moa.models import Bridge, WorkerStat
 from moa.toot import Toot
 from moa.tweet import Tweet
+from moa.tweet_poster import TweetPoster
+from moa.toot_poster import TootPoster
 
 start_time = time.time()
 worker_stat = WorkerStat()
@@ -116,6 +116,7 @@ for bridge in bridges:
 
     if c.SEND and len(new_toots) != 0:
         bridge.mastodon_last_id = int(new_toots[0]['id'])
+    new_toots.reverse()
 
     #
     # Fetch from Twitter
@@ -148,6 +149,7 @@ for bridge in bridges:
 
     if c.SEND and len(new_tweets) != 0:
         bridge.twitter_last_id = new_tweets[0].id
+    new_tweets.reverse()
 
     #
     # Instagram
@@ -177,10 +179,9 @@ for bridge in bridges:
     # Post to Twitter
     #
 
-    if bridge.settings.post_to_twitter_enabled and len(new_toots) > 0:
-        new_toots.reverse()
+    poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
-        poster = TwitterPoster(c.SEND, session, twitter_api, bridge)
+    if bridge.settings.post_to_twitter_enabled and len(new_toots) > 0:
 
         for toot in new_toots:
 
@@ -192,8 +193,6 @@ for bridge in bridges:
                 worker_stat.add_toot()
 
     if bridge.settings.instagram_post_to_twitter and len(new_instas) > 0:
-
-        poster = TwitterPoster(c.SEND, session, twitter_api, bridge)
 
         for data in new_instas:
 
@@ -207,55 +206,20 @@ for bridge in bridges:
     # Post to Mastodon
     #
 
-    if bridge.settings.post_to_mastodon_enabled and len(new_tweets) != 0:
+    poster = TootPoster(c.SEND, session, mast_api, bridge)
 
-        new_tweets.reverse()
+    if bridge.settings.post_to_mastodon_enabled and len(new_tweets) > 0:
 
         for status in new_tweets:
 
-            l.info(f"Working on tweet {status.id}")
+            tweet = Tweet(bridge.settings,status, twitter_api)
 
-            tweet = Tweet(status, bridge.settings, twitter_api, mast_api)
+            result = poster.post(tweet)
 
-            worker_stat.add_tweet()
-
-            if tweet.should_skip:
-                continue
-
-            l.debug(pp.pformat(status.__dict__))
-
-            if c.SEND:
-                if not tweet.transfer_attachments():
-                    continue
-
-            reply_to = None
-            if tweet.is_self_reply:
-                mapping = session.query(Mapping).filter_by(twitter_id=status.in_reply_to_status_id).first()
-
-                if mapping:
-                    reply_to = mapping.mastodon_id
-                    l.info(f"Replying to mastodon status {reply_to}")
-
-            if c.SEND:
-                mastodon_last_id = tweet.send_toot(reply_to=reply_to)
-                l.info(f"Toot ID: {mastodon_last_id}")
-
-                if mastodon_last_id:
-                    m = Mapping()
-                    m.mastodon_id = mastodon_last_id
-                    m.twitter_id = status.id
-                    session.add(m)
-
-                    bridge.mastodon_last_id = mastodon_last_id
-
-                bridge.twitter_last_id = status.id
-                session.commit()
-
-            else:
-                l.info(tweet.clean_content)
+            if result:
+                worker_stat.add_tweet()
 
     if len(new_instas) > 0 and bridge.settings.instagram_post_to_mastodon:
-
         pass
 
     if c.SEND:
