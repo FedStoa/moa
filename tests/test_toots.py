@@ -1,6 +1,7 @@
 import logging
 import unittest
 
+from moa.tweet_poster import TWEET_LENGTH
 from tests.toot_samples import *
 from moa.toot import Toot
 from moa.settings import Settings
@@ -19,7 +20,7 @@ class TestToots(unittest.TestCase):
 
     def test_boost(self):
 
-        toot = Toot(boost, self.settings)
+        toot = Toot(self.settings, boost)
 
         self.assertEqual(toot.is_boost, True)
         self.assertEqual(toot.is_reply, False)
@@ -29,7 +30,7 @@ class TestToots(unittest.TestCase):
 
     def test_twitter_mention(self):
 
-        toot = Toot(twitter_mention, self.settings)
+        toot = Toot(self.settings, twitter_mention)
 
         self.assertEqual(toot.is_boost, False)
         self.assertEqual(toot.is_reply, False)
@@ -38,23 +39,23 @@ class TestToots(unittest.TestCase):
 
     def test_mention(self):
 
-        toot = Toot(toot_with_mention, self.settings)
+        toot = Toot(self.settings, toot_with_mention)
 
         self.assertEqual(toot.clean_content, "mentioning @foozmeat@pdx.social here")
 
     def test_double_mention(self):
 
-        toot = Toot(toot_double_mention, self.settings)
+        toot = Toot(self.settings, toot_double_mention)
 
         self.assertEqual(toot.clean_content, "test 1 @moa_party@pdx.social\ntest 2 @moa_party")
 
     def test_cw(self):
 
-        toot = Toot(toot_with_cw, self.settings)
+        toot = Toot(self.settings, toot_with_cw)
         self.assertEqual(toot.clean_content, "CW: This is the spoiler text\n\nThis is the secret stuff")
 
     def test_length(self):
-        toot = Toot(toot_with_bogus_url, self.settings)
+        toot = Toot(self.settings, toot_with_bogus_url)
         # print(toot.clean_content)
         expected_length = toot.expected_status_length(toot.clean_content)
         # print(expected_length)
@@ -63,7 +64,7 @@ class TestToots(unittest.TestCase):
 
     def test_truncation(self):
         self.settings.split_twitter_messages = False
-        toot = Toot(toot_incorrectly_truncated, self.settings)
-        toot.split_toot()
+        toot = Toot(self.settings, toot_incorrectly_truncated)
+        toot.split_toot(TWEET_LENGTH)
 
         self.assertEqual('Has anyone written a story where the Amish play a crucial role in future society because they deliberately choose which technology they let in to their communities, and can therefore be safe “wake-up zones” for those cry…\nhttps://wandering.shop/@phildini/99434181894510181', toot.message_parts[0])

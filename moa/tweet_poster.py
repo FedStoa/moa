@@ -30,7 +30,9 @@ class TweetPoster(Poster):
 
     def post(self, post: Message) -> bool:
 
-        logger.info(f"Working on {post.type} {post.id}")
+        self.reset()
+
+        logger.info(f"TweetPoster Working on {post.type} {post.id}")
         logger.debug(pp.pformat(post.dump_data()))
 
         if post.should_skip:

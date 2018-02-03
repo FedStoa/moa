@@ -10,9 +10,9 @@ from urllib.parse import urlparse
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 
-from message import Message
-from models import Mapping
-from poster import Poster
+from moa.message import Message
+from moa.models import Mapping
+from moa. poster import Poster
 
 logger = logging.getLogger('worker')
 
@@ -30,7 +30,10 @@ class TootPoster(Poster):
         self.bridge = bridge
 
     def post(self, post: Message) -> bool:
-        logger.info(f"Working on {post.type} {post.id}")
+
+        self.reset()
+
+        logger.info(f"TootPoster Working on {post.type} {post.id}")
         logger.debug(pp.pformat(post.dump_data()))
 
         if post.should_skip:
@@ -43,6 +46,7 @@ class TootPoster(Poster):
             self.transfer_attachments(post)
 
             reply_to = None
+
             if post.is_self_reply:
                 mapping = self.session.query(Mapping).filter_by(twitter_id=post.in_reply_to_id).first()
 
@@ -65,7 +69,6 @@ class TootPoster(Poster):
 
                     self.bridge.mastodon_last_id = mastodon_last_id
 
-                self.bridge.twitter_last_id = post.id
                 self.session.commit()
 
             else:
@@ -115,7 +118,7 @@ class TootPoster(Poster):
 
     def transfer_attachments(self, post: Message) -> bool:
 
-        logger.debug(post.media_attachments)
+        # logger.debug(post.media_attachments)
 
         for attachment in post.media_attachments:
 

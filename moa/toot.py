@@ -27,7 +27,7 @@ class Toot(Message):
         super().__init__(settings, toot_data)
 
         self.content = None
-        self.url_length = 24
+        self.url_length = 23
         self.type = 'Toot'
 
     def dump_data(self):

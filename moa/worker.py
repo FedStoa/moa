@@ -176,10 +176,10 @@ for bridge in bridges:
 
 
     #
-    # Post to Twitter
+    # Post Toots to Twitter
     #
 
-    poster = TweetPoster(c.SEND, session, twitter_api, bridge)
+    tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
     if bridge.settings.post_to_twitter_enabled and len(new_toots) > 0:
 
@@ -187,26 +187,16 @@ for bridge in bridges:
 
             t = Toot(bridge.settings, toot)
 
-            result = poster.post(t)
+            result = tweet_poster.post(t)
 
             if result:
                 worker_stat.add_toot()
 
-    if bridge.settings.instagram_post_to_twitter and len(new_instas) > 0:
-
-        for data in new_instas:
-
-            insta = Insta(bridge.settings, data)
-            result = poster.post(insta)
-            if result:
-                worker_stat.add_insta()
-
-
     #
-    # Post to Mastodon
+    # Post Tweets to Mastodon
     #
 
-    poster = TootPoster(c.SEND, session, mast_api, bridge)
+    toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
 
     if bridge.settings.post_to_mastodon_enabled and len(new_tweets) > 0:
 
@@ -214,13 +204,34 @@ for bridge in bridges:
 
             tweet = Tweet(bridge.settings,status, twitter_api)
 
-            result = poster.post(tweet)
+            result = toot_poster.post(tweet)
 
             if result:
                 worker_stat.add_tweet()
 
-    if len(new_instas) > 0 and bridge.settings.instagram_post_to_mastodon:
-        pass
+
+    #
+    # Post Instagram
+    #
+
+    if len(new_instas) > 0:
+
+        for data in new_instas:
+            stat_recorded = False
+
+            insta = Insta(bridge.settings, data)
+
+            if bridge.settings.instagram_post_to_mastodon:
+                result = toot_poster.post(insta)
+                if result:
+                    worker_stat.add_insta()
+                    stat_recorded = True
+
+            if bridge.settings.instagram_post_to_twitter:
+
+                result = tweet_poster.post(insta)
+                if result and not stat_recorded:
+                    worker_stat.add_insta()
 
     if c.SEND:
         session.commit()

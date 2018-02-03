@@ -1,6 +1,6 @@
 from typing import Any
 
-from settings import Settings
+from moa.settings import Settings
 
 
 class Message:

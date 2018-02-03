@@ -4,7 +4,7 @@ import re
 
 import requests
 
-from message import Message
+from moa.message import Message
 
 logger = logging.getLogger('worker')
 

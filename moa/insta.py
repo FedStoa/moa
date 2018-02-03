@@ -26,7 +26,10 @@ class Insta(Message):
 
     @property
     def clean_content(self):
-        return self.data.caption.text
+        if self.data.caption:
+            return self.data.caption.text
+        else:
+            return ""
 
     @property
     def media_attachments(self):
@@ -36,14 +39,37 @@ class Insta(Message):
     def dump_data(self):
         return self.data.__dict__
 
+    @property
+    def should_skip(self) -> bool:
+        return False
+
+    @property
+    def is_self_reply(self) -> bool:
+        return False
+
+    @property
+    def sensitive(self) -> bool:
+        return False
+
     def prepare_for_post(self, length=1):
         suffix = f"\n{self.url}"
-        leftover_length = length - len(suffix)
-        truncated_text = self.clean_content[:leftover_length] + suffix
 
-        # logger.debug(f"Truncated Text length is {len(truncated_text)}")
+        content = self.clean_content
+
+        if len(content + suffix) > length:
+            suffix = "…" + suffix
+            logger.debug(f"Truncating text")
+
+            trunc_length = length - len(suffix)
+            content = self.clean_content[:trunc_length] + suffix
+
+        else:
+
+            content = content + suffix
+
+        logger.debug(f"Truncated Text length is {len(content)}")
         # logger.debug(truncated_text)
 
-        self.message_parts.append(truncated_text)
+        self.message_parts = [content]
 
 

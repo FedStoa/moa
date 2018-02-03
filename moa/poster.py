@@ -6,3 +6,5 @@ class Poster:
         self.session = session
         self.media_ids = []
 
+    def reset(self) -> None:
+        self.media_ids = []
