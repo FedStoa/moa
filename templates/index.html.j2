@@ -24,13 +24,15 @@
             </form>
         {% endif %}
     {% endif %}
-    {% if g.bridge.instagram_access_code %}
-        <p>Instagram: <strong>{{ g.bridge.instagram_handle }}</strong></p>
+    {% if g.t_user and g.m_user %}
+        {% if g.bridge.instagram_access_code %}
+            <p>Instagram: <strong>{{ g.bridge.instagram_handle }}</strong></p>
 
-    {% else %}
-        <form method="POST" action="{{ url_for('instagram_activate') }}">
-            <input type="submit" value="Add Instagram">
-        </form>
+        {% else %}
+            <form method="POST" action="{{ url_for('instagram_activate') }}">
+                <input type="submit" value="Add Instagram">
+            </form>
+        {% endif %}
     {% endif %}
 
 

@@ -19,7 +19,7 @@ from twitter import TwitterError
 
 from moa.insta import Insta
 from moa.models import Bridge, Mapping, WorkerStat
-from moa.twitter_poster import TwitterPoster
+from moa.tweet_poster import TwitterPoster
 from moa.toot import Toot
 from moa.tweet import Tweet
 

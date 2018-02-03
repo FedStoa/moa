@@ -11,22 +11,18 @@ from urllib.parse import urlparse
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 
+from message import Message
+
 logger = logging.getLogger('worker')
-MASTODON_RETRIES = 3
-MASTODON_RETRY_DELAY = 5
 
 
-class Tweet:
-    def __init__(self, status, settings, api, masto_api):
+class Tweet(Message):
+    def __init__(self, settings, data):
 
-        self.media_ids = []
-        self.attachments = []
+        super().__init__(settings, data)
+
         self.__fetched_attachments = None
         self.__content = None
-        self.status = status
-        self.settings = settings
-        self.api = api
-        self.masto_api = masto_api
 
     @property
     def media(self):
@@ -34,12 +30,12 @@ class Tweet:
         if not self.__fetched_attachments:
 
             if self.is_retweet:
-                target_id = self.status.retweeted_status.id
+                target_id = self.data.retweeted_status.id
 
             elif self.is_quoted:
-                target_id = self.status.quoted_status.id
+                target_id = self.data.quoted_status.id
             else:
-                target_id = self.status.id
+                target_id = self.data.id
 
             fetched_tweet = self.api.GetStatus(
                 status_id=target_id,
@@ -80,56 +76,56 @@ class Tweet:
     @property
     def url(self):
         base = "https://twitter.com"
-        user = self.status.user.screen_name
-        status = self.status.id
+        user = self.data.user.screen_name
+        status = self.data.id
 
         if self.is_retweet:
-            user = self.status.retweeted_status.user.screen_name
-            status = self.status.retweeted_status.id
+            user = self.data.retweeted_status.user.screen_name
+            status = self.data.retweeted_status.id
 
         elif self.is_quoted:
-            user = self.status.quoted_status.user.screen_name
-            status = self.status.quoted_status.id
+            user = self.data.quoted_status.user.screen_name
+            status = self.data.quoted_status.id
 
         return f"{base}/{user}/status/{status}"
 
     @property
     def is_retweet(self):
-        return self.status.retweeted
+        return self.data.retweeted
 
     @property
     def is_quoted(self):
-        return self.status.quoted_status
+        return self.data.quoted_status
 
     @property
     def is_reply(self):
 
-        if self.status.in_reply_to_screen_name is not None:
+        if self.data.in_reply_to_screen_name is not None:
 
-            if not self.is_self_reply or self.status.full_text[0] == '@':
+            if not self.is_self_reply or self.data.full_text[0] == '@':
                 return True
 
     @property
     def is_self_reply(self):
-        return self.status.in_reply_to_user_id == self.status.user.id
+        return self.data.in_reply_to_user_id == self.data.user.id
 
     @property
     def urls(self):
         if self.is_retweet:
-            return self.status.retweeted_status.urls
+            return self.data.retweeted_status.urls
         elif self.is_quoted:
-            return self.status.quoted_status.urls
+            return self.data.quoted_status.urls
         else:
-            return self.status.urls
+            return self.data.urls
 
     @property
     def sensitive(self):
-        return bool(self.status.possibly_sensitive)
+        return bool(self.data.possibly_sensitive)
 
     @property
     def mentions(self):
 
-        m = [u.screen_name for u in self.status.user_mentions]
+        m = [u.screen_name for u in self.data.user_mentions]
 
         m = list(set(m))
 
@@ -155,19 +151,19 @@ class Tweet:
         if not self.__content:
 
             if self.is_retweet:
-                content = self.status.retweeted_status.full_text
+                content = self.data.retweeted_status.full_text
 
             elif self.is_quoted:
 
-                content = re.sub(r'https?://.*', '', self.status.full_text, flags=re.MULTILINE)
-                quoted_text = f"{self.status.quoted_status.full_text}"
+                content = re.sub(r'https?://.*', '', self.data.full_text, flags=re.MULTILINE)
+                quoted_text = f"{self.data.quoted_status.full_text}"
 
-                for url in self.status.quoted_status.urls:
+                for url in self.data.quoted_status.urls:
                     # Unshorten URLs
                     quoted_text = re.sub(url.url, url.expanded_url, quoted_text)
 
             else:
-                content = self.status.full_text
+                content = self.data.full_text
 
             content = html.unescape(content)
 
@@ -180,9 +176,9 @@ class Tweet:
 
             if self.is_retweet:
                 if len(content) > 0:
-                    content = f"RT @{self.status.retweeted_status.user.screen_name}@twitter.com\n{content}"
+                    content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.com\n{content}"
                 else:
-                    content = f"RT @{self.status.retweeted_status.user.screen_name}@twitter.com\n"
+                    content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.com\n"
 
             elif self.is_quoted:
                 possible_content = f"{content}\n---\n{quoted_text}\n{self.url}"
@@ -208,7 +204,10 @@ class Tweet:
             self.__content = content
         return self.__content
 
-    def transfer_attachments(self):
+    @property
+    def media_attachments(self):
+
+        attachments = []
 
         for attachment in self.media:
             # logger.debug(attachment.__dict__)
@@ -254,83 +253,9 @@ class Tweet:
             else:
                 attachment_url = attachment.media_url
 
-            if not attachment_url:
-                return False
+            if attachment_url:
+                attachments.append({'url': attachment_url,
+                                    'description': attachment.ext_alt_text})
 
-            logger.info(f'Downloading {attachment.ext_alt_text} {attachment.type} {attachment_url}')
-            attachment_file = requests.get(attachment_url, stream=True)
-            attachment_file.raw.decode_content = True
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_file.write(attachment_file.raw.read())
-            temp_file.close()
+        return attachments
 
-            path = urlparse(attachment_url).path
-            file_extension = splitext(path)[1]
-
-            # file_extension = mimetypes.guess_extension(attachment_file.headers['Content-type'])
-
-            # ffs
-            if file_extension == '.jpe':
-                file_extension = '.jpg'
-
-            upload_file_name = temp_file.name + file_extension
-            os.rename(temp_file.name, upload_file_name)
-
-            self.attachments.append((upload_file_name, attachment.ext_alt_text))
-
-            logger.debug(f'Uploading {attachment.ext_alt_text}: {upload_file_name}')
-
-            try:
-                self.media_ids.append(self.masto_api.media_post(upload_file_name,
-                                                                description=attachment.ext_alt_text))
-                os.unlink(upload_file_name)
-
-            except MastodonAPIError as e:
-                logger.error(e)
-                return False
-
-            except MastodonNetworkError as e:
-                logger.error(e)
-                return False
-
-        return True
-
-    def send_toot(self, reply_to=None):
-        retry_counter = 0
-        post_success = False
-        spoiler_text = self.settings.tweet_cw_text if self.settings.tweets_behind_cw else ""
-
-        while not post_success and retry_counter < MASTODON_RETRIES:
-            logger.info(f'Tooting "{self.clean_content}"')
-
-            if self.media_ids:
-                logger.info(f'With media')
-
-            try:
-                post = self.masto_api.status_post(
-                    self.clean_content,
-                    media_ids=self.media_ids,
-                    visibility=self.settings.toot_visibility,
-                    sensitive=self.sensitive,
-                    in_reply_to_id=reply_to,
-                    spoiler_text=spoiler_text)
-
-                reply_to = post["id"]
-                post_success = True
-
-            except MastodonAPIError as e:
-                logger.error(e)
-
-                if retry_counter < MASTODON_RETRIES:
-                    retry_counter += 1
-                    time.sleep(MASTODON_RETRY_DELAY)
-
-            except MastodonNetworkError as e:
-                # assume this is transient
-                pass
-
-        if retry_counter == MASTODON_RETRIES:
-            logger.error("Retry limit reached.")
-            return None
-
-        return reply_to
