@@ -472,9 +472,7 @@ def count_graph():
     hours = int(request.args.get('hours', 24))
 
     since = datetime.now() - timedelta(hours=hours)
-    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
-                                                                                                WorkerStat.toots,
-                                                                                                WorkerStat.tweets)
+    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created, WorkerStat.toots, WorkerStat.tweets, WorkerStat.instas)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
     df.set_index(['created'], inplace=True)
@@ -485,6 +483,7 @@ def count_graph():
 
     toots = r['toots'].tolist()
     tweets = r['tweets'].tolist()
+    instas = r['instas'].tolist()
 
     chart = pygal.StackedBar(title=f"# of Incoming Messages in the last {hours} hours",
                              human_readable=True,
@@ -492,6 +491,7 @@ def count_graph():
                              legend_at_bottom=True)
     chart.add('Toots', toots)
     chart.add('Tweets', tweets)
+    chart.add('Instas', instas)
 
     return chart.render_response()
 
