@@ -5,22 +5,19 @@ import pandas as pd
 import pygal
 import twitter
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
-from flask_mail import Message, Mail
+from flask_mail import Mail, Message
+from flask_migrate import Migrate
 from flask_oauthlib.client import OAuth
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-
+from instagram.client import InstagramAPI
+from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
-from pygal.style import LightGreenStyle
 from sqlalchemy import exc
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.models import Bridge, MastodonHost, WorkerStat, metadata
 from moa.settings import Settings
-
-from instagram.client import InstagramAPI
-from instagram.helper import datetime_to_timestamp
 
 app = Flask(__name__)
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
@@ -458,7 +455,6 @@ def time_graph():
 
     chart = pygal.Line(title=f"Worker run time (s) in the last {hours} hours",
                        stroke_style={'width': 5},
-                       style=LightGreenStyle,
                        show_legend=False)
 
     chart.add('Total time', times, fill=True, show_dots=False)
@@ -487,7 +483,6 @@ def count_graph():
 
     chart = pygal.StackedBar(title=f"# of Incoming Messages in the last {hours} hours",
                              human_readable=True,
-                             style=LightGreenStyle,
                              legend_at_bottom=True)
     chart.add('Toots', toots)
     chart.add('Tweets', tweets)
@@ -519,7 +514,6 @@ def user_graph():
 
     chart = pygal.Line(title="# of Users (all time)",
                        stroke_style={'width': 5},
-                       style=LightGreenStyle,
                        show_legend=False)
     chart.add('Users', users, fill=True, show_dots=False)
 
