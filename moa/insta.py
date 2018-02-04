@@ -1,5 +1,6 @@
 import logging
 
+import re
 from instagram.helper import datetime_to_timestamp
 
 from moa.message import Message
@@ -13,6 +14,7 @@ class Insta(Message):
         super().__init__(settings, data)
 
         self.type = 'Insta'
+        self.__content = None
 
     @property
     def id(self):
@@ -26,10 +28,21 @@ class Insta(Message):
 
     @property
     def clean_content(self):
-        if self.data.caption:
-            return self.data.caption.text
-        else:
-            return ""
+
+        if not self.__content:
+
+            if self.data.caption:
+                self.__content = self.data.caption.text
+            else:
+                self.__content = ""
+
+            mentions = re.findall(r'[@][a-zA-Z0-9_]*', self.__content)
+
+            for mention in mentions:
+                # Replace all mentions for an equivalent to clearly signal their origin on Twitter
+                self.__content = re.sub(mention, f"{mention}@instagram.com", self.__content)
+
+        return self.__content
 
     @property
     def media_attachments(self):
