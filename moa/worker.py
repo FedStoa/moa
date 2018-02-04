@@ -171,7 +171,7 @@ for bridge in bridges:
 
         if c.SEND and len(new_instas) != 0:
             bridge.instagram_last_id = datetime_to_timestamp(new_instas[0].created_time)
-            new_instas.reverse()
+    new_instas.reverse()
 
 
 
