@@ -86,6 +86,8 @@ class TweetPoster(Poster):
 
             return True
         else:
+            logger.info(post.media_attachments)
+            logger.info(post.clean_content)
             return False
 
     def send_tweet(self, status_text, reply_to, media_ids=None) -> Optional[int]:

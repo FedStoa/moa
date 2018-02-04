@@ -71,8 +71,10 @@ class TootPoster(Poster):
 
                 self.session.commit()
 
-            else:
-                logger.info(post.clean_content)
+        else:
+            logger.info(post.media_attachments)
+            logger.info(post.clean_content)
+            return False
 
         return True
 
