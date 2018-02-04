@@ -47,7 +47,12 @@ class Insta(Message):
     @property
     def media_attachments(self):
         """ Array of { 'url': 'blah', 'description': 'blah'} """
-        return [{"url": self.data.images['standard_resolution'].url}]
+
+        if self.data.type in ["image", "carousel"]:
+            return [{"url": self.data.images['standard_resolution'].url}]
+        else:
+            return [{"url": self.data.videos['standard_resolution'].url}]
+
 
     def dump_data(self):
         return self.data.__dict__
