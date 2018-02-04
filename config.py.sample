@@ -7,6 +7,8 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TWITTER_CONSUMER_KEY = ''
     TWITTER_CONSUMER_SECRET = ''
+    INSTAGRAM_CLIENT_ID = ''
+    INSTAGRAM_SECRET = ''
     SQLALCHEMY_DATABASE_URI = 'sqlite:///moa.db'
     SEND = True
     SENTRY_DSN = ''
