@@ -143,12 +143,14 @@ def options():
             tweet_mode='extended'  # Allow tweets longer than 140 raw characters
         )
 
-        if not bridge_found:
+        if bridge.twitter_last_id == 0:
             tl = twitter_api.GetUserTimeline()
             if len(tl) > 0:
                 bridge.twitter_last_id = tl[0].id
             else:
                 bridge.twitter_last_id = 0
+
+        if bridge.mastodon_last_id == 0:
 
             # get mastodon ID
             api = mastodon_api(session['mastodon']['host'],
@@ -167,22 +169,6 @@ def options():
                 bridge.mastodon_last_id = 0
 
         app.logger.debug("Saving new settings")
-
-        if not bridge_found:
-            db.session.add(bridge)
-
-            body = render_template('new_user_email.txt.j2', bridge=bridge)
-
-            msg = Message(subject="New moa.party user",
-                          body=body,
-                          sender="hello@jmoore.me",
-                          recipients=["hello@jmoore.me"])
-
-            try:
-                mail.send(msg)
-
-            except Exception as e:
-                app.logger.error(e)
 
         flash("Settings Saved.")
         db.session.commit()
@@ -351,6 +337,31 @@ def mastodon_oauthorized():
             'access_code': access_code,
             'username': api.account_verify_credentials()["username"]
         }
+
+        bridge = Bridge()
+        bridge.enabled = False
+        bridge.settings = Settings()
+        bridge.twitter_oauth_token = session['twitter']['oauth_token']
+        bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
+        bridge.twitter_handle = session['twitter']['screen_name']
+        bridge.mastodon_access_code = session['mastodon']['access_code']
+        bridge.mastodon_user = session['mastodon']['username']
+        bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
+        db.session.add(bridge)
+        db.session.commit()
+
+        body = render_template('new_user_email.txt.j2', bridge=bridge)
+
+        msg = Message(subject="New moa.party user",
+                      body=body,
+                      sender="hello@jmoore.me",
+                      recipients=["hello@jmoore.me"])
+
+        try:
+            mail.send(msg)
+
+        except Exception as e:
+            app.logger.error(e)
 
     return redirect(url_for('index'))
 
