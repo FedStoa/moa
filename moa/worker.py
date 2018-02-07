@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import time
+from typing import List, Any
 
 import requests
 import twitter
@@ -88,7 +89,7 @@ for bridge in bridges:
     # Fetch from Mastodon
     #
 
-    new_toots = []
+    new_toots: List[Any] = []
 
     try:
         new_toots = mast_api.account_statuses(
@@ -122,7 +123,7 @@ for bridge in bridges:
     # Fetch from Twitter
     #
 
-    new_tweets = []
+    new_tweets: List[Any] = []
     try:
         new_tweets = twitter_api.GetUserTimeline(
                 since_id=bridge.twitter_last_id,

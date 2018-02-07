@@ -10,3 +10,4 @@ config.py
 /scratch.ipynb
 /.coverage
 /moa.db
+/.mypy_cache/

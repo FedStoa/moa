@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from moa.settings import Settings
 
@@ -8,7 +8,7 @@ class Message:
         abstract = True
 
     def __init__(self, settings: Settings, data: Any) -> None:
-        self.message_parts = []
+        self.message_parts: List[str] = []
         self.settings = settings
         self.data = data
         self.type = 'Message'
