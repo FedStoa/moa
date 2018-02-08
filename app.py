@@ -338,30 +338,39 @@ def mastodon_oauthorized():
             'username': api.account_verify_credentials()["username"]
         }
 
-        bridge = Bridge()
-        bridge.enabled = False
-        bridge.settings = Settings()
-        bridge.twitter_oauth_token = session['twitter']['oauth_token']
-        bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
-        bridge.twitter_handle = session['twitter']['screen_name']
-        bridge.mastodon_access_code = session['mastodon']['access_code']
-        bridge.mastodon_user = session['mastodon']['username']
-        bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
-        db.session.add(bridge)
-        db.session.commit()
+        bridge = db.session.query(Bridge).filter_by(
+            mastodon_user=session['mastodon']['username'],
+            twitter_handle=session['twitter']['screen_name'],
+        ).first()
 
-        body = render_template('new_user_email.txt.j2', bridge=bridge)
+        if bridge:
+            app.logger.debug("Existing settings found")
+        else:
+            bridge = Bridge()
 
-        msg = Message(subject="New moa.party user",
-                      body=body,
-                      sender="hello@jmoore.me",
-                      recipients=["hello@jmoore.me"])
+            bridge.enabled = False
+            bridge.settings = Settings()
+            bridge.twitter_oauth_token = session['twitter']['oauth_token']
+            bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
+            bridge.twitter_handle = session['twitter']['screen_name']
+            bridge.mastodon_access_code = session['mastodon']['access_code']
+            bridge.mastodon_user = session['mastodon']['username']
+            bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
+            db.session.add(bridge)
+            db.session.commit()
 
-        try:
-            mail.send(msg)
+            body = render_template('new_user_email.txt.j2', bridge=bridge)
 
-        except Exception as e:
-            app.logger.error(e)
+            msg = Message(subject="New moa.party user",
+                          body=body,
+                          sender="hello@jmoore.me",
+                          recipients=["hello@jmoore.me"])
+
+            try:
+                mail.send(msg)
+
+            except Exception as e:
+                app.logger.error(e)
 
     return redirect(url_for('index'))
 
