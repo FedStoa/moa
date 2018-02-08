@@ -359,18 +359,18 @@ def mastodon_oauthorized():
             db.session.add(bridge)
             db.session.commit()
 
-            body = render_template('new_user_email.txt.j2', bridge=bridge)
+            if app.config.get('MAIL_SERVER', None):
+                body = render_template('new_user_email.txt.j2', bridge=bridge)
+                msg = Message(subject="New moa.party user",
+                              body=body,
+                              sender=app.config.get('MAIL_FROM', None),
+                              recipients=app.config.get('MAIL_TO', None))
 
-            msg = Message(subject="New moa.party user",
-                          body=body,
-                          sender="hello@jmoore.me",
-                          recipients=["hello@jmoore.me"])
+                try:
+                    mail.send(msg)
 
-            try:
-                mail.send(msg)
-
-            except Exception as e:
-                app.logger.error(e)
+                except Exception as e:
+                    app.logger.error(e)
 
     return redirect(url_for('index'))
 
