@@ -63,6 +63,11 @@ if not c.DEBUG:
 for bridge in bridges:
     # l.debug(bridge.settings.__dict__)
 
+    total_time = time.time() - start_time
+
+    if total_time > 60 * 4.5:
+        continue
+
     mastodon_last_id = bridge.mastodon_last_id
     twitter_last_id = bridge.twitter_last_id
 
