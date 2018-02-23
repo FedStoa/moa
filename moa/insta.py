@@ -53,7 +53,6 @@ class Insta(Message):
         else:
             return [{"url": self.data.videos['standard_resolution'].url}]
 
-
     def dump_data(self):
         return self.data.__dict__
 

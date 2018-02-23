@@ -58,7 +58,8 @@ class TootPoster(Poster):
                 mastodon_last_id = self.send_toot(post.message_parts[0],
                                                   reply_to,
                                                   media_ids=self.media_ids,
-                                                  sensitive=post.sensitive)
+                                                  sensitive=post.sensitive,
+                                                  msg_type=post.type)
                 logger.info(f"Toot ID: {mastodon_last_id}")
 
                 if mastodon_last_id:
@@ -78,10 +79,13 @@ class TootPoster(Poster):
 
         return True
 
-    def send_toot(self, status_text: str, reply_to: int, media_ids=None, sensitive=False) -> Optional[int]:
+    def send_toot(self, status_text: str, reply_to: int, media_ids=None, sensitive=False, msg_type="") -> Optional[int]:
         retry_counter = 0
         post_success = False
-        spoiler_text = self.bridge.settings.tweet_cw_text if self.bridge.settings.tweets_behind_cw else ""
+        spoiler_text = None
+        
+        if msg_type == 'Tweet':
+            spoiler_text = self.bridge.settings.tweet_cw_text if self.bridge.settings.tweets_behind_cw else ""
 
         while not post_success and retry_counter < MASTODON_RETRIES:
             logger.info(f'Tooting "{status_text}"')
