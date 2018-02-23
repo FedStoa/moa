@@ -11,6 +11,7 @@ class Settings:
     # Twitter -> Masto
     post_to_mastodon = True
     post_rts_to_mastodon = True
+    post_quotes_to_mastodon = True
     toot_visibility = 'public'
     tweets_behind_cw = False
     tweet_cw_text = "From birdsite"
@@ -27,6 +28,7 @@ class Settings:
 
         self.post_to_mastodon = True # This means post non-RT tweets
         self.post_rts_to_mastodon = True
+        self.post_quotes_to_mastodon = True
         self.toot_visibility = 'public'
         self.tweets_behind_cw = False
         self.tweet_cw_text = "From birdsite"

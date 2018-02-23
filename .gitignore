@@ -11,3 +11,4 @@ config.py
 /.coverage
 /moa.db
 /.mypy_cache/
+.DS_Store

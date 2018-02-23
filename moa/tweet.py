@@ -61,6 +61,9 @@ class Tweet(Message):
             logger.info(f'Skipping reply.')
             return True
 
+        if self.is_quoted and not self.settings.post_quotes_to_mastodon:
+            return True
+
         if self.is_retweet and not self.settings.post_rts_to_mastodon:
             logger.info(f'Skipping retweet.')
             return True
@@ -97,7 +100,7 @@ class Tweet(Message):
 
     @property
     def is_quoted(self):
-        return self.data.quoted_status
+        return self.data.quoted_status is not None
 
     @property
     def is_reply(self):
