@@ -37,7 +37,6 @@ class TootPoster(Poster):
         logger.debug(pp.pformat(post.dump_data()))
 
         if post.should_skip:
-            logger.info("Skipping")
             return False
 
         post.prepare_for_post(length=MASTODON_TOOT_LENGTH)

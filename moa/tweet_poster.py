@@ -36,7 +36,6 @@ class TweetPoster(Poster):
         logger.debug(pp.pformat(post.dump_data()))
 
         if post.should_skip:
-            logger.info("Skipping")
             return False
 
         post.prepare_for_post(length=TWEET_LENGTH)

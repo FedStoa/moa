@@ -62,6 +62,7 @@ class Tweet(Message):
             return True
 
         if self.is_quoted and not self.settings.post_quotes_to_mastodon:
+            logger.info(f'Skipping quoted tweets.')
             return True
 
         if self.is_retweet and not self.settings.post_rts_to_mastodon:
