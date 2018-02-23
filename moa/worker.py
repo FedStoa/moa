@@ -7,7 +7,7 @@ from typing import List, Any
 
 import requests
 import twitter
-from instagram import InstagramAPI
+from instagram import InstagramAPI, InstagramClientError
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
@@ -161,7 +161,10 @@ for bridge in bridges:
     if bridge.instagram_access_code:
         api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=c.INSTAGRAM_SECRET)
 
-        recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
+        try:
+            recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
+        except InstagramClientError as e:
+            l.error(e)
 
         for media in recent_media:
 
