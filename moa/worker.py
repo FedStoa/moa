@@ -7,7 +7,7 @@ from typing import List, Any
 
 import requests
 import twitter
-from instagram import InstagramAPI, InstagramClientError
+from instagram import InstagramAPI, InstagramClientError, InstagramAPIError
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
@@ -139,6 +139,9 @@ for bridge in bridges:
         l.error(f"Working on twitter user {bridge.twitter_handle}")
         l.error(e)
 
+        if 'Unknown' in e.message:
+            continue
+
         if len(e.message) > 0:
             if e.message[0]['code'] == 89:
                 l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
@@ -170,6 +173,11 @@ for bridge in bridges:
             recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
         except InstagramClientError as e:
             l.error(e)
+            continue
+
+        except InstagramAPIError as e:
+            l.error(e)
+            continue
 
         for media in recent_media:
 

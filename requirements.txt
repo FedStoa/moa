@@ -5,12 +5,12 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 -e git+https://github.com/foozmeat/python-instagram.git#egg=instagram
-alembic==0.9.7            # via flask-migrate
+alembic==0.9.9            # via flask-migrate
 blinker==1.4              # via flask-mail, raven
 certifi==2018.1.18        # via requests
 chardet==3.0.4            # via requests
 click==6.7                # via flask, pip-tools
-coverage==4.4.2
+coverage==4.5.1
 decorator==4.2.1          # via mastodon.py
 first==2.0.1              # via pip-tools
 flask-mail==0.9.1
@@ -20,29 +20,29 @@ flask-sqlalchemy==2.3.2
 flask-wtf==0.14.2
 flask==0.12.2
 future==0.16.0            # via python-twitter
-httplib2==0.10.3
+httplib2==0.11.0
 idna==2.6                 # via requests
 itsdangerous==0.24        # via flask
 jinja2==2.10              # via flask
 mako==1.0.7               # via alembic
 markupsafe==1.0           # via jinja2, mako
-mastodon.py==1.2.1
-numpy==1.14.0             # via pandas
-oauthlib==2.0.6           # via flask-oauthlib, requests-oauthlib
+mastodon.py==1.2.2
+numpy==1.14.2             # via pandas
+oauthlib==2.0.7           # via flask-oauthlib, requests-oauthlib
 pandas==0.22.0
 pip-tools==1.11.0
 pygal==2.4.0
 pymysql==0.8.0
-python-dateutil==2.6.1    # via alembic, mastodon.py, pandas
+python-dateutil==2.7.1    # via alembic, mastodon.py, pandas
 python-editor==1.0.3      # via alembic
-python-twitter==3.3
-pytz==2017.3              # via mastodon.py, pandas
-raven[flask]==6.5.0
+python-twitter==3.4.1
+pytz==2018.3              # via mastodon.py, pandas
+raven[flask]==6.6.0
 requests-oauthlib==0.8.0  # via flask-oauthlib, python-twitter
 requests==2.18.4          # via mastodon.py, python-twitter, requests-oauthlib
 simplejson==3.13.2
 six==1.11.0               # via mastodon.py, pip-tools, python-dateutil
-sqlalchemy==1.2.1         # via alembic, flask-sqlalchemy
+sqlalchemy==1.2.5         # via alembic, flask-sqlalchemy
 urllib3==1.22             # via requests
 werkzeug==0.14.1          # via flask
 wtforms==2.1              # via flask-wtf
