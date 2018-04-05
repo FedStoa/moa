@@ -317,7 +317,12 @@ def mastodon_oauthorized():
         flash('You denied the request to sign in to Mastodon.')
     else:
 
-        host = session['mastodon_host']
+        host = session.get('mastodon_host', None)
+
+        if not host:
+            flash('There was an error. Please ensure you allow this site to use cookies.')
+            return redirect(url_for('index'))
+
         session.pop('mastodon_host', None)
 
         api = mastodon_api(host)

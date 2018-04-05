@@ -171,13 +171,10 @@ for bridge in bridges:
 
         try:
             recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
-        except InstagramClientError as e:
+        except Exception as e:
             l.error(e)
             continue
 
-        except InstagramAPIError as e:
-            l.error(e)
-            continue
 
         for media in recent_media:
 
