@@ -20,7 +20,7 @@ flask-sqlalchemy==2.3.2
 flask-wtf==0.14.2
 flask==0.12.2
 future==0.16.0            # via python-twitter
-httplib2==0.11.0
+httplib2==0.11.3
 idna==2.6                 # via requests
 itsdangerous==0.24        # via flask
 jinja2==2.10              # via flask
@@ -33,7 +33,7 @@ pandas==0.22.0
 pip-tools==1.11.0
 pygal==2.4.0
 pymysql==0.8.0
-python-dateutil==2.7.1    # via alembic, mastodon.py, pandas
+python-dateutil==2.7.2    # via alembic, mastodon.py, pandas
 python-editor==1.0.3      # via alembic
 python-twitter==3.4.1
 pytz==2018.3              # via mastodon.py, pandas
@@ -42,7 +42,7 @@ requests-oauthlib==0.8.0  # via flask-oauthlib, python-twitter
 requests==2.18.4          # via mastodon.py, python-twitter, requests-oauthlib
 simplejson==3.13.2
 six==1.11.0               # via mastodon.py, pip-tools, python-dateutil
-sqlalchemy==1.2.5         # via alembic, flask-sqlalchemy
+sqlalchemy==1.2.6         # via alembic, flask-sqlalchemy
 urllib3==1.22             # via requests
 werkzeug==0.14.1          # via flask
 wtforms==2.1              # via flask-wtf
