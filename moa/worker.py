@@ -142,7 +142,7 @@ for bridge in bridges:
         if 'Unknown' in e.message:
             continue
 
-        if len(e.message) > 0:
+        elif isinstance(e.message, list) and len(e.message) > 0:
             if e.message[0]['code'] == 89:
                 l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
                 bridge.enabled = False
