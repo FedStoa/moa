@@ -21,7 +21,7 @@ https://moa.party
 
 ## Install
 
-#### Requires python 3 (tested with python 3.6)
+#### Requires python 3.6+
 
 Moa is a flask app and can be run with `python` or proxied behind something like nginx/passenger.
 
