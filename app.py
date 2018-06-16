@@ -204,7 +204,11 @@ def delete():
 
 @app.route('/twitter_login')
 def twitter_login():
-    callback_url = url_for('twitter_oauthorized', next=request.args.get('next'))
+    callback_url = url_for(
+            'twitter_oauthorized',
+            _external=True,
+            next=request.args.get('next')
+    )
 
     app.logger.debug(callback_url)
 
