@@ -372,8 +372,7 @@ def mastodon_oauthorized():
                 body = render_template('new_user_email.txt.j2', bridge=bridge)
                 msg = Message(subject="New moa.party user",
                               body=body,
-                              sender=app.config.get('MAIL_FROM', None),
-                              recipients=app.config.get('MAIL_TO', None))
+                              recipients=[app.config.get('MAIL_TO', None)])
 
                 try:
                     mail.send(msg)
