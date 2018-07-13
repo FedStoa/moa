@@ -18,7 +18,7 @@ class Config(object):
     MAIL_USE_TLS = True
     MAIL_USERNAME = ''
     MAIL_PASSWORD = ''
-
+    MAIL_TO = ''
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
