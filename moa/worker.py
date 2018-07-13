@@ -144,7 +144,7 @@ for bridge in bridges:
             continue
 
         elif isinstance(e.message, list) and len(e.message) > 0:
-            if e.message[0]['code'] == 89:
+            if e.message[0]['code'] in [89, 400]:
                 l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
                 bridge.enabled = False
 
