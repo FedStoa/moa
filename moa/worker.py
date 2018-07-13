@@ -129,6 +129,8 @@ for bridge in bridges:
     #
 
     new_tweets: List[Any] = []
+    l.error(f"Working on twitter user {bridge.twitter_handle}")
+
     try:
         new_tweets = twitter_api.GetUserTimeline(
                 since_id=bridge.twitter_last_id,
@@ -136,7 +138,6 @@ for bridge in bridges:
                 exclude_replies=False)
 
     except TwitterError as e:
-        l.error(f"Working on twitter user {bridge.twitter_handle}")
         l.error(e)
 
         if 'Unknown' in e.message:
@@ -174,7 +175,6 @@ for bridge in bridges:
         except Exception as e:
             l.error(e)
             continue
-
 
         for media in recent_media:
 
