@@ -19,7 +19,7 @@ class Config(object):
     MAIL_USERNAME = ''
     MAIL_PASSWORD = ''
     MAIL_TO = ''
-    DEFAULT_MAIL_SENDER = ''
+    MAIL_DEFAULT_SENDER = ''
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
