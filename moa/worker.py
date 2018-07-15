@@ -95,6 +95,7 @@ for bridge in bridges:
     #
 
     new_toots: List[Any] = []
+    l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
 
     try:
         new_toots = mast_api.account_statuses(
@@ -102,7 +103,6 @@ for bridge in bridges:
                 since_id=bridge.mastodon_last_id
         )
     except MastodonAPIError as e:
-        l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
         l.error(e)
 
         if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden']):
