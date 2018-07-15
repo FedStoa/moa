@@ -33,11 +33,11 @@ class TootPoster(Poster):
 
         self.reset()
 
-        logger.info(f"TootPoster Working on {post.type} {post.id}")
-        logger.debug(pp.pformat(post.dump_data()))
-
         if post.should_skip:
             return False
+
+        logger.info(f"TootPoster Working on {post.type} {post.id}")
+        logger.debug(pp.pformat(post.dump_data()))
 
         post.prepare_for_post(length=MASTODON_TOOT_LENGTH)
 
@@ -83,7 +83,7 @@ class TootPoster(Poster):
         retry_counter = 0
         post_success = False
         spoiler_text = None
-        
+
         if msg_type == 'Tweet':
             spoiler_text = self.bridge.settings.tweet_cw_text if self.bridge.settings.tweets_behind_cw else ""
 

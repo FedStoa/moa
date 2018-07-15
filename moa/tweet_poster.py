@@ -32,11 +32,11 @@ class TweetPoster(Poster):
 
         self.reset()
 
-        logger.info(f"TweetPoster Working on {post.type} {post.id}")
-        logger.debug(pp.pformat(post.dump_data()))
-
         if post.should_skip:
             return False
+
+        logger.info(f"TweetPoster Working on {post.type} {post.id}")
+        logger.debug(pp.pformat(post.dump_data()))
 
         post.prepare_for_post(length=TWEET_LENGTH)
 
