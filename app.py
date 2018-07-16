@@ -7,7 +7,7 @@ import twitter
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from flask_mail import Mail, Message
 from flask_migrate import Migrate
-from flask_oauthlib.client import OAuth
+from flask_oauthlib.client import OAuth, OAuthException
 from flask_sqlalchemy import SQLAlchemy
 from instagram.client import InstagramAPI
 from instagram.helper import datetime_to_timestamp
@@ -217,9 +217,13 @@ def twitter_login():
 
 @app.route('/twitter_oauthorized')
 def twitter_oauthorized():
-    resp = twitter_oauth.authorized_response()
+    try:
+        resp = twitter_oauth.authorized_response()
+    except OAuthException:
+        resp = None
+
     if resp is None:
-        flash('You denied the request to sign in.')
+        flash('ERROR: You denied the request to sign in or have cookies disabled.')
     else:
         session['twitter'] = resp
 
