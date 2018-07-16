@@ -20,6 +20,7 @@ class Config(object):
     MAIL_PASSWORD = ''
     MAIL_TO = ''
     MAIL_DEFAULT_SENDER = ''
+    TWITTER_BLACKLIST = []
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'

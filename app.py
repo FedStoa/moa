@@ -16,6 +16,7 @@ from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from sqlalchemy import exc
 
 from moa.forms import MastodonIDForm, SettingsForm
+from moa.helpers import blacklisted
 from moa.models import Bridge, MastodonHost, WorkerStat, metadata
 from moa.settings import Settings
 
@@ -224,6 +225,22 @@ def twitter_oauthorized():
 
     if resp is None:
         flash('ERROR: You denied the request to sign in or have cookies disabled.')
+
+    elif blacklisted(resp['screen_name'], app.config.get('TWITTER_BLACKLIST', [])):
+        flash('ERROR: Access Denied.')
+
+        if app.config.get('MAIL_SERVER', None):
+            body = render_template('access_denied.txt.j2', user=f"https://twitter.com/{resp['screen_name']}")
+            msg = Message(subject="moa access denied",
+                          body=body,
+                          recipients=[app.config.get('MAIL_TO', None)])
+
+            try:
+                mail.send(msg)
+
+            except Exception as e:
+                app.logger.error(e)
+
     else:
         session['twitter'] = resp
 
