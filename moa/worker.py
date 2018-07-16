@@ -95,7 +95,7 @@ for bridge in bridges:
     #
 
     new_toots: List[Any] = []
-    l.error(f"-- {bridge.mastodon_user}@{mastodonhost.hostname} --")
+    # l.error(f"-- {bridge.mastodon_user}@{mastodonhost.hostname} --")
 
     try:
         new_toots = mast_api.account_statuses(
@@ -129,7 +129,7 @@ for bridge in bridges:
     #
 
     new_tweets: List[Any] = []
-    l.error(f"-- @{bridge.twitter_handle} --")
+    # l.error(f"-- @{bridge.twitter_handle} --")
 
     try:
         new_tweets = twitter_api.GetUserTimeline(
@@ -172,7 +172,7 @@ for bridge in bridges:
 
     if bridge.instagram_access_code:
 
-        l.error(f"-- INSTAGRAM: {bridge.instagram_account_id} --")
+        # l.error(f"-- INSTAGRAM: {bridge.instagram_account_id} --")
 
         api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=c.INSTAGRAM_SECRET)
 
