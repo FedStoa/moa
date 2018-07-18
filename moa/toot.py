@@ -22,13 +22,14 @@ logger = logging.getLogger('worker')
 
 class Toot(Message):
 
-    def __init__(self, settings, toot_data):
+    def __init__(self, settings, toot_data, config):
 
         super().__init__(settings, toot_data)
 
         self.content = None
         self.url_length = 23
         self.type = 'Toot'
+        self.config = config
 
     def dump_data(self):
         return self.data
@@ -203,7 +204,10 @@ class Toot(Message):
             for mention in self.mentions:
                 self.content = re.sub(f'@({mention[0]})(?!@)', f"{mention[1]}", self.content)
 
-            self.content = re.sub(r'@(\w+)@twitter.com', '@\g<1>', self.content)
+            if self.config.SANITIZE_TWITTER_HANDLES:
+                self.content = re.sub(r'@(\w+)@twitter.com', '\g<1>', self.content)
+            else:
+                self.content = re.sub(r'@(\w+)@twitter.com', '@\g<1>', self.content)
 
             self.content = self.content.strip()
 

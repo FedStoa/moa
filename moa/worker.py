@@ -193,8 +193,6 @@ for bridge in bridges:
             bridge.instagram_last_id = datetime_to_timestamp(new_instas[0].created_time)
     new_instas.reverse()
 
-
-
     #
     # Post Toots to Twitter
     #
@@ -205,7 +203,7 @@ for bridge in bridges:
 
         for toot in new_toots:
 
-            t = Toot(bridge.settings, toot)
+            t = Toot(bridge.settings, toot, c)
 
             result = tweet_poster.post(t)
 
@@ -222,13 +220,12 @@ for bridge in bridges:
 
         for status in new_tweets:
 
-            tweet = Tweet(bridge.settings,status, twitter_api)
+            tweet = Tweet(bridge.settings, status, twitter_api)
 
             result = toot_poster.post(tweet)
 
             if result:
                 worker_stat.add_tweet()
-
 
     #
     # Post Instagram
@@ -263,7 +260,7 @@ end_time = time.time()
 worker_stat.time = end_time - start_time
 
 l.info(
-    f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg")
+        f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg")
 
 session.add(worker_stat)
 session.commit()

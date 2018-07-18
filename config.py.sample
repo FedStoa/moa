@@ -21,6 +21,10 @@ class Config(object):
     MAIL_TO = ''
     MAIL_DEFAULT_SENDER = ''
     TWITTER_BLACKLIST = []
+    
+    # This option prevents twitter replies and mentions from occuring when a toot contains @user@twitter.com. This
+    # behavior is against twitter's rules.
+    SANITIZE_TWITTER_HANDLES = True
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
