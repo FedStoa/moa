@@ -36,7 +36,7 @@ class TweetPoster(Poster):
             return False
 
         logger.info(f"TweetPoster Working on {post.type} {post.id}")
-        logger.debug(pp.pformat(post.dump_data()))
+        # logger.debug(pp.pformat(post.dump_data()))
 
         post.prepare_for_post(length=TWEET_LENGTH)
 

@@ -37,7 +37,7 @@ class TootPoster(Poster):
             return False
 
         logger.info(f"TootPoster Working on {post.type} {post.id}")
-        logger.debug(pp.pformat(post.dump_data()))
+        # logger.debug(pp.pformat(post.dump_data()))
 
         post.prepare_for_post(length=MASTODON_TOOT_LENGTH)
 
