@@ -378,7 +378,7 @@ def mastodon_oauthorized():
         else:
             bridge = Bridge()
 
-            bridge.enabled = False
+            bridge.enabled = True
             bridge.settings = Settings()
             bridge.twitter_oauth_token = session['twitter']['oauth_token']
             bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
