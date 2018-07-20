@@ -145,9 +145,16 @@ class TweetPoster(Poster):
             logger.info(f'Downloading {attachment_url}')
             attachment_file = requests.get(attachment_url, stream=True)
             attachment_file.raw.decode_content = True
+
             temp_file = tempfile.NamedTemporaryFile(delete=False)
             temp_file.write(attachment_file.raw.read())
             temp_file.close()
+
+            fsize = os.path.getsize(temp_file.name)
+
+            if fsize == 0:
+                logger.error("Attachment is 0 length...skipping")
+                continue
 
             file_extension = mimetypes.guess_extension(attachment_file.headers['Content-type'])
 
