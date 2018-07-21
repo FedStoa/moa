@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired, Email, Length
 
 
 class SettingsForm(FlaskForm):
-    enabled = BooleanField('Enabled?')
+    enabled = BooleanField('Bridging Enabled?')
 
     post_to_twitter = BooleanField('Post Public toots to Twitter?')
     post_private_to_twitter = BooleanField('Post Private toots to Twitter?')

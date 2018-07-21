@@ -43,6 +43,7 @@
 
         <form method="POST" action="{{ url_for('options') }}">
             <ul>
+                <hr>
                 <li>{{ form.enabled(checked=enabled) }}{{ form.enabled.label }}</li>
                 <hr>
                 <li>{{ form.post_to_twitter }}{{ form.post_to_twitter.label }}</li>
