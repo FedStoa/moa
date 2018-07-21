@@ -115,8 +115,8 @@ class TweetPoster(Poster):
                     # Status is a duplicate
                     return None
                 elif e.message[0]['code'] == 186:
-                    # Status is too long so bail out and get notified
-                    raise
+                    # Status is too long. Nowadays this happens because of UTF-8 text.
+                    return None
 
                 elif e.message[0]['code'] == 144:
                     # tweet being replied to is gone
