@@ -357,13 +357,14 @@ def mastodon_login():
 @app.route('/mastodon_oauthorized')
 def mastodon_oauthorized():
     authorization_code = request.args.get('code')
-    app.logger.info(f"Authorization code {authorization_code}")
 
     if authorization_code is None:
         flash('You denied the request to sign in to Mastodon.')
     else:
 
         host = session.get('mastodon_host', None)
+
+        app.logger.info(f"Authorization code {authorization_code} for {host}")
 
         if not host:
             flash('There was an error. Please ensure you allow this site to use cookies.')
@@ -436,7 +437,7 @@ def instagram_activate():
     client_id = app.config['INSTAGRAM_CLIENT_ID']
     client_secret = app.config['INSTAGRAM_SECRET']
     redirect_uri = url_for('instagram_oauthorized', _external=True)
-    app.logger.info(redirect_uri)
+    # app.logger.info(redirect_uri)
 
     scope = ["basic"]
     api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
@@ -464,11 +465,7 @@ def instagram_oauthorized():
             twitter_handle=session['twitter']['screen_name'],
         ).first()
 
-        print(access_token)
-
         bridge.instagram_access_code = access_token[0]
-
-        print(bridge.instagram_access_code)
 
         data = access_token[1]
         bridge.instagram_account_id = data['id']
