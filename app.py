@@ -1,5 +1,7 @@
+import logging
 import os
 from datetime import datetime, timedelta
+from logging.handlers import TimedRotatingFileHandler
 
 import pandas as pd
 import pygal
@@ -12,7 +14,7 @@ from flask_sqlalchemy import SQLAlchemy
 from instagram.client import InstagramAPI
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
-from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
+from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError
 from sqlalchemy import exc
 
 from moa.forms import MastodonIDForm, SettingsForm
@@ -580,4 +582,22 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
+
+    FORMAT = '%(asctime)-15s %(message)s'
+    formatter = logging.Formatter(FORMAT)
+
+    # initialize the log handler
+    logHandler = TimedRotatingFileHandler('logs/app.log', when='D', backupCount=7)
+    logHandler.setFormatter(formatter)
+
+    # set the log handler level
+    logHandler.setLevel(logging.INFO)
+
+    # set the app logger level
+    app.logger.setLevel(logging.INFO)
+
+    app.logger.addHandler(logHandler)
+
+    app.logger.info("Starting up...")
+
     app.run()
