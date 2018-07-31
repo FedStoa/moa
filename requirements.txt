@@ -30,7 +30,7 @@ itsdangerous==0.24        # via flask
 jinja2==2.10              # via flask
 mako==1.0.7               # via alembic
 markupsafe==1.0           # via jinja2, mako
-mastodon.py==1.3.0
+mastodon.py==1.3.1
 numpy==1.14.2             # via pandas
 oauthlib==2.1.0           # via flask-oauthlib, requests-oauthlib
 pandas==0.22.0
