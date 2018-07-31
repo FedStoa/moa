@@ -24,7 +24,8 @@ from moa.settings import Settings
 
 app = Flask(__name__)
 
-FORMAT = '%(asctime)-15s %(message)s'
+FORMAT = "%(asctime)-15s [%(lineno)s - %(funcName)20s() ] %(message)s"
+
 formatter = logging.Formatter(FORMAT)
 
 # initialize the log handler

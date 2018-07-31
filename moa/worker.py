@@ -35,7 +35,7 @@ if c.SENTRY_DSN:
 
     client = Client(c.SENTRY_DSN)
 
-FORMAT = '%(asctime)-15s %(message)s'
+FORMAT = "%(asctime)-15s [%(lineno)s - %(funcName)20s() ] %(message)s"
 logging.basicConfig(format=FORMAT)
 
 l = logging.getLogger('worker')
