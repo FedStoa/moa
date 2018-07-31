@@ -268,7 +268,7 @@ def get_or_create_host(hostname):
                 redirect_uris=url_for("mastodon_oauthorized", _external=True)
             )
 
-            app.logger.info(f"New host created for {hostname} {client_id} {client_secret}")
+            app.logger.info(f"New host created for {hostname}")
 
             mastodonhost = MastodonHost(hostname=hostname,
                                         client_id=client_id,
@@ -354,11 +354,16 @@ def mastodon_oauthorized():
 
         api = mastodon_api(host)
 
-        access_code = api.log_in(
-            code=authorization_code,
-            scopes=["read", "write"],
-            redirect_uri=url_for("mastodon_oauthorized", _external=True)
-        )
+        try:
+            access_code = api.log_in(
+                    code=authorization_code,
+                    scopes=["read", "write"],
+                    redirect_uri=url_for("mastodon_oauthorized", _external=True)
+            )
+        except MastodonIllegalArgumentError as e:
+
+            flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+            return redirect(url_for('index'))
 
         # app.logger.info(f"Access code {access_code}")
 
