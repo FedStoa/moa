@@ -17,7 +17,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
 from twitter import TwitterError
 
-from app import FORMAT
 from moa.insta import Insta
 from moa.models import Bridge, WorkerStat
 from moa.toot import Toot
@@ -35,6 +34,8 @@ if c.SENTRY_DSN:
     from raven import Client
 
     client = Client(c.SENTRY_DSN)
+
+FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 logging.basicConfig(format=FORMAT)
 
