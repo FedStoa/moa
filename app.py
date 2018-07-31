@@ -24,7 +24,7 @@ from moa.settings import Settings
 
 app = Flask(__name__)
 
-FORMAT = "%(asctime)-15s [%(lineno)s - %(funcName)20s() ] %(message)s"
+FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 formatter = logging.Formatter(FORMAT)
 
