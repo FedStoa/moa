@@ -23,6 +23,24 @@ from moa.models import Bridge, MastodonHost, WorkerStat, metadata
 from moa.settings import Settings
 
 app = Flask(__name__)
+
+FORMAT = '%(asctime)-15s %(message)s'
+formatter = logging.Formatter(FORMAT)
+
+# initialize the log handler
+logHandler = TimedRotatingFileHandler('logs/app.log', when='D', backupCount=7)
+logHandler.setFormatter(formatter)
+
+# set the log handler level
+logHandler.setLevel(logging.INFO)
+
+# set the app logger level
+app.logger.setLevel(logging.INFO)
+
+app.logger.addHandler(logHandler)
+
+app.logger.info("Starting up...")
+
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
 app.config.from_object(config)
 mail = Mail(app)
@@ -587,22 +605,5 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
-
-    FORMAT = '%(asctime)-15s %(message)s'
-    formatter = logging.Formatter(FORMAT)
-
-    # initialize the log handler
-    logHandler = TimedRotatingFileHandler('logs/app.log', when='D', backupCount=7)
-    logHandler.setFormatter(formatter)
-
-    # set the log handler level
-    logHandler.setLevel(logging.INFO)
-
-    # set the app logger level
-    app.logger.setLevel(logging.INFO)
-
-    app.logger.addHandler(logHandler)
-
-    app.logger.info("Starting up...")
 
     app.run()
