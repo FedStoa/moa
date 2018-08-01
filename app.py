@@ -565,10 +565,7 @@ def count_graph():
 
 @app.route('/stats/users.svg')
 def user_graph():
-    hours = int(request.args.get('hours', 24))
-    since = datetime.now() - timedelta(hours=hours)
-
-    stats_query = db.session.query(Bridge).filter(Bridge.created > since).with_entities(Bridge.created)
+    stats_query = db.session.query(Bridge).with_entities(Bridge.created)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
     df.set_index(['created'], inplace=True)
@@ -587,7 +584,7 @@ def user_graph():
     users = r['cum_sum'].tolist()
     # app.logger.info(users)
 
-    chart = pygal.Line(title="# of Bridges",
+    chart = pygal.Line(title="# of Users (all time)",
                        stroke_style={'width': 5},
                        show_legend=False)
     chart.add('Users', users, fill=True, show_dots=False)
