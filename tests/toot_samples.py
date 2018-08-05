@@ -1,5 +1,5 @@
 import datetime
-
+from datetime import timezone
 from dateutil.tz import tzutc
 
 boost = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/accounts/6717/statuses',
@@ -25,7 +25,7 @@ boost = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/accounts/6717/sta
                     'class="u-url mention">@<span>foozmeat</span></a></span> Redis was '
                     'a real a-hole today. I&apos;m sad that we rely on it for job '
                     'queues.</p>',
-         'created_at': datetime.datetime(2017, 11, 9, 3, 10, 4, 769000, tzinfo=tzutc()),
+         'created_at': datetime.datetime.now(timezone.utc),
          'emojis': [],
          'favourited': False,
          'favourites_count': 0,
@@ -110,7 +110,7 @@ boost_w_attachments = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/acc
                                   'class="invisible">https://</span><span '
                                   'class="ellipsis">pdx.social/media/72JR2KtOOkFy8</span><span '
                                   'class="invisible">S8a7Rw</span></a></p>',
-                       'created_at': datetime.datetime(2017, 11, 9, 3, 47, 48, 153000, tzinfo=tzutc()),
+                       'created_at': datetime.datetime.now(timezone.utc),
                        'emojis': [],
                        'favourited': False,
                        'favourites_count': 0,
@@ -204,7 +204,7 @@ reply1 = {'account': {'acct': 'moatest',
                       'username': 'moatest'},
           'application': {'name': 'Web', 'website': None},
           'content': '<p>Reply test 1</p>',
-          'created_at': datetime.datetime(2017, 11, 9, 5, 5, 25, 247000, tzinfo=tzutc()),
+          'created_at': datetime.datetime.now(timezone.utc),
           'emojis': [],
           'favourited': False,
           'favourites_count': 0,
@@ -245,7 +245,7 @@ reply2 = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/accounts/6717/st
                       'username': 'moatest'},
           'application': {'name': 'Web', 'website': None},
           'content': '<p>Reply test 2</p>',
-          'created_at': datetime.datetime(2017, 11, 9, 5, 5, 35, 527000, tzinfo=tzutc()),
+          'created_at': datetime.datetime.now(timezone.utc),
           'emojis': [],
           'favourited': False,
           'favourites_count': 0,
@@ -286,7 +286,7 @@ twitter_mention = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/account
                                'username': 'moatest'},
                    'application': {'name': 'Web', 'website': None},
                    'content': '<p>mentioning @foozmeat@twitter.com here</p>',
-                   'created_at': datetime.datetime(2017, 11, 9, 5, 22, 44, 643000, tzinfo=tzutc()),
+                   'created_at': datetime.datetime.now(timezone.utc),
                    'emojis': [],
                    'favourited': False,
                    'favourites_count': 0,
@@ -328,7 +328,7 @@ image_with_description = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/
                                       'username': 'moatest'},
                           'application': {'name': 'Web', 'website': None},
                           'content': '<p>image description test</p>',
-                          'created_at': datetime.datetime(2017, 11, 9, 5, 52, 40, 901000, tzinfo=tzutc()),
+                          'created_at': datetime.datetime.now(timezone.utc),
                           'emojis': [],
                           'favourited': False,
                           'favourites_count': 0,
@@ -385,7 +385,7 @@ toot_with_mention = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/accou
                      'content': '<p>mentioning <span class="h-card"><a '
                                 'href="https://pdx.social/@foozmeat" class="u-url '
                                 'mention">@<span>foozmeat</span></a></span> here</p>',
-                     'created_at': datetime.datetime(2017, 11, 9, 20, 26, 46, 625000, tzinfo=tzutc()),
+                     'created_at': datetime.datetime.now(timezone.utc),
                      'emojis': [],
                      'favourited': False,
                      'favourites_count': 0,
@@ -433,7 +433,7 @@ toot_double_mention = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/acc
                                   'href="https://pdx.social/@moa_party" class="u-url '
                                   'mention">@<span>moa_party</span></a></span><br />test 2 '
                                   '@moa_party@twitter.com</p>',
-                       'created_at': datetime.datetime(2017, 11, 27, 22, 21, 53, 411000, tzinfo=tzutc()),
+                       'created_at': datetime.datetime.now(timezone.utc),
                        'emojis': [],
                        'favourited': False,
                        'favourites_count': 0,
@@ -478,7 +478,7 @@ toot_with_cw = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/accounts/6
                             'username': 'moatest'},
                 'application': {'name': 'Web', 'website': None},
                 'content': '<p>This is the secret stuff</p>',
-                'created_at': datetime.datetime(2017, 11, 28, 1, 53, 21, 534000, tzinfo=tzutc()),
+                'created_at': datetime.datetime.now(timezone.utc),
                 'emojis': [],
                 'favourited': False,
                 'favourites_count': 0,
@@ -526,7 +526,7 @@ toot_with_many_urls = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/acc
                                   'those two stop you. There are many instances (like scifi.fyi or '
                                   'witches.town or... joinmastodon.com)</p><p>I&apos;m really '
                                   'content here.</p>',
-                       'created_at': datetime.datetime(2017, 12, 4, 2, 29, 11, 272000, tzinfo=tzutc()),
+                       'created_at': datetime.datetime.now(timezone.utc),
                        'emojis': [],
                        'favourited': False,
                        'favourites_count': 1,
@@ -574,7 +574,7 @@ toot_with_bogus_url = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/acc
                                   'reducing the resolution of performance.now() and disabling '
                                   'SharedArrayBuffers.</p><p>None of these efforts actually prevent '
                                   'attacks.</p>',
-                       'created_at': datetime.datetime(2018, 1, 4, 17, 14, 52, 348000, tzinfo=tzutc()),
+                       'created_at': datetime.datetime.now(timezone.utc),
                        'emojis': [],
                        'favourited': False,
                        'favourites_count': 0,
@@ -619,7 +619,7 @@ toot_incorrectly_truncated = {'account': {'acct': 'phildini',
                                          'technology they let in to their communities, and can therefore be '
                                          'safe “wake-up zones” for those cryogenically frozen or brought '
                                          'from the past in some way?</p>',
-                              'created_at': datetime.datetime(2018, 1, 29, 17, 0, 7, 420000, tzinfo=tzutc()),
+                              'created_at': datetime.datetime.now(timezone.utc),
                               'emojis': [],
                               'favourited': False,
                               'favourites_count': 2,
@@ -640,3 +640,53 @@ toot_incorrectly_truncated = {'account': {'acct': 'phildini',
                               'uri': 'https://wandering.shop/users/phildini/statuses/99434181894510181',
                               'url': 'https://wandering.shop/@phildini/99434181894510181',
                               'visibility': 'public'}
+
+sanitize_test = {'account': {'acct': 'moatest',
+                             'avatar': 'https://pdx.social/avatars/original/missing.png',
+                             'avatar_static': 'https://pdx.social/avatars/original/missing.png',
+                             'bot': False,
+                             'created_at': datetime.datetime(2017, 10, 30, 20, 34, 29, 216000, tzinfo=tzutc()),
+                             'display_name': 'Moa test account',
+                             'emojis': [],
+                             'fields': [],
+                             'followers_count': 0,
+                             'following_count': 1,
+                             'header': 'https://pdx.social/headers/original/missing.png',
+                             'header_static': 'https://pdx.social/headers/original/missing.png',
+                             'id': 6717,
+                             'locked': True,
+                             'note': '<p>Lot&apos;s of random garbage posts. You should ignore '
+                                     'it.</p>',
+                             'statuses_count': 270,
+                             'url': 'https://pdx.social/@moatest',
+                             'username': 'moatest'},
+                 'application': {'name': 'Web', 'website': None},
+                 'content': '<p>Sanitize test:</p><p><span class="h-card"><a '
+                            'href="https://pdx.social/@moatest" class="u-url '
+                            'mention">@<span>moatest</span></a></span><br '
+                            '/>@xcxcxcxc@twitter.com<br />xcxcxcxc@twitter.com<br '
+                            '/>@xcxcxcxc</p><p>@xcxcxcxc@twitter.com.<br '
+                            '/>xcxcxcxc@twitter.com.<br />@xcxcxcxc.</p>',
+                 'created_at': datetime.datetime.now(timezone.utc),
+                 'emojis': [],
+                 'favourited': False,
+                 'favourites_count': 0,
+                 'id': 100499052882653488,
+                 'in_reply_to_account_id': None,
+                 'in_reply_to_id': None,
+                 'language': 'en',
+                 'media_attachments': [],
+                 'mentions': [{'acct': 'moatest',
+                               'id': 6717,
+                               'url': 'https://pdx.social/@moatest',
+                               'username': 'moatest'}],
+                 'muted': False,
+                 'reblog': None,
+                 'reblogged': False,
+                 'reblogs_count': 0,
+                 'sensitive': False,
+                 'spoiler_text': '',
+                 'tags': [],
+                 'uri': 'https://pdx.social/users/moatest/statuses/100499052882653488',
+                 'url': 'https://pdx.social/@moatest/100499052882653488',
+                 'visibility': 'private'}

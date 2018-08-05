@@ -59,7 +59,7 @@ class Toot(Message):
     @property
     def too_old(self) -> bool:
         now = datetime.now(timezone.utc)
-        td = now - self.data.created_at
+        td = now - self.data['created_at']
         return td.total_seconds() >= 60 * 60 * HOUR_CUTOFF
 
     @property
