@@ -1,6 +1,13 @@
 {% extends "layout.html.j2" %}
 {% block body %}
 
+    <div>Time Span:
+        <a href="{{ url_for('stats', hours=24) }}">24 Hours</a>
+        <a href="{{ url_for('stats', hours=72) }}">72 Hours</a>
+        <a href="{{ url_for('stats', hours=168) }}">1 Week</a>
+        <a href="{{ url_for('stats', hours=336) }}">2 Weeks</a>
+    </div>
+    <hr>
     <img src="{{ url_for('time_graph', hours=hours) }}" alt="moa time stats">
     <hr>
     <img src="{{ url_for('count_graph', hours=hours) }}" alt="moa count stats">
