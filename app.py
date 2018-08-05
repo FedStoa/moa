@@ -15,7 +15,7 @@ from instagram.client import InstagramAPI
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError
-from sqlalchemy import exc
+from sqlalchemy import exc, func
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted
@@ -509,6 +509,9 @@ def timespan(hours):
         t = hours // 24
         tw = 'days'
 
+        if t == 1:
+            tw = 'day'
+
     if hours % (24 * 7) == 0:
         t = hours // (24 * 7)
         tw = 'weeks'
@@ -537,7 +540,7 @@ def time_graph():
     times = r['time'].tolist()
     # avg = r['avg'].tolist()
 
-    chart = pygal.Line(title=f"Worker run time (s) in the last {timespan(hours)}",
+    chart = pygal.Line(title=f"Worker run time (s) ({timespan(hours)})",
                        stroke_style={'width': 5},
                        show_legend=False)
 
@@ -550,8 +553,8 @@ def time_graph():
 @app.route('/stats/counts.svg')
 def count_graph():
     hours = int(request.args.get('hours', 24))
-
     since = datetime.now() - timedelta(hours=hours)
+
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created, WorkerStat.toots, WorkerStat.tweets, WorkerStat.instas)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
@@ -565,7 +568,7 @@ def count_graph():
     tweets = r['tweets'].tolist()
     instas = r['instas'].tolist()
 
-    chart = pygal.StackedBar(title=f"# of Incoming Messages in the last {timespan(hours)}",
+    chart = pygal.StackedBar(title=f"# of Incoming Messages ({timespan(hours)})",
                              human_readable=True,
                              legend_at_bottom=True)
     chart.add('Toots', toots)
@@ -577,7 +580,12 @@ def count_graph():
 
 @app.route('/stats/users.svg')
 def user_graph():
-    stats_query = db.session.query(Bridge).with_entities(Bridge.created)
+    hours = int(request.args.get('hours', 24))
+    since = datetime.now() - timedelta(hours=hours)
+
+    stats_query = db.session.query(Bridge).filter(Bridge.created > since).with_entities(Bridge.created)
+
+    base_count_query = db.session.query(func.count(Bridge.id)).scalar()
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
     df.set_index(['created'], inplace=True)
@@ -589,14 +597,14 @@ def user_graph():
 
     r = df.resample('d').sum()
     r = r.fillna(0)
-    r['cum_sum'] = r['count'].cumsum()
+    r['cum_sum'] = r['count'].cumsum() + base_count_query
 
     # app.logger.info(r)
 
     users = r['cum_sum'].tolist()
     # app.logger.info(users)
 
-    chart = pygal.Line(title="# of Users (all time)",
+    chart = pygal.Line(title=f"# of Users ({timespan(hours)})",
                        stroke_style={'width': 5},
                        show_legend=False)
     chart.add('Users', users, fill=True, show_dots=False)
