@@ -86,7 +86,7 @@ class TootPoster(Poster):
         spoiler_text = ""
 
         if msg_type == 'Tweet':
-            if self.bridge.settings.tweet_cw_text:
+            if self.bridge.settings.tweets_behind_cw:
                 spoiler_text = self.bridge.settings.tweet_cw_text
 
             if cw:
