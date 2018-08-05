@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 import logging
 from moa.message import Message
-from tweet import HOUR_CUTOFF
+from moa.tweet import HOUR_CUTOFF
 
 MY_TLDS = [
     "shop"

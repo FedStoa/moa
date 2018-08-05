@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from instagram.helper import datetime_to_timestamp
 
 from moa.message import Message
-from tweet import HOUR_CUTOFF
+from moa.tweet import HOUR_CUTOFF
 
 logger = logging.getLogger('worker')
 
