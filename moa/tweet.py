@@ -21,6 +21,7 @@ class Tweet(Message):
         self.__content = None
         self.api = api
         self.type = 'Tweet'
+        self.cw = None
 
     @property
     def id(self) -> int:
@@ -49,11 +50,11 @@ class Tweet(Message):
                 target_id = self.data.id
 
             fetched_tweet = self.api.GetStatus(
-                status_id=target_id,
-                trim_user=True,
-                include_my_retweet=False,
-                include_entities=True,
-                include_ext_alt_text=True
+                    status_id=target_id,
+                    trim_user=True,
+                    include_my_retweet=False,
+                    include_entities=True,
+                    include_ext_alt_text=True
             )
 
             self.__fetched_attachments = fetched_tweet.media
@@ -170,6 +171,7 @@ class Tweet(Message):
     def clean_content(self):
 
         quoted_text = None
+        cw_regex = r'[Cc][Ww]: ([\w ]+)'
 
         if not self.__content:
 
@@ -187,6 +189,13 @@ class Tweet(Message):
 
             else:
                 content = self.data.full_text
+
+                m = re.search(cw_regex, content)
+
+                if m:
+                    whole_cw = m.group(0)
+                    content = content.replace(whole_cw, '').strip()
+                    self.cw = m.group(1)
 
             content = html.unescape(content)
 
@@ -285,4 +294,3 @@ class Tweet(Message):
                                     'description': attachment.ext_alt_text})
 
         return attachments
-

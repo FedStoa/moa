@@ -1,18 +1,18 @@
 import logging
 import os
-import pprint as pp
 import tempfile
 import time
 from os.path import splitext
 from typing import Optional
 from urllib.parse import urlparse
+import pprint as pp
 
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 
 from moa.message import Message
 from moa.models import Mapping
-from moa. poster import Poster
+from moa.poster import Poster
 
 logger = logging.getLogger('worker')
 
@@ -59,7 +59,8 @@ class TootPoster(Poster):
                                                   reply_to,
                                                   media_ids=self.media_ids,
                                                   sensitive=post.sensitive,
-                                                  msg_type=post.type)
+                                                  msg_type=post.type,
+                                                  cw=post.cw)
                 logger.info(f"Toot ID: {mastodon_last_id}")
 
                 if mastodon_last_id:
@@ -79,13 +80,17 @@ class TootPoster(Poster):
 
         return True
 
-    def send_toot(self, status_text: str, reply_to: int, media_ids=None, sensitive=False, msg_type="") -> Optional[int]:
+    def send_toot(self, status_text: str, reply_to: int, media_ids=None, sensitive=False, msg_type="", cw=None) -> Optional[int]:
         retry_counter = 0
         post_success = False
-        spoiler_text = None
+        spoiler_text = ""
 
         if msg_type == 'Tweet':
-            spoiler_text = self.bridge.settings.tweet_cw_text if self.bridge.settings.tweets_behind_cw else ""
+            if self.bridge.settings.tweet_cw_text:
+                spoiler_text = self.bridge.settings.tweet_cw_text
+
+            if cw:
+                spoiler_text = cw
 
         while not post_success and retry_counter < MASTODON_RETRIES:
             logger.info(f'Tooting "{status_text}"')

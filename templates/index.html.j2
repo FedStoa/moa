@@ -60,6 +60,8 @@
                 <ul>
                     <li>{{ form.tweet_cw_text.label }}{{ form.tweet_cw_text }}</li>
                 </ul>
+                <div>NOTE: Tweets containing "CW: phrase" will have a Content Warning when converted to a toot.</div>
+
                 {% if g.bridge.instagram_access_code %}
                     <hr>
                     <li>{{ form.instagram_post_to_twitter }}{{ form.instagram_post_to_twitter.label }}</li>
