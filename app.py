@@ -504,6 +504,18 @@ def stats():
                            hours=hours)
 
 
+def timespan(hours):
+    if hours % 24 == 0:
+        t = hours // 24
+        tw = 'days'
+
+    if hours % (24 * 7) == 0:
+        t = hours // (24 * 7)
+        tw = 'weeks'
+
+    return f'{t} {tw}'
+
+
 @app.route('/stats/times.svg')
 def time_graph():
 
@@ -525,7 +537,7 @@ def time_graph():
     times = r['time'].tolist()
     # avg = r['avg'].tolist()
 
-    chart = pygal.Line(title=f"Worker run time (s) in the last {hours} hours",
+    chart = pygal.Line(title=f"Worker run time (s) in the last {timespan(hours)}",
                        stroke_style={'width': 5},
                        show_legend=False)
 
@@ -553,7 +565,7 @@ def count_graph():
     tweets = r['tweets'].tolist()
     instas = r['instas'].tolist()
 
-    chart = pygal.StackedBar(title=f"# of Incoming Messages in the last {hours} hours",
+    chart = pygal.StackedBar(title=f"# of Incoming Messages in the last {timespan(hours)}",
                              human_readable=True,
                              legend_at_bottom=True)
     chart.add('Toots', toots)
