@@ -1,12 +1,15 @@
 import html
 import logging
 import re
+from datetime import datetime, timezone
 
 import requests
 
 from moa.message import Message
 
 logger = logging.getLogger('worker')
+
+HOUR_CUTOFF = 8
 
 
 class Tweet(Message):
@@ -25,6 +28,12 @@ class Tweet(Message):
 
     def dump_data(self):
         return self.data.__dict__
+
+    @property
+    def too_old(self) -> bool:
+        now = datetime.now(timezone.utc)
+        td = now - datetime.strptime(self.data.created_at, '%a %b %d %H:%M:%S %z %Y')
+        return td.total_seconds() >= 60 * 60 * HOUR_CUTOFF
 
     @property
     def media(self):
@@ -56,6 +65,10 @@ class Tweet(Message):
 
     @property
     def should_skip(self):
+
+        if self.too_old:
+            logger.info(f'Skipping because >= {HOUR_CUTOFF} hours old.')
+            return True
 
         if self.is_reply:
             logger.info(f'Skipping reply.')

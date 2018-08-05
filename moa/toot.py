@@ -1,8 +1,10 @@
 import html
 import re
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 import logging
 from moa.message import Message
+from tweet import HOUR_CUTOFF
 
 MY_TLDS = [
     "shop"
@@ -53,6 +55,12 @@ class Toot(Message):
             return self.data['reblog']['content']
         else:
             return self.data['content']
+
+    @property
+    def too_old(self) -> bool:
+        now = datetime.now(timezone.utc)
+        td = now - self.data.created_at
+        return td.total_seconds() >= 60 * 60 * HOUR_CUTOFF
 
     @property
     def is_reply(self):
@@ -108,6 +116,10 @@ class Toot(Message):
 
     @property
     def should_skip(self):
+
+        if self.too_old:
+            logger.info(f'Skipping because >= {HOUR_CUTOFF} hours old.')
+            return True
 
         if self.visibility == 'direct':
             logger.info(f'Skipping DM.')

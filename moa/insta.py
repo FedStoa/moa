@@ -1,9 +1,12 @@
 import logging
 
 import re
+from datetime import datetime, timezone
+
 from instagram.helper import datetime_to_timestamp
 
 from moa.message import Message
+from tweet import HOUR_CUTOFF
 
 logger = logging.getLogger('worker')
 
@@ -25,6 +28,12 @@ class Insta(Message):
     @property
     def url(self):
         return self.data.link
+
+    @property
+    def too_old(self) -> bool:
+        now = datetime.now(timezone.utc)
+        td = now - self.data.created_time
+        return td.total_seconds() >= 60 * 60 * HOUR_CUTOFF
 
     @property
     def clean_content(self):
@@ -58,6 +67,11 @@ class Insta(Message):
 
     @property
     def should_skip(self) -> bool:
+
+        if self.too_old:
+            logger.info(f'Skipping because >= {HOUR_CUTOFF} hours old.')
+            return True
+
         return False
 
     @property
