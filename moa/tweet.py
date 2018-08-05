@@ -21,7 +21,6 @@ class Tweet(Message):
         self.__content = None
         self.api = api
         self.type = 'Tweet'
-        self.cw = None
 
     @property
     def id(self) -> int:

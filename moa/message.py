@@ -12,6 +12,7 @@ class Message:
         self.settings = settings
         self.data = data
         self.type = 'Message'
+        self.cw = None
 
     def prepare_for_post(self, length=1):
         raise Exception("Needs Implementation")
