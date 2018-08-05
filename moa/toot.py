@@ -1,8 +1,9 @@
 import html
+import logging
 import re
 from datetime import datetime, timezone
 from urllib.parse import urlparse
-import logging
+
 from moa.message import Message
 from moa.tweet import HOUR_CUTOFF
 
@@ -188,6 +189,44 @@ class Toot(Message):
             # logger.debug(f"{len(string)} {string} {status_length}")
         return status_length
 
+    def sanitize_twitter_handles(self):
+        self.content = re.sub(r'@?(\w{1,15})@twitter.com', '\g<1>', self.content)
+
+        # find possible twitter handles so we can get their ranges
+        tm = list(re.finditer(r'@(\w{1,15})', self.content))
+
+        # find all masto handles so we can get their ranges
+        mm = list(re.finditer(r'@\w+@[\w\.]+', self.content))
+
+        handles = set(tm)
+
+        # remove all potential twitter handles that overlap a masto handle
+        for m in mm:
+            good_handles = set()
+            ms = m.span()
+
+            for t in tm:
+                ts = t.span()
+
+                # do the ranges overlap?
+                overlap = not ((ts[-1] < ms[0]) or (ms[-1] < ts[0]))
+
+                if overlap:
+                    continue
+
+                good_handles.add(t)
+
+            handles = handles & good_handles
+
+        handles = list(handles)
+        handles = sorted(handles, key=lambda x: x.span()[0], reverse=True)
+
+        for h in handles:
+            front = self.content[:h.span()[0]]
+            middle = h.group(1)
+            back = self.content[h.span()[1]:]
+            self.content = front + middle + back
+
     @property
     def clean_content(self):
 
@@ -217,9 +256,10 @@ class Toot(Message):
                 self.content = re.sub(f'@({mention[0]})(?!@)', f"{mention[1]}", self.content)
 
             if self.config.SANITIZE_TWITTER_HANDLES:
-                self.content = re.sub(r'@(\w+)@twitter.com', '\g<1>', self.content)
+                self.sanitize_twitter_handles()
+
             else:
-                self.content = re.sub(r'@(\w+)@twitter.com', '@\g<1>', self.content)
+                self.content = re.sub(r'@(\w{1,15})@twitter.com', '@\g<1>', self.content)
 
             self.content = self.content.strip()
 

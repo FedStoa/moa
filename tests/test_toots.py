@@ -79,3 +79,18 @@ class TestToots(unittest.TestCase):
         toot.split_toot(TWEET_LENGTH)
 
         self.assertEqual('Has anyone written a story where the Amish play a crucial role in future society because they deliberately choose which technology they let in to their communities, and can therefore be safe “wake-up zones” for those cry…\nhttps://wandering.shop/@phildini/99434181894510181', toot.message_parts[0])
+
+    def test_twitter_sanitize(self):
+        toot = Toot(self.settings, sanitize_test, self.c)
+        expected_outcome = """Sanitize test:
+
+@moatest@pdx.social
+xcxcxcxc
+xcxcxcxc
+xcxcxcxc
+
+xcxcxcxc.
+xcxcxcxc.
+xcxcxcxc."""
+
+        self.assertEqual(toot.clean_content, expected_outcome)
