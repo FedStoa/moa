@@ -20,8 +20,8 @@ class SettingsForm(FlaskForm):
         ('private', "Private"),
         ('unlisted', 'Unlisted'),
     ])
-    tweets_behind_cw = BooleanField('Post Tweets behind a Content Warning?')
-    tweet_cw_text = StringField('Content Warning text: ',
+    tweets_behind_cw = BooleanField('Always Post Tweets behind a Content Warning?')
+    tweet_cw_text = StringField('',
                                 validators=[Length(min=1, message="Content Warning text can't be empty")])
 
     instagram_enabled = BooleanField('Import posts from Instagram?')

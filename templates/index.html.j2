@@ -56,10 +56,7 @@
                 <li>{{ form.post_rts_to_mastodon }}{{ form.post_rts_to_mastodon.label }}</li>
                 <li>{{ form.post_quotes_to_mastodon }}{{ form.post_quotes_to_mastodon.label }}</li>
                 <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
-                <li>{{ form.tweets_behind_cw }}{{ form.tweets_behind_cw.label }}</li>
-                <ul>
-                    <li>{{ form.tweet_cw_text.label }}{{ form.tweet_cw_text }}</li>
-                </ul>
+                <li>{{ form.tweets_behind_cw }}{{ form.tweets_behind_cw.label }} {{ form.tweet_cw_text }}</li>
                 <div>NOTE: Tweets containing "CW: phrase" will have a Content Warning when converted to a toot.</div>
 
                 {% if g.bridge.instagram_access_code %}
