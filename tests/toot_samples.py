@@ -1,5 +1,6 @@
 import datetime
 from datetime import timezone
+
 from dateutil.tz import tzutc
 
 boost = {'_pagination_prev': {'_pagination_endpoint': '/api/v1/accounts/6717/statuses',
@@ -690,3 +691,54 @@ sanitize_test = {'account': {'acct': 'moatest',
                  'uri': 'https://pdx.social/users/moatest/statuses/100499052882653488',
                  'url': 'https://pdx.social/@moatest/100499052882653488',
                  'visibility': 'private'}
+
+long_toot = {'account': {'acct': 'moatest',
+                         'avatar': 'https://pdx.social/avatars/original/missing.png',
+                         'avatar_static': 'https://pdx.social/avatars/original/missing.png',
+                         'bot': False,
+                         'created_at': datetime.datetime(2017, 10, 30, 20, 34, 29, 216000, tzinfo=tzutc()),
+                         'display_name': 'Moa test account',
+                         'emojis': [],
+                         'fields': [],
+                         'followers_count': 0,
+                         'following_count': 1,
+                         'header': 'https://pdx.social/headers/original/missing.png',
+                         'header_static': 'https://pdx.social/headers/original/missing.png',
+                         'id': 6717,
+                         'locked': True,
+                         'note': '<p>Lot&apos;s of random garbage posts. You should ignore '
+                                 'it.</p>',
+                         'statuses_count': 272,
+                         'url': 'https://pdx.social/@moatest',
+                         'username': 'moatest'},
+             'application': {'name': 'Whalebird', 'website': 'https://whalebird.org'},
+             'content': '<p>It is a long established fact that a reader will be distracted '
+                        'by the readable content of a page when looking at its layout. The '
+                        'point of using Lorem Ipsum is that it has a more-or-less normal '
+                        'distribution of letters, as opposed to using &apos;Content here, '
+                        'content here&apos;, making it look like readable English. Many '
+                        'desktop publishing packages and web page editors now use Lorem '
+                        'Ipsum as their default model text, and a search for &apos;lorem '
+                        'ipsum&apos; will uncover many web sites still in their infancy. '
+                        'Various</p>',
+             'created_at': datetime.datetime(2018, 8, 6, 0, 39, 52, 945000, tzinfo=tzutc()),
+             'emojis': [],
+             'favourited': False,
+             'favourites_count': 0,
+             'id': 100500504096121723,
+             'in_reply_to_account_id': None,
+             'in_reply_to_id': None,
+             'language': 'en',
+             'media_attachments': [],
+             'mentions': [],
+             'muted': False,
+             'pinned': False,
+             'reblog': None,
+             'reblogged': False,
+             'reblogs_count': 0,
+             'sensitive': False,
+             'spoiler_text': '',
+             'tags': [],
+             'uri': 'https://pdx.social/users/moatest/statuses/100500504096121723',
+             'url': 'https://pdx.social/@moatest/100500504096121723',
+             'visibility': 'public'}
