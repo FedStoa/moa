@@ -105,7 +105,7 @@ for bridge in bridges:
     #
 
     new_toots: List[Any] = []
-    l.debug(f"-- {bridge.id}: {bridge.mastodon_user}@{mastodonhost.hostname} --")
+    l.info(f"-- {bridge.id}: {bridge.mastodon_user}@{mastodonhost.hostname} --")
 
     try:
         new_toots = mast_api.account_statuses(
@@ -127,7 +127,7 @@ for bridge in bridges:
         continue
 
     if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
-        l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
+        # l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
         l.info(f"{len(new_toots)} new toots found")
 
     if c.SEND and len(new_toots) != 0:
@@ -139,7 +139,7 @@ for bridge in bridges:
     #
 
     new_tweets: List[Any] = []
-    l.debug(f"-- {bridge.id}: @{bridge.twitter_handle} --")
+    l.info(f"-- {bridge.id}: @{bridge.twitter_handle} --")
 
     try:
         new_tweets = twitter_api.GetUserTimeline(
