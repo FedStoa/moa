@@ -602,7 +602,7 @@ def user_graph():
     hours = int(request.args.get('hours', 24))
     since = datetime.now() - timedelta(hours=hours)
 
-    stats_query = db.session.query(Bridge).filter(Bridge.created > since).with_entities(Bridge.created)
+    stats_query = db.session.query(Bridge).filter(Bridge.created > since).filter(Bridge.enabled == 1).with_entities(Bridge.created)
 
     base_count_query = db.session.query(func.count(Bridge.id)).scalar()
 
