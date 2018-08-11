@@ -109,7 +109,7 @@ for bridge in bridges:
     #
 
     new_toots: List[Any] = []
-    l.info(f"-- {bridge.id}: {bridge.mastodon_user}@{mastodonhost.hostname} --")
+    l.debug(f"-- {bridge.id}: {bridge.mastodon_user}@{mastodonhost.hostname} --")
 
     try:
         new_toots = mast_api.account_statuses(
@@ -143,7 +143,7 @@ for bridge in bridges:
     #
 
     new_tweets: List[Any] = []
-    l.info(f"-- {bridge.id}: @{bridge.twitter_handle} --")
+    l.debug(f"-- {bridge.id}: @{bridge.twitter_handle} --")
 
     try:
         new_tweets = twitter_api.GetUserTimeline(
