@@ -544,14 +544,13 @@ def time_graph():
     r_2 = df_2.resample('h').mean()
     r_2 = r_2.fillna(0)
     times_2 = r_2['time'].tolist()
-    # avg = r['avg'].tolist()
 
     chart = pygal.Line(title=f"Worker run time (s) ({timespan(hours)})",
                        stroke_style={'width': 2},
-                       show_legend=False)
+                       legend_at_bottom=True)
 
-    chart.add('Total time 1', times_1, show_dots=False)
-    chart.add('Total time 2', times_2, show_dots=False)
+    chart.add('Worker 1', times_1, show_dots=False)
+    chart.add('Worker 2', times_2, show_dots=False)
 
     return chart.render_response()
 
