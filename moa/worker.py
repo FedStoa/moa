@@ -36,16 +36,17 @@ if c.SENTRY_DSN:
     client = Client(c.SENTRY_DSN)
 
 parser = argparse.ArgumentParser(description='Moa Worker')
-parser.add_argument('--modulo', dest='modulo', type=int, required=False, default=1)
+parser.add_argument('--worker', dest='worker', type=int, required=False, default=1)
+parser.add_argument('--jobs', dest='jobs', type=int, required=False, default=1)
 args = parser.parse_args()
 
-worker_stat = WorkerStat(worker=args.modulo)
+worker_stat = WorkerStat(worker=args.worker)
 
 FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 logging.basicConfig(format=FORMAT)
 
-l = logging.getLogger(f'worker_{args.modulo}')
+l = logging.getLogger(f'worker_{args.worker}')
 
 if c.DEBUG:
     l.setLevel(logging.DEBUG)
@@ -66,7 +67,7 @@ except exc.SQLAlchemyError as e:
 
 session = Session(engine)
 
-bridges = session.query(Bridge).filter_by(enabled=True).filter(Bridge.id % args.modulo == 0)
+bridges = session.query(Bridge).filter_by(enabled=True)
 
 if not c.DEBUG:
     bridges = bridges.order_by(func.rand())
@@ -76,6 +77,9 @@ for bridge in bridges:
     total_time = time.time() - start_time
 
     if total_time > 60 * 4.5:
+        continue
+
+    if args.worker != (bridge.id % args.jobs) + 1:
         continue
 
     mastodon_last_id = bridge.mastodon_last_id
