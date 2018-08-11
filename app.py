@@ -505,6 +505,10 @@ def stats():
 
 
 def timespan(hours):
+
+    t = hours
+    tw = 'hour'
+
     if hours % 24 == 0:
         t = hours // 24
         tw = 'days'
