@@ -1,3 +1,4 @@
+import argparse
 import importlib
 import logging
 import os
@@ -25,7 +26,6 @@ from moa.tweet_poster import TweetPoster
 from moa.toot_poster import TootPoster
 
 start_time = time.time()
-worker_stat = WorkerStat()
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
@@ -35,12 +35,22 @@ if c.SENTRY_DSN:
 
     client = Client(c.SENTRY_DSN)
 
+parser = argparse.ArgumentParser(description='Moa Worker')
+parser.add_argument('--modulo', dest='modulo', type=int, required=False, default=1)
+args = parser.parse_args()
+
+worker_stat = WorkerStat(worker=args.modulo)
+
 FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 logging.basicConfig(format=FORMAT)
 
-l = logging.getLogger('worker')
-l.setLevel(logging.DEBUG)
+l = logging.getLogger(f'worker_{args.modulo}')
+
+if c.DEBUG:
+    l.setLevel(logging.DEBUG)
+else:
+    l.setLevel(logging.INFO)
 
 # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
@@ -56,14 +66,13 @@ except exc.SQLAlchemyError as e:
 
 session = Session(engine)
 
-bridges = session.query(Bridge).filter_by(enabled=True)
+bridges = session.query(Bridge).filter_by(enabled=True).filter(Bridge.id % args.modulo == 0)
 
 if not c.DEBUG:
     bridges = bridges.order_by(func.rand())
 
 for bridge in bridges:
     # l.debug(bridge.settings.__dict__)
-
     total_time = time.time() - start_time
 
     if total_time > 60 * 4.5:
@@ -96,7 +105,7 @@ for bridge in bridges:
     #
 
     new_toots: List[Any] = []
-    # l.error(f"-- {bridge.mastodon_user}@{mastodonhost.hostname} --")
+    l.debug(f"-- {bridge.id}: {bridge.mastodon_user}@{mastodonhost.hostname} --")
 
     try:
         new_toots = mast_api.account_statuses(
@@ -113,7 +122,7 @@ for bridge in bridges:
         continue
 
     except MastodonNetworkError as e:
-        # l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
+        l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
         l.error(e)
         continue
 
@@ -130,7 +139,7 @@ for bridge in bridges:
     #
 
     new_tweets: List[Any] = []
-    # l.error(f"-- @{bridge.twitter_handle} --")
+    l.debug(f"-- {bridge.id}: @{bridge.twitter_handle} --")
 
     try:
         new_tweets = twitter_api.GetUserTimeline(
