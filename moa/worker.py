@@ -69,8 +69,8 @@ session = Session(engine)
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
-if not c.DEBUG:
-    bridges = bridges.order_by(func.rand())
+# if not c.DEBUG:
+#     bridges = bridges.order_by(func.rand())
 
 for bridge in bridges:
     # l.debug(bridge.settings.__dict__)
