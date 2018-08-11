@@ -521,31 +521,37 @@ def timespan(hours):
 
 @app.route('/stats/times.svg')
 def time_graph():
-
     hours = int(request.args.get('hours', 24))
 
     since = datetime.now() - timedelta(hours=hours)
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
                                                                                                 WorkerStat.time,
-                                                                                                WorkerStat.avg)
+                                                                                                WorkerStat.avg,
+                                                                                                WorkerStat.worker)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
 
     df.set_index(['created'], inplace=True)
 
-    df.groupby(level=0).mean()
-    r = df.resample('h').mean()
-    r = r.fillna(0)
+    df_1 = df[df['worker'] == 1]
+    df_1.groupby(level=0).mean()
+    r_1 = df_1.resample('h').mean()
+    r_1 = r_1.fillna(0)
+    times_1 = r_1['time'].tolist()
 
-    times = r['time'].tolist()
+    df_2 = df[df['worker'] == 2]
+    df_2.groupby(level=0).mean()
+    r_2 = df_2.resample('h').mean()
+    r_2 = r_2.fillna(0)
+    times_2 = r_2['time'].tolist()
     # avg = r['avg'].tolist()
 
     chart = pygal.Line(title=f"Worker run time (s) ({timespan(hours)})",
-                       stroke_style={'width': 5},
+                       stroke_style={'width': 2},
                        show_legend=False)
 
-    chart.add('Total time', times, fill=True, show_dots=False)
-    # chart.add('Avg time', avg)
+    chart.add('Total time 1', times_1, show_dots=False)
+    chart.add('Total time 2', times_2, show_dots=False)
 
     return chart.render_response()
 
