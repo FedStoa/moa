@@ -20,7 +20,7 @@ class TestToots(unittest.TestCase):
         FORMAT = '%(asctime)-15s %(message)s'
         logging.basicConfig(format=FORMAT)
 
-        self.l = logging.getLogger('worker')
+        self.l = logging.getLogger()
         self.l.setLevel(logging.DEBUG)
 
     def test_boost(self):
