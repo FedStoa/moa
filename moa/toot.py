@@ -20,7 +20,7 @@ URL_REGEXP = re.compile((
     r'(?:[/]?[?][a-z0-9!*\'();:&=+$/%#\[\]\-_.,~?]*)*'  # path/query params
     r')'), re.U | re.I | re.X)
 
-logger = logging.getLogger()
+logger = logging.getLogger('worker')
 
 
 class Toot(Message):

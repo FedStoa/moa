@@ -46,7 +46,7 @@ FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 logging.basicConfig(format=FORMAT)
 
-l = logging.getLogger()
+l = logging.getLogger('worker')
 
 if c.DEBUG:
     l.setLevel(logging.DEBUG)

@@ -7,7 +7,7 @@ import requests
 
 from moa.message import Message
 
-logger = logging.getLogger()
+logger = logging.getLogger('worker')
 
 HOUR_CUTOFF = 8
 

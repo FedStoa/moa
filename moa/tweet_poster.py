@@ -13,7 +13,7 @@ from moa.message import Message
 from moa.models import Mapping
 from moa.poster import Poster
 
-logger = logging.getLogger()
+logger = logging.getLogger('worker')
 TWITTER_RETRIES = 3
 TWITTER_RETRY_DELAY = 5
 TWEET_LENGTH = 272  # be conservative so we don't split too near the end

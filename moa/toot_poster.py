@@ -14,7 +14,7 @@ from moa.message import Message
 from moa.models import Mapping
 from moa.poster import Poster
 
-logger = logging.getLogger()
+logger = logging.getLogger('worker')
 
 MASTODON_RETRIES = 3
 MASTODON_RETRY_DELAY = 5

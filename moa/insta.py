@@ -8,7 +8,7 @@ from instagram.helper import datetime_to_timestamp
 from moa.message import Message
 from moa.tweet import HOUR_CUTOFF
 
-logger = logging.getLogger()
+logger = logging.getLogger('worker')
 
 
 class Insta(Message):
