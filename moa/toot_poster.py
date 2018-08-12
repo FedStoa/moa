@@ -16,7 +16,7 @@ from moa.poster import Poster
 
 logger = logging.getLogger('worker')
 
-MASTODON_RETRIES = 3
+MASTODON_RETRIES = 1
 MASTODON_RETRY_DELAY = 5
 MASTODON_TOOT_LENGTH = 495
 
@@ -115,13 +115,14 @@ class TootPoster(Poster):
 
                 if retry_counter < MASTODON_RETRIES:
                     retry_counter += 1
-                    time.sleep(MASTODON_RETRY_DELAY)
+                    # time.sleep(MASTODON_RETRY_DELAY)
 
             except MastodonNetworkError:
                 # assume this is transient
-                pass
+                retry_counter += 1
+                # pass
 
-        if retry_counter == MASTODON_RETRIES:
+        if retry_counter >= MASTODON_RETRIES:
             logger.error("Retry limit reached.")
             return None
 
