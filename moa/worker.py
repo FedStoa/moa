@@ -132,13 +132,12 @@ for bridge in bridges:
         continue
 
     except MastodonNetworkError as e:
-        l.error(f"Working on user {bridge.mastodon_user}@{mastodonhost.hostname}")
-        l.error(e)
+        l.error(f"Error with on user {bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
         continue
 
     if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
         # l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
-        l.info(f"{len(new_toots)} new toots found")
+        l.info(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {len(new_toots)} new toots found")
 
     if c.SEND and len(new_toots) != 0:
         bridge.mastodon_last_id = int(new_toots[0]['id'])
@@ -158,7 +157,7 @@ for bridge in bridges:
                 exclude_replies=False)
 
     except TwitterError as e:
-        l.error(e)
+        l.error(f"Error with on user @{bridge.twitter_handle}: {e}")
 
         if 'Unknown' in e.message:
             continue
@@ -177,8 +176,9 @@ for bridge in bridges:
         continue
 
     if bridge.settings.post_to_mastodon_enabled and len(new_tweets) != 0:
-        l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
-        l.info(f"{len(new_tweets)} new tweets found")
+        l.info(f"@{bridge.twitter_handle}: {len(new_tweets)} new tweets found")
+        # l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
+        # l.info(f"{len(new_tweets)} new tweets found")
 
     if c.SEND and len(new_tweets) != 0:
         bridge.twitter_last_id = new_tweets[0].id
