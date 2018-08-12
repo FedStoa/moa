@@ -37,7 +37,6 @@ if c.SENTRY_DSN:
 
 parser = argparse.ArgumentParser(description='Moa Worker')
 parser.add_argument('--worker', dest='worker', type=int, required=False, default=1)
-parser.add_argument('--jobs', dest='jobs', type=int, required=False, default=1)
 args = parser.parse_args()
 
 worker_stat = WorkerStat(worker=args.worker)
@@ -79,7 +78,7 @@ for bridge in bridges:
     if total_time > 60 * 4.5:
         continue
 
-    if args.worker != (bridge.id % args.jobs) + 1:
+    if args.worker != (bridge.id % c.WORKER_JOBS) + 1:
         continue
 
     mastodon_last_id = bridge.mastodon_last_id
