@@ -15,6 +15,7 @@ from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from requests import ConnectionError
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy.sql.expression import func
 from twitter import TwitterError
 
@@ -76,6 +77,12 @@ for bridge in bridges:
     total_time = time.time() - start_time
 
     if total_time > 60 * 4.5:
+        continue
+
+    try:
+        _ = bridge.id
+    except ObjectDeletedError:
+        # in case the row is removed during a run
         continue
 
     if args.worker != (bridge.id % c.WORKER_JOBS) + 1:
