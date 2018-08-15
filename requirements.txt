@@ -13,7 +13,7 @@ cffi==1.11.5              # via cryptography
 chardet==3.0.4            # via requests
 click==6.7                # via flask, pip-tools
 coverage==4.5.1
-cryptography==2.2.2       # via http-ece, mastodon.py
+cryptography>=2.3       # via http-ece, mastodon.py
 decorator==4.2.1          # via mastodon.py
 first==2.0.1              # via pip-tools
 flask-mail==0.9.1
