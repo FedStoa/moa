@@ -571,7 +571,8 @@ def time_graph():
             times[i] = new_data + times[i]
 
         chart.add(f"{i}", times[i], show_dots=False)
-
+        i = i + 1
+        
     # df_1 = df[df['worker'] == 1]
     # times = df_1['created']
     # df_1.set_index(['created'], inplace=True)
