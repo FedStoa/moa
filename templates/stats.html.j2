@@ -13,6 +13,8 @@
     <hr>
     <img src="{{ url_for('count_graph', hours=hours) }}" alt="moa count stats">
     <hr>
+    <img src="{{ url_for('percent_graph', hours=hours) }}" alt="moa count ratios">
+    <hr>
     <img src="{{ url_for('user_graph', hours=hours) }}" alt="moa user stats">
 
 {% endblock %}

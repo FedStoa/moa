@@ -86,7 +86,7 @@ class WorkerStat(Base):
 
     @property
     def items(self):
-        return self.tweets + self.toots
+        return self.tweets + self.toots + self.instas
 
     def add_toot(self):
         self.toots += 1

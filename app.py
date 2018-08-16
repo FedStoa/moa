@@ -497,7 +497,6 @@ def logout():
 
 @app.route('/stats')
 def stats():
-
     hours = request.args.get('hours', 24)
 
     return render_template('stats.html.j2',
@@ -505,7 +504,6 @@ def stats():
 
 
 def timespan(hours):
-
     t = hours
     tw = 'hour'
 
@@ -576,7 +574,10 @@ def count_graph():
     hours = int(request.args.get('hours', 24))
     since = datetime.now() - timedelta(hours=hours)
 
-    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created, WorkerStat.toots, WorkerStat.tweets, WorkerStat.instas)
+    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
+                                                                                                WorkerStat.toots,
+                                                                                                WorkerStat.tweets,
+                                                                                                WorkerStat.instas)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
     df.set_index(['created'], inplace=True)
@@ -599,12 +600,49 @@ def count_graph():
     return chart.render_response()
 
 
+@app.route('/stats/percent.svg')
+def percent_graph():
+    hours = int(request.args.get('hours', 24))
+    since = datetime.now() - timedelta(hours=hours)
+
+    stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
+                                                                                                WorkerStat.toots,
+                                                                                                WorkerStat.tweets,
+                                                                                                WorkerStat.instas)
+
+    df = pd.read_sql(stats_query.statement, stats_query.session.bind)
+    df.set_index(['created'], inplace=True)
+
+    df.groupby(level=0).sum()
+    r = df.resample('h').sum()
+    r = r.fillna(0)
+
+    r['total'] = r['toots'] + r['tweets'] + r['instas']
+    r['tweets_p'] = r['tweets'] / r['total']
+    r['toots_p'] = r['toots'] / r['total']
+    r['instas_p'] = r['instas'] / r['total']
+
+    toots_p = r['toots_p'].tolist()
+    tweets_p = r['tweets_p'].tolist()
+    instas_p = r['instas_p'].tolist()
+
+    chart = pygal.StackedBar(title=f"Ratio of Incoming Messages ({timespan(hours)})",
+                             human_readable=True,
+                             legend_at_bottom=True)
+    chart.add('Tweets', tweets_p)
+    chart.add('Toots', toots_p)
+    chart.add('Instas', instas_p)
+
+    return chart.render_response()
+
+
 @app.route('/stats/users.svg')
 def user_graph():
     hours = int(request.args.get('hours', 24))
     since = datetime.now() - timedelta(hours=hours)
 
-    stats_query = db.session.query(Bridge).filter(Bridge.created > since).filter(Bridge.enabled == 1).with_entities(Bridge.created)
+    stats_query = db.session.query(Bridge).filter(Bridge.created > since).filter(Bridge.enabled == 1).with_entities(
+            Bridge.created)
 
     base_count_query = db.session.query(func.count(Bridge.id)).scalar()
 
