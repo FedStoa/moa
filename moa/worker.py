@@ -280,7 +280,7 @@ end_time = time.time()
 worker_stat.time = end_time - start_time
 
 l.info(
-        f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {worker_stat.avg}s avg")
+        f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items")
 
 session.add(worker_stat)
 session.commit()
