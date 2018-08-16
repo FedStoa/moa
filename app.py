@@ -530,7 +530,6 @@ def time_graph():
     since = datetime.now() - timedelta(hours=hours)
     stats_query = db.session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created,
                                                                                                 WorkerStat.time,
-                                                                                                WorkerStat.avg,
                                                                                                 WorkerStat.worker)
 
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
@@ -539,20 +538,16 @@ def time_graph():
     rs = {}
     l_1 = 0
     times = {}
-    main_times = None
+    main_times = pd.DataFrame({'A' : []})
 
     chart = pygal.Line(title=f"Worker run time (s) ({timespan(hours)})",
                        stroke_style={'width': 2},
                        legend_at_bottom=True)
 
     i = 1
+
     while i <= app.config['WORKER_JOBS']:
         dfs[i] = df[df['worker'] == i]
-
-        if not times:
-            main_times = dfs[i]['created']
-        else:
-            dfs[i]['created'] = main_times
 
         dfs[i].set_index(['created'], inplace=True)
         dfs[i].groupby(level=0).mean()
@@ -560,7 +555,7 @@ def time_graph():
         rs[i] = rs[i].fillna(0)
         times[i] = rs[i]['time'].tolist()
 
-        if not l_1:
+        if i == 1:
             l_1 = len(times[i])
 
         c_l = len(times[i])
@@ -572,33 +567,6 @@ def time_graph():
 
         chart.add(f"{i}", times[i], show_dots=False)
         i = i + 1
-        
-    # df_1 = df[df['worker'] == 1]
-    # times = df_1['created']
-    # df_1.set_index(['created'], inplace=True)
-    # df_1.groupby(level=0).mean()
-    # r_1 = df_1.resample('h').mean()
-    # r_1 = r_1.fillna(0)
-    # times_1 = r_1['time'].tolist()
-    # l_1 = len(times_1)
-
-    # df_2 = df[df['worker'] == 2]
-    # df_2['created'] = times
-    # df_2.set_index(['created'], inplace=True)
-    # df_2.groupby(level=0).mean()
-    # r_2 = df_2.resample('h').mean()
-    # r_2 = r_2.fillna(0)
-    # times_2 = r_2['time'].tolist()
-
-    # l_2 = len(times_2)
-    # diff = l_1 - l_2
-
-    # if diff > 0:
-    #     new_data = [0] * diff
-    #     times_2 = new_data + times_2
-
-    # chart.add('Worker 1', times_1, show_dots=False)
-    # chart.add('Worker 2', times_2, show_dots=False)
 
     return chart.render_response()
 
