@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import time
+from datetime import datetime
 from typing import List, Any
 
 import requests
@@ -92,6 +93,10 @@ for bridge in bridges:
     twitter_last_id = bridge.twitter_last_id
 
     mastodonhost = bridge.mastodon_host
+
+    if mastodonhost.defer_until > datetime.now():
+        l.warning(f"Deferring connections to {mastodonhost.hostname}")
+        continue
 
     mast_api = Mastodon(
             client_id=mastodonhost.client_id,

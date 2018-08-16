@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import MetaData, Column, Integer, String, DateTime, BigInteger, ForeignKey, Boolean, PickleType, Float, \
     event
 from sqlalchemy.ext.declarative import declarative_base
@@ -7,6 +7,8 @@ from moa.settings import Settings
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
+
+PENALTY_TIME = 600  # 10 minutes
 
 
 class MastodonHost(Base):
@@ -18,6 +20,10 @@ class MastodonHost(Base):
     client_secret = Column(String(64), nullable=False)
     created = Column(DateTime, default=datetime.utcnow)
     bridges = relationship('Bridge', backref='mastodon_host', lazy='dynamic')
+    defer_until = Column(DateTime)
+
+    def defer(self):
+        self.defer_until = datetime.now() + timedelta(seconds=PENALTY_TIME)
 
 
 class Bridge(Base):
