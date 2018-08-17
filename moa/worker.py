@@ -70,7 +70,7 @@ session = Session(engine)
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
-if not c.DEBUG:
+if not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())
 
 for bridge in bridges:
