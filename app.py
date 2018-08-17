@@ -14,7 +14,8 @@ from flask_sqlalchemy import SQLAlchemy
 from instagram.client import InstagramAPI
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
-from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError
+from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError, \
+    MastodonUnauthorizedError
 from sqlalchemy import exc, func
 
 from moa.forms import MastodonIDForm, SettingsForm
@@ -389,11 +390,16 @@ def mastodon_oauthorized():
 
         api.access_code = access_code
 
-        session['mastodon'] = {
-            'host': host,
-            'access_code': access_code,
-            'username': api.account_verify_credentials()["username"]
-        }
+        try:
+            session['mastodon'] = {
+                'host': host,
+                'access_code': access_code,
+                'username': api.account_verify_credentials()["username"]
+            }
+
+        except MastodonUnauthorizedError as e:
+            flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+            return redirect(url_for('index'))
 
         bridge = db.session.query(Bridge).filter_by(
             mastodon_user=session['mastodon']['username'],
