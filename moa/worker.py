@@ -15,7 +15,7 @@ from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from requests import ConnectionError
-from sqlalchemy import create_engine, exc
+from sqlalchemy import create_engine, exc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from twitter import TwitterError
@@ -70,8 +70,8 @@ session = Session(engine)
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
-# if not c.DEBUG:
-#     bridges = bridges.order_by(func.rand())
+if not c.DEBUG:
+    bridges = bridges.order_by(func.rand())
 
 for bridge in bridges:
     # l.debug(bridge.settings.__dict__)
