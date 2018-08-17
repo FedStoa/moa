@@ -137,7 +137,9 @@ for bridge in bridges:
         continue
 
     except MastodonNetworkError as e:
-        l.error(f"Error with on user {bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+        l.error(f"Error with user {bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+        mastodonhost.defer()
+        session.commit()
         continue
 
     if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
