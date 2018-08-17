@@ -213,7 +213,7 @@ Subject: {mastodonhost.hostname} Deferred
 
     if bridge.instagram_access_code:
 
-        l.debug(f"-- INSTAGRAM: {bridge.instagram_account_id} --")
+        l.debug(f"-- INSTAGRAM: {bridge.handle} --")
 
         api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=c.INSTAGRAM_SECRET)
 
