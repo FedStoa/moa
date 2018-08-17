@@ -2,14 +2,15 @@ import argparse
 import importlib
 import logging
 import os
+import smtplib
 import sys
 import time
 from datetime import datetime
-from typing import List, Any
+from typing import Any, List
 
 import requests
 import twitter
-from instagram import InstagramAPI, InstagramClientError, InstagramAPIError
+from instagram import InstagramAPI
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
@@ -17,15 +18,14 @@ from requests import ConnectionError
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
-from sqlalchemy.sql.expression import func
 from twitter import TwitterError
 
 from moa.insta import Insta
 from moa.models import Bridge, WorkerStat
 from moa.toot import Toot
+from moa.toot_poster import TootPoster
 from moa.tweet import Tweet
 from moa.tweet_poster import TweetPoster
-from moa.toot_poster import TootPoster
 
 start_time = time.time()
 
@@ -140,6 +140,20 @@ for bridge in bridges:
         l.error(f"Error with user {bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
         mastodonhost.defer()
         session.commit()
+
+        if c.MAIL_SERVER:
+            try:
+                message = f"""From: {c.MAIL_DEFAULT_SENDER}
+To: {c.MAIL_TO}
+Subject: {mastodonhost.hostname} Deferred
+
+"""
+                smtpObj = smtplib.SMTP(c.MAIL_SERVER)
+                smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
+
+            except smtplib.SMTPException as e:
+                l.error(e)
+
         continue
 
     if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
