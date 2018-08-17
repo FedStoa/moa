@@ -130,7 +130,7 @@ for bridge in bridges:
     except MastodonAPIError as e:
         l.error(e)
 
-        if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden']):
+        if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
             l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
             bridge.enabled = False
 
