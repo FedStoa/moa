@@ -94,7 +94,7 @@ for bridge in bridges:
 
     mastodonhost = bridge.mastodon_host
 
-    if mastodonhost.defer_until > datetime.now():
+    if mastodonhost.defer_until and mastodonhost.defer_until > datetime.now():
         l.warning(f"Deferring connections to {mastodonhost.hostname}")
         continue
 
