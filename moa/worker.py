@@ -6,6 +6,7 @@ import smtplib
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 from typing import Any, List
 
 import requests
@@ -55,6 +56,10 @@ else:
     l.setLevel(logging.INFO)
 
 # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
+if Path('worker_stop').exists():
+    l.info("Worker paused")
+    exit(0)
 
 l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
@@ -142,7 +147,7 @@ for bridge in bridges:
         session.commit()
 
         if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
-            
+
             try:
                 message = f"""From: {c.MAIL_DEFAULT_SENDER}
 To: {c.MAIL_TO}

@@ -12,3 +12,4 @@ config.py
 /moa.db
 /.mypy_cache/
 .DS_Store
+/worker_stop
