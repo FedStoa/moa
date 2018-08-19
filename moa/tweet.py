@@ -4,6 +4,7 @@ import re
 from datetime import datetime, timezone
 
 import requests
+from twitter import TwitterError
 
 from moa.message import Message
 
@@ -48,15 +49,18 @@ class Tweet(Message):
             else:
                 target_id = self.data.id
 
-            fetched_tweet = self.api.GetStatus(
-                    status_id=target_id,
-                    trim_user=True,
-                    include_my_retweet=False,
-                    include_entities=True,
-                    include_ext_alt_text=True
-            )
+            try:
+                fetched_tweet = self.api.GetStatus(
+                        status_id=target_id,
+                        trim_user=True,
+                        include_my_retweet=False,
+                        include_entities=True,
+                        include_ext_alt_text=True
+                )
+                self.__fetched_attachments = fetched_tweet.media
 
-            self.__fetched_attachments = fetched_tweet.media
+            except TwitterError as e:
+                logger.error(e)
 
             if not self.__fetched_attachments:
                 self.__fetched_attachments = []
