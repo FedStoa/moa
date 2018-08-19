@@ -182,9 +182,16 @@ class Tweet(Message):
                 content = self.data.retweeted_status.full_text
 
             elif self.is_quoted:
+                content = self.data.full_text
 
-                content = re.sub(r'https?://.*', '', self.data.full_text, flags=re.MULTILINE)
-                quoted_text = f"{self.data.quoted_status.full_text}"
+                for url in self.data.urls:
+                    # Unshorten URLs
+                    content = re.sub(url.url, url.expanded_url, content)
+
+                # remove the trailing URL of the quoted tweet
+                content = re.sub(r'https://twitter.com/.*$', '', content)
+
+                quoted_text = self.data.quoted_status.full_text
 
                 for url in self.data.quoted_status.urls:
                     # Unshorten URLs
