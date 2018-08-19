@@ -7,6 +7,8 @@ class Settings:
     post_unlisted_to_twitter = False
     split_twitter_messages = True
     post_boosts_to_twitter = True
+    post_sensitive_behind_link = False
+    sensitive_link_text = '(NSFW Image)'
 
     # Twitter -> Masto
     post_to_mastodon = True
