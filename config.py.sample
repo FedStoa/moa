@@ -27,6 +27,8 @@ class Config(object):
     # behavior is against twitter's rules.
     SANITIZE_TWITTER_HANDLES = True
 
+    SEND_DEFERRED_EMAIL = False
+
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
     DEBUG = False

@@ -141,7 +141,8 @@ for bridge in bridges:
         mastodonhost.defer()
         session.commit()
 
-        if c.MAIL_SERVER:
+        if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
+            
             try:
                 message = f"""From: {c.MAIL_DEFAULT_SENDER}
 To: {c.MAIL_TO}
