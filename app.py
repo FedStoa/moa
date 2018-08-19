@@ -423,7 +423,20 @@ def mastodon_oauthorized():
             db.session.commit()
 
             if app.config.get('MAIL_SERVER', None):
-                body = render_template('new_user_email.txt.j2', bridge=bridge)
+
+                # Fetch twitter follower count
+                twitter_api = twitter.Api(
+                        consumer_key=app.config['TWITTER_CONSUMER_KEY'],
+                        consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
+                        access_token_key=bridge.twitter_oauth_token,
+                        access_token_secret=bridge.twitter_oauth_secret
+                )
+                follower_list = twitter_api.GetFollowerIDs()
+                follower_count = len(follower_list)
+
+                body = render_template('new_user_email.txt.j2',
+                                       bridge=bridge,
+                                       follower_count=follower_count)
                 msg = Message(subject="New moa.party user",
                               body=body,
                               recipients=[app.config.get('MAIL_TO', None)])
