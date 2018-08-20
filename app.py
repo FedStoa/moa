@@ -648,8 +648,8 @@ def percent_graph():
     chart = pygal.StackedBar(title=f"Ratio of Incoming Messages ({timespan(hours)})",
                              human_readable=True,
                              legend_at_bottom=True)
-    chart.add('Tweets', tweets_p)
     chart.add('Toots', toots_p)
+    chart.add('Tweets', tweets_p)
     chart.add('Instas', instas_p)
 
     return chart.render_response()
