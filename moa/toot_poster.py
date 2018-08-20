@@ -58,7 +58,7 @@ class TootPoster(Poster):
                 mastodon_last_id = self.send_toot(post.message_parts[0],
                                                   reply_to,
                                                   media_ids=self.media_ids,
-                                                  sensitive=post.sensitive,
+                                                  sensitive=post.is_sensitive,
                                                   msg_type=post.type,
                                                   cw=post.cw)
                 logger.info(f"Toot ID: {mastodon_last_id}")

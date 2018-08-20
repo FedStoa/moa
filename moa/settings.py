@@ -27,6 +27,8 @@ class Settings:
         self.post_unlisted_to_twitter = False
         self.split_twitter_messages = True
         self.post_boosts_to_twitter = True
+        self.post_sensitive_behind_link = False
+        self.sensitive_link_text = '(NSFW Image)'
 
         self.post_to_mastodon = True # This means post non-RT tweets
         self.post_rts_to_mastodon = True

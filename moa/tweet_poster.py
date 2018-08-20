@@ -42,7 +42,10 @@ class TweetPoster(Poster):
 
         if self.send:
 
-            self.transfer_attachments(post)
+            if post.is_sensitive and self.bridge.settings.post_sensitive_behind_link:
+                pass
+            else:
+                self.transfer_attachments(post)
 
             reply_to = None
 
@@ -86,7 +89,7 @@ class TweetPoster(Poster):
 
             return True
         else:
-            logger.info(post.media_attachments)
+            # logger.info(post.media_attachments)
             logger.info(post.clean_content)
             return False
 

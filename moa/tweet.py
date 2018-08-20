@@ -146,7 +146,7 @@ class Tweet(Message):
             return self.data.urls
 
     @property
-    def sensitive(self):
+    def is_sensitive(self):
         return bool(self.data.possibly_sensitive)
 
     @property

@@ -79,7 +79,7 @@ class Insta(Message):
         return False
 
     @property
-    def sensitive(self) -> bool:
+    def is_sensitive(self) -> bool:
         return False
 
     def prepare_for_post(self, length=1):

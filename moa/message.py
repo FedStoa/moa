@@ -50,5 +50,5 @@ class Message:
         raise Exception("Needs Implementation")
 
     @property
-    def sensitive(self):
+    def is_sensitive(self):
         raise Exception("Needs Implementation")
