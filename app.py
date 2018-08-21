@@ -110,6 +110,8 @@ def index():
             g.bridge = bridge
             app.logger.debug(f"Existing settings found: {enabled} {settings.__dict__}")
 
+            settings.check_for_upgrade()
+
     form = SettingsForm(obj=settings)
 
     return render_template('index.html.j2',
