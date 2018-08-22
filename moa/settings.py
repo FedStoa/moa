@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 
 
@@ -70,6 +71,7 @@ class Settings:
 
     def merge(self, old_settings):
         for k, v in old_settings.__dict__.items():
+            print(k, v)
             setattr(self, k, v)
 
     @property
@@ -101,18 +103,30 @@ if __name__ == '__main__':
     engine.connect()
     session = Session(engine)
 
-    bridges = session.query(Bridge).all()
+    if sys.argv[1]:
+        bridge = session.query(Bridge).filter_by(id=sys.argv[1]).first()
 
-    for bridge in bridges:
         s = bridge.settings
-        upgraded = s.check_for_upgrade()
+        # pp(s.__dict__)
 
-        if upgraded:
-            # pp(s.__dict__)
+        if s.check_for_upgrade():
             new_settings = Settings()
             new_settings.merge(s)
             bridge.settings = new_settings
+            # pp(bridge.settings.__dict__)
+
             session.commit()
+    else:
+        bridges = session.query(Bridge).all()
+
+        for bridge in bridges:
+            s = bridge.settings
+
+            if s.check_for_upgrade():
+                # pp(s.__dict__)
+                new_settings = Settings()
+                new_settings.merge(s)
+                bridge.settings = new_settings
+                session.commit()
 
     session.close()
-
