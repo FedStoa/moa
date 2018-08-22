@@ -32,7 +32,9 @@ if __name__ == '__main__':
     else:
         bridges = session.query(Bridge).with_entities(Bridge.id).order_by(Bridge.id.asc()).all()
 
-        for bridge in bridges:
+        for b in bridges:
+            bridge = session.query(Bridge).filter_by(id=b.id).with_entities(Bridge.id).first()
+
             try:
                 with open(f"/tmp/moa_settings/{bridge.id}.pickle", 'rb') as fp:
                     print(bridge.id)
@@ -40,5 +42,5 @@ if __name__ == '__main__':
                     session.query(Bridge).update({Bridge.settings: s})
                     session.commit()
             except FileNotFoundError:
-                pass
+                print(f"No settings found for {bridge.id}")
     session.close()
