@@ -110,7 +110,14 @@ def index():
             g.bridge = bridge
             app.logger.debug(f"Existing settings found: {enabled} {settings.__dict__}")
 
-            settings.check_for_upgrade()
+            # upgraded = settings.check_for_upgrade()
+            #
+            # if upgraded:
+            #     # pp(s.__dict__)
+            #     new_settings = Settings()
+            #     new_settings.merge(settings)
+            #     bridge.settings = new_settings
+            #     session.commit()
 
     form = SettingsForm(obj=settings)
 

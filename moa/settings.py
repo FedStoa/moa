@@ -51,8 +51,12 @@ class Settings:
     def check_for_upgrade(self):
         if not hasattr(self, 'version'):
             self.version = 0
+
         if self.version != self.class_version:
             self.upgrade()
+            return True
+        else:
+            return False
 
     def upgrade(self):
         version = self.version
@@ -63,6 +67,10 @@ class Settings:
             print(f'upgrade to version {self.version}')
             self.post_sensitive_behind_link = False
             self.sensitive_link_text = '(NSFW Image)'
+
+    def merge(self, old_settings):
+        for k, v in old_settings.__dict__.items():
+            setattr(self, k, v)
 
     @property
     def post_to_twitter_enabled(self):
@@ -89,19 +97,22 @@ if __name__ == '__main__':
     moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
     config = getattr(importlib.import_module('config'), moa_config)
 
-    engine = create_engine(config.SQLALCHEMY_DATABASE_URI, echo=True)
+    engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
     engine.connect()
     session = Session(engine)
 
-    # bridge_id = int(sys.argv[1])
+    bridges = session.query(Bridge).all()
 
-    bridge = session.query(Bridge).first()
-    s = bridge.settings
-    pp(s.__dict__)
-    s.check_for_upgrade()
-    bridge.settings = s
-    # bridge.updated = datetime.now()
-    pp(bridge.settings.__dict__)
-    session.commit()
+    for bridge in bridges:
+        s = bridge.settings
+        upgraded = s.check_for_upgrade()
+
+        if upgraded:
+            # pp(s.__dict__)
+            new_settings = Settings()
+            new_settings.merge(s)
+            bridge.settings = new_settings
+            session.commit()
+
     session.close()
 
