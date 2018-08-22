@@ -11,8 +11,8 @@ class SettingsForm(FlaskForm):
     post_unlisted_to_twitter = BooleanField('Post Unlisted toots to Twitter?')
     post_boosts_to_twitter = BooleanField('Post Boosts to Twitter?')
     split_twitter_messages = BooleanField('Split long toots on Twitter?')
-    post_sensitive_behind_link = BooleanField('Link toot with warning if there are sensitive images?')
-    sensitive_link_text = StringField('', validators=[Length(min=1, message="Warning can't be empty")])
+    # post_sensitive_behind_link = BooleanField('Link toot with warning if there are sensitive images?')
+    # sensitive_link_text = StringField('', validators=[Length(min=1, message="Warning can't be empty")])
 
     post_rts_to_mastodon = BooleanField('Post RTs to Mastodon?')
     post_quotes_to_mastodon = BooleanField('Post quoted tweets to Mastodon?')

@@ -8,24 +8,24 @@ class Settings:
     class_version: int = 1
 
     # Masto -> Twitter
-    # post_to_twitter = True
-    # post_private_to_twitter = False
-    # post_unlisted_to_twitter = False
-    # split_twitter_messages = True
-    # post_boosts_to_twitter = True
+    post_to_twitter = True
+    post_private_to_twitter = False
+    post_unlisted_to_twitter = False
+    split_twitter_messages = True
+    post_boosts_to_twitter = True
     # post_sensitive_behind_link = False
     # sensitive_link_text = '(NSFW Image)'
 
     # Twitter -> Masto
-    # post_to_mastodon = True
-    # post_rts_to_mastodon = True
-    # post_quotes_to_mastodon = True
-    # toot_visibility = 'public'
-    # tweets_behind_cw = False
-    # tweet_cw_text = "From birdsite"
-    #
-    # instagram_post_to_twitter = False
-    # instagram_post_to_mastodon = False
+    post_to_mastodon = True
+    post_rts_to_mastodon = True
+    post_quotes_to_mastodon = True
+    toot_visibility = 'public'
+    tweets_behind_cw = False
+    tweet_cw_text = "From birdsite"
+
+    instagram_post_to_twitter = False
+    instagram_post_to_mastodon = False
 
     def __init__(self):
 
@@ -36,8 +36,8 @@ class Settings:
         self.post_unlisted_to_twitter = False
         self.split_twitter_messages = True
         self.post_boosts_to_twitter = True
-        self.post_sensitive_behind_link = False
-        self.sensitive_link_text = '(NSFW Image)'
+        # self.post_sensitive_behind_link = False
+        # self.sensitive_link_text = '(NSFW Image)'
 
         self.post_to_mastodon = True  # This means post non-RT tweets
         self.post_rts_to_mastodon = True
