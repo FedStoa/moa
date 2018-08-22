@@ -57,10 +57,6 @@ else:
 
 # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
-if Path('worker_stop').exists():
-    l.info("Worker paused")
-    exit(0)
-
 l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
 engine.connect()
@@ -72,6 +68,14 @@ except exc.SQLAlchemyError as e:
     sys.exit()
 
 session = Session(engine)
+
+if Path('worker_stop').exists():
+    l.info("Worker paused...exiting")
+    worker_stat.time = 0
+    session.add(worker_stat)
+    session.commit()
+    session.close()
+    exit(0)
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
