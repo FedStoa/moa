@@ -188,8 +188,8 @@ class Toot(Message):
             status_length = status_length - replaced_chars + (self.url_length * len(match))
             # logger.debug(f"{len(string)} {string} {status_length}")
 
-        if self.is_sensitive and self.settings.post_sensitive_behind_link:
-            status_length += len(f"\n{self.settings.sensitive_link_text}\n{self.url}")
+        # if self.is_sensitive and self.settings.post_sensitive_behind_link:
+        #     status_length += len(f"\n{self.settings.sensitive_link_text}\n{self.url}")
 
         return status_length
 
@@ -270,8 +270,8 @@ class Toot(Message):
             if self.spoiler_text:
                 self.content = f"CW: {self.spoiler_text}\n\n{self.content}"
 
-            if self.is_sensitive and self.settings.post_sensitive_behind_link:
-                self.content = f"{self.content}\n{self.settings.sensitive_link_text}\n{self.url}"
+            # if self.is_sensitive and self.settings.post_sensitive_behind_link:
+            #     self.content = f"{self.content}\n{self.settings.sensitive_link_text}\n{self.url}"
 
             if self.is_boost:
                 if len(self.content) > 0:
