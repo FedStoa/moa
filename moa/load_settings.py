@@ -37,9 +37,9 @@ if __name__ == '__main__':
 
             try:
                 with open(f"/tmp/moa_settings/{bridge.id}.pickle", 'rb') as fp:
-                    print(bridge.id)
+                    # print(bridge.id)
                     s = pickle.load(fp)
-                    session.query(Bridge).update({Bridge.settings: s})
+                    session.query(Bridge).filter_by(id=bridge.id).update({Bridge.settings: s})
                     session.commit()
             except FileNotFoundError:
                 print(f"No settings found for {bridge.id}")
