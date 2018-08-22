@@ -37,7 +37,7 @@ pandas==0.22.0
 pip-tools==2.0.2
 pycparser==2.18           # via cffi
 pygal==2.4.0
-pymysql==0.8.0
+pymysql==0.9.2
 python-dateutil==2.7.2    # via alembic, mastodon.py, pandas
 python-editor==1.0.3      # via alembic
 python-twitter==3.4.2
