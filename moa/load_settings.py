@@ -30,7 +30,7 @@ if __name__ == '__main__':
             session.commit()
 
     else:
-        bridges = session.query(Bridge).with_entities(Bridge.id).all()
+        bridges = session.query(Bridge).with_entities(Bridge.id).order_by(Bridge.id.asc()).all()
 
         for bridge in bridges:
             try:
