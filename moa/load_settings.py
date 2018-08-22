@@ -33,10 +33,12 @@ if __name__ == '__main__':
         bridges = session.query(Bridge).with_entities(Bridge.id).all()
 
         for bridge in bridges:
-            with open(f"/tmp/moa_settings/{bridge.id}.pickle", 'rb') as fp:
-                print(bridge.id)
-                s = pickle.load(fp)
-                session.query(Bridge).update({Bridge.settings: s})
-                session.commit()
-
+            try:
+                with open(f"/tmp/moa_settings/{bridge.id}.pickle", 'rb') as fp:
+                    print(bridge.id)
+                    s = pickle.load(fp)
+                    session.query(Bridge).update({Bridge.settings: s})
+                    session.commit()
+            except FileNotFoundError:
+                pass
     session.close()
