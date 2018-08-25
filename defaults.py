@@ -1,5 +1,4 @@
-
-class Config(object):
+class DefaultConfig(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
@@ -10,6 +9,7 @@ class Config(object):
     INSTAGRAM_CLIENT_ID = ''
     INSTAGRAM_SECRET = ''
     SQLALCHEMY_DATABASE_URI = 'sqlite:///moa.db'
+    # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
     SEND = True
     SENTRY_DSN = ''
     HEALTHCHECKS = ''
@@ -29,21 +29,3 @@ class Config(object):
 
     SEND_DEFERRED_EMAIL = False
     MAINTENANCE_MODE = False
-
-class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
-    DEBUG = False
-
-
-class StageConfig(Config):
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
-
-
-class DevelopmentConfig(Config):
-    DEVELOPMENT = True
-    DEBUG = True
-
-
-class TestingConfig(Config):
-    TESTING = True
