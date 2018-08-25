@@ -83,7 +83,7 @@ if not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())
 
 for bridge in bridges:
-    # l.debug(bridge.settings.__dict__)
+    # l.debug(bridge.t_settings.__dict__)
     total_time = time.time() - start_time
 
     if total_time > 60 * 4.5:
@@ -166,7 +166,7 @@ Subject: {mastodonhost.hostname} Deferred
 
         continue
 
-    if bridge.settings.post_to_twitter_enabled and len(new_toots) != 0:
+    if bridge.t_settings.post_to_twitter_enabled and len(new_toots) != 0:
         # l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
         l.info(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {len(new_toots)} new toots found")
 
@@ -206,7 +206,7 @@ Subject: {mastodonhost.hostname} Deferred
     except ConnectionError as e:
         continue
 
-    if bridge.settings.post_to_mastodon_enabled and len(new_tweets) != 0:
+    if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) != 0:
         l.info(f"@{bridge.twitter_handle}: {len(new_tweets)} new tweets found")
         # l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
         # l.info(f"{len(new_tweets)} new tweets found")
@@ -250,11 +250,11 @@ Subject: {mastodonhost.hostname} Deferred
 
     tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
-    if bridge.settings.post_to_twitter_enabled and len(new_toots) > 0:
+    if bridge.t_settings.post_to_twitter_enabled and len(new_toots) > 0:
 
         for toot in new_toots:
 
-            t = Toot(bridge.settings, toot, c)
+            t = Toot(bridge.t_settings, toot, c)
 
             result = tweet_poster.post(t)
 
@@ -267,11 +267,11 @@ Subject: {mastodonhost.hostname} Deferred
 
     toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
 
-    if bridge.settings.post_to_mastodon_enabled and len(new_tweets) > 0:
+    if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) > 0:
 
         for status in new_tweets:
 
-            tweet = Tweet(bridge.settings, status, twitter_api)
+            tweet = Tweet(bridge.t_settings, status, twitter_api)
 
             result = toot_poster.post(tweet)
 
@@ -287,15 +287,15 @@ Subject: {mastodonhost.hostname} Deferred
         for data in new_instas:
             stat_recorded = False
 
-            insta = Insta(bridge.settings, data)
+            insta = Insta(bridge.t_settings, data)
 
-            if bridge.settings.instagram_post_to_mastodon:
+            if bridge.t_settings.instagram_post_to_mastodon:
                 result = toot_poster.post(insta)
                 if result:
                     worker_stat.add_insta()
                     stat_recorded = True
 
-            if bridge.settings.instagram_post_to_twitter:
+            if bridge.t_settings.instagram_post_to_twitter:
 
                 result = tweet_poster.post(insta)
                 if result and not stat_recorded:

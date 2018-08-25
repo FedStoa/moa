@@ -28,6 +28,7 @@ class Config(object):
     SANITIZE_TWITTER_HANDLES = True
 
     SEND_DEFERRED_EMAIL = False
+    MAINTENANCE_MODE = False
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'

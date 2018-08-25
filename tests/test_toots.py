@@ -3,9 +3,9 @@ import logging
 import os
 import unittest
 
-from moa.settings import Settings
 from moa.toot import Toot
 from moa.tweet_poster import TWEET_LENGTH
+from moa.models import TSettings
 from tests.toot_samples import *
 
 
@@ -15,7 +15,7 @@ class TestToots(unittest.TestCase):
         moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
         self.c = getattr(importlib.import_module('config'), moa_config)
 
-        self.settings = Settings()
+        self.settings = TSettings()
 
         FORMAT = '%(asctime)-15s %(message)s'
         logging.basicConfig(format=FORMAT)

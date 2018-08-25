@@ -26,6 +26,64 @@ class MastodonHost(Base):
         self.defer_until = datetime.now() + timedelta(seconds=PENALTY_TIME)
 
 
+class TSettings(Base):
+    __tablename__ = 'settings'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci' }
+
+    id = Column(Integer, primary_key=True)
+    bridge = relationship('Bridge', backref='t_settings', lazy='dynamic')
+
+    # Masto -> Twitter
+    post_to_twitter = Column(Boolean, nullable=False, default=True)  # This means post public toots
+    post_private_to_twitter = Column(Boolean, nullable=False, default=False)
+    post_unlisted_to_twitter = Column(Boolean, nullable=False, default=False)
+    split_twitter_messages = Column(Boolean, nullable=False, default=True)
+    post_boosts_to_twitter = Column(Boolean, nullable=False, default=True)
+    post_sensitive_behind_link = Column(Boolean, nullable=False, default=False)
+    sensitive_link_text = Column(String(100), nullable=False, default='(NSFW Image)')
+
+    # Twitter -> Masto
+    post_to_mastodon = Column(Boolean, nullable=False, default=True)
+    post_rts_to_mastodon = Column(Boolean, nullable=False, default=True)
+    post_quotes_to_mastodon = Column(Boolean, nullable=False, default=True)
+    toot_visibility = Column(String(40), nullable=False, default='public')
+    tweets_behind_cw = Column(Boolean, nullable=False, default=False)
+    tweet_cw_text = Column(String(100), nullable=False, default="From birdsite")
+
+    instagram_post_to_twitter = Column(Boolean, nullable=False, default=False)
+    instagram_post_to_mastodon = Column(Boolean, nullable=False, default=False)
+
+    def import_settings(self, old_settings):
+
+        self.post_to_twitter = old_settings.post_to_twitter
+        self.post_private_to_twitter = old_settings.post_private_to_twitter
+        self.post_unlisted_to_twitter = old_settings.post_unlisted_to_twitter
+        self.split_twitter_messages = old_settings.split_twitter_messages
+        self.post_boosts_to_twitter = old_settings.post_boosts_to_twitter
+
+        self.post_to_mastodon = old_settings.post_to_mastodon
+        self.post_rts_to_mastodon = old_settings.post_rts_to_mastodon
+        self.post_quotes_to_mastodon = old_settings.post_quotes_to_mastodon
+        self.toot_visibility = old_settings.toot_visibility
+        self.tweets_behind_cw = old_settings.tweets_behind_cw
+        self.tweet_cw_text = str(old_settings.tweet_cw_text)
+
+        self.instagram_post_to_twitter = old_settings.instagram_post_to_twitter
+        self.instagram_post_to_mastodon = old_settings.instagram_post_to_mastodon
+
+    @property
+    def post_to_twitter_enabled(self):
+        return self.post_to_twitter or \
+               self.post_private_to_twitter or \
+               self.post_unlisted_to_twitter or \
+               self.post_boosts_to_twitter
+
+    @property
+    def post_to_mastodon_enabled(self):
+        return self.post_to_mastodon or \
+               self.post_rts_to_mastodon
+
+
 class Bridge(Base):
     __tablename__ = 'bridge'
 
@@ -49,6 +107,7 @@ class Bridge(Base):
     instagram_handle = Column(String(30))
 
     settings = Column(PickleType)
+    t_settings_id = Column(Integer, ForeignKey('settings.id'), nullable=True)
 
     created = Column(DateTime, default=datetime.utcnow)
     updated = Column(DateTime)
@@ -117,7 +176,6 @@ if __name__ == '__main__':
     import os
     import importlib
     from sqlalchemy import create_engine
-    from moa.settings import Settings
 
     moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
     config = getattr(importlib.import_module('config'), moa_config)
@@ -125,7 +183,7 @@ if __name__ == '__main__':
     if "mysql" in config.SQLALCHEMY_DATABASE_URI:
         import pymysql
 
-    engine = create_engine(config.SQLALCHEMY_DATABASE_URI, echo=True)
+    engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
     metadata = MetaData(engine, reflect=True)
     print("Creating Tables")
 
@@ -134,3 +192,5 @@ if __name__ == '__main__':
     for t in metadata.tables:
         # t.create()
         print("Table: ", t)
+
+    print("./tools/flask_db.sh stamp head to finish")

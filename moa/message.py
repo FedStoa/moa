@@ -1,13 +1,13 @@
 from typing import Any, List
 
-from moa.settings import Settings
+from moa.models import TSettings
 
 
 class Message:
     class Meta:
         abstract = True
 
-    def __init__(self, settings: Settings, data: Any) -> None:
+    def __init__(self, settings: TSettings, data: Any) -> None:
         self.message_parts: List[str] = []
         self.settings = settings
         self.data = data

@@ -20,8 +20,7 @@ from sqlalchemy import exc, func
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted
-from moa.models import Bridge, MastodonHost, WorkerStat, metadata
-from moa.settings import Settings
+from moa.models import Bridge, MastodonHost, WorkerStat, metadata, TSettings
 
 app = Flask(__name__)
 
@@ -91,8 +90,11 @@ def before_request():
 
 @app.route('/')
 def index():
+    if app.config['MAINTENANCE_MODE']:
+        return render_template('maintenance.html.j2')
+
     mform = MastodonIDForm()
-    settings = Settings()
+    settings = TSettings()
     enabled = True
     found_settings = False
 
@@ -105,19 +107,10 @@ def index():
 
         if bridge:
             found_settings = True
-            settings = bridge.settings
+            settings = bridge.t_settings
             enabled = bridge.enabled
             g.bridge = bridge
             app.logger.debug(f"Existing settings found: {enabled} {settings.__dict__}")
-
-            # upgraded = settings.check_for_upgrade()
-            #
-            # if upgraded:
-            #     # pp(s.__dict__)
-            #     new_settings = Settings()
-            #     new_settings.merge(settings)
-            #     bridge.settings = new_settings
-            #     session.commit()
 
     form = SettingsForm(obj=settings)
 
@@ -135,25 +128,22 @@ def options():
 
     if form.validate_on_submit():
 
-        settings = Settings()
-
-        form.populate_obj(settings)
-
-        bridge_found = False
-
         bridge = db.session.query(Bridge).filter_by(
             mastodon_user=session['mastodon']['username'],
             twitter_handle=session['twitter']['screen_name'],
         ).first()
 
         if bridge:
-            bridge_found = True
             app.logger.debug("Existing settings found")
+            form.populate_obj(bridge.t_settings)
+
         else:
             bridge = Bridge()
+            settings = TSettings()
+            form.populate_obj(settings)
 
         bridge.enabled = form.enabled.data
-        bridge.settings = settings
+        # bridge.t_settings = settings
         bridge.updated = datetime.now()
         bridge.twitter_oauth_token = session['twitter']['oauth_token']
         bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
@@ -224,7 +214,9 @@ def delete():
         if bridge:
             app.logger.info(
                 f"Deleting settings for {session['mastodon']['username']} {session['twitter']['screen_name']}")
+            settings = bridge.t_settings
             db.session.delete(bridge)
+            db.session.delete(settings)
             db.session.commit()
 
     return redirect(url_for('logout'))
@@ -418,16 +410,18 @@ def mastodon_oauthorized():
         if bridge:
             app.logger.debug("Existing settings found")
         else:
-            bridge = Bridge()
 
+            bridge = Bridge()
             bridge.enabled = True
-            bridge.settings = Settings()
+            bridge.t_settings = TSettings()
             bridge.twitter_oauth_token = session['twitter']['oauth_token']
             bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
             bridge.twitter_handle = session['twitter']['screen_name']
             bridge.mastodon_access_code = session['mastodon']['access_code']
             bridge.mastodon_user = session['mastodon']['username']
             bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
+
+            db.session.add(bridge.t_settings)
             db.session.add(bridge)
             db.session.commit()
 

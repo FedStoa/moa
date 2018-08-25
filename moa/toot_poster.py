@@ -86,8 +86,8 @@ class TootPoster(Poster):
         spoiler_text = ""
 
         if msg_type == 'Tweet':
-            if self.bridge.settings.tweets_behind_cw:
-                spoiler_text = self.bridge.settings.tweet_cw_text
+            if self.bridge.t_settings.tweets_behind_cw:
+                spoiler_text = self.bridge.t_settings.tweet_cw_text
 
             if cw:
                 spoiler_text = cw
@@ -102,7 +102,7 @@ class TootPoster(Poster):
                 post = self.api.status_post(
                         status_text,
                         media_ids=media_ids,
-                        visibility=self.bridge.settings.toot_visibility,
+                        visibility=self.bridge.t_settings.toot_visibility,
                         sensitive=sensitive,
                         in_reply_to_id=reply_to,
                         spoiler_text=spoiler_text)
