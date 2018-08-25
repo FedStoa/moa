@@ -156,39 +156,8 @@ def options():
             flash(f"There was a problem connecting to {session['mastodon']['host']}")
             return redirect(url_for('index'))
 
-        # get twitter ID
-        twitter_api = twitter.Api(
-            consumer_key=app.config['TWITTER_CONSUMER_KEY'],
-            consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
-            access_token_key=session['twitter']['oauth_token'],
-            access_token_secret=session['twitter']['oauth_token_secret'],
-            tweet_mode='extended'  # Allow tweets longer than 140 raw characters
-        )
-
-        if bridge.twitter_last_id == 0:
-            tl = twitter_api.GetUserTimeline()
-            if len(tl) > 0:
-                bridge.twitter_last_id = tl[0].id
-            else:
-                bridge.twitter_last_id = 0
-
-        if bridge.mastodon_last_id == 0:
-
-            # get mastodon ID
-            api = mastodon_api(session['mastodon']['host'],
-                               access_code=session['mastodon']['access_code'])
-
-            bridge.mastodon_account_id = api.account_verify_credentials()["id"]
-
-            try:
-                statuses = api.account_statuses(bridge.mastodon_account_id)
-                if len(statuses) > 0:
-                    bridge.mastodon_last_id = statuses[0]["id"]
-                else:
-                    bridge.mastodon_last_id = 0
-
-            except MastodonAPIError:
-                bridge.mastodon_last_id = 0
+        catch_up_twitter(bridge)
+        catch_up_mastodon(bridge)
 
         app.logger.debug("Saving new settings")
 
@@ -200,6 +169,48 @@ def options():
         return redirect(url_for('index'))
 
     return redirect(url_for('index'))
+
+
+def catch_up_twitter(bridge):
+
+    if bridge.twitter_last_id == 0:
+        # get twitter ID
+        twitter_api = twitter.Api(
+            consumer_key=app.config['TWITTER_CONSUMER_KEY'],
+            consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
+            access_token_key=session['twitter']['oauth_token'],
+            access_token_secret=session['twitter']['oauth_token_secret'],
+            tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+        )
+        tl = twitter_api.GetUserTimeline()
+        if len(tl) > 0:
+            bridge.twitter_last_id = tl[0].id
+        else:
+            bridge.twitter_last_id = 0
+
+        db.session.commit()
+
+
+def catch_up_mastodon(bridge):
+    if bridge.mastodon_last_id == 0:
+
+        # get mastodon ID
+        api = mastodon_api(session['mastodon']['host'],
+                           access_code=session['mastodon']['access_code'])
+
+        bridge.mastodon_account_id = api.account_verify_credentials()["id"]
+
+        try:
+            statuses = api.account_statuses(bridge.mastodon_account_id)
+            if len(statuses) > 0:
+                bridge.mastodon_last_id = statuses[0]["id"]
+            else:
+                bridge.mastodon_last_id = 0
+
+        except MastodonAPIError:
+            bridge.mastodon_last_id = 0
+
+        db.session.commit()
 
 
 @app.route('/delete', methods=["POST"])
@@ -424,6 +435,9 @@ def mastodon_oauthorized():
             db.session.add(bridge.t_settings)
             db.session.add(bridge)
             db.session.commit()
+
+            catch_up_mastodon(bridge)
+            catch_up_twitter(bridge)
 
             if app.config.get('MAIL_SERVER', None):
 
