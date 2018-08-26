@@ -46,6 +46,9 @@ class TootPoster(Poster):
             self.transfer_attachments(post)
 
             reply_to = None
+            visibility = self.bridge.t_settings.toot_visibility
+            if post.is_retweet:
+                visibility = 'unlisted'
 
             if post.is_self_reply:
                 mapping = self.session.query(Mapping).filter_by(twitter_id=post.in_reply_to_id).first()
@@ -60,7 +63,8 @@ class TootPoster(Poster):
                                                   media_ids=self.media_ids,
                                                   sensitive=post.is_sensitive,
                                                   msg_type=post.type,
-                                                  cw=post.cw)
+                                                  cw=post.cw,
+                                                  visibility=visibility)
                 logger.info(f"Toot ID: {mastodon_last_id}")
 
                 if mastodon_last_id:
@@ -80,7 +84,7 @@ class TootPoster(Poster):
 
         return True
 
-    def send_toot(self, status_text: str, reply_to: int, media_ids=None, sensitive=False, msg_type="", cw=None) -> Optional[int]:
+    def send_toot(self, status_text: str, reply_to: int, media_ids=None, sensitive=False, msg_type="", cw=None, visibility='public') -> Optional[int]:
         retry_counter = 0
         post_success = False
         spoiler_text = ""
@@ -102,7 +106,7 @@ class TootPoster(Poster):
                 post = self.api.status_post(
                         status_text,
                         media_ids=media_ids,
-                        visibility=self.bridge.t_settings.toot_visibility,
+                        visibility=visibility,
                         sensitive=sensitive,
                         in_reply_to_id=reply_to,
                         spoiler_text=spoiler_text)

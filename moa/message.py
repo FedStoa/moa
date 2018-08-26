@@ -52,3 +52,7 @@ class Message:
     @property
     def is_sensitive(self):
         raise Exception("Needs Implementation")
+
+    @property
+    def is_retweet(self):
+        return False
