@@ -114,7 +114,7 @@ class Tweet(Message):
 
     @property
     def is_retweet(self):
-        return self.data.retweeted
+        return self.data.retweeted_status is not None
 
     @property
     def is_quoted(self):

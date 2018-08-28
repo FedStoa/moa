@@ -32,9 +32,6 @@ formatter = logging.Formatter(FORMAT)
 logHandler = TimedRotatingFileHandler('logs/app.log', when='D', backupCount=7)
 logHandler.setFormatter(formatter)
 
-# set the log handler level
-logHandler.setLevel(logging.INFO)
-
 # set the app logger level
 app.logger.setLevel(logging.INFO)
 
