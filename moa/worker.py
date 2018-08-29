@@ -43,6 +43,7 @@ parser.add_argument('--worker', dest='worker', type=int, required=False, default
 args = parser.parse_args()
 
 worker_stat = WorkerStat(worker=args.worker)
+worker_stat.time = 0
 
 FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
@@ -69,13 +70,17 @@ except exc.SQLAlchemyError as e:
 
 session = Session(engine)
 
-if Path('worker_stop').exists():
-    l.info("Worker paused...exiting")
-    worker_stat.time = 0
-    session.add(worker_stat)
-    session.commit()
-    session.close()
-    exit(0)
+
+def check_worker_stop():
+    if Path('worker_stop').exists():
+        l.info("Worker paused...exiting")
+        session.add(worker_stat)
+        session.commit()
+        session.close()
+        exit(0)
+
+
+check_worker_stop()
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
@@ -304,14 +309,15 @@ Subject: {mastodonhost.hostname} Deferred
     if c.SEND:
         session.commit()
 
+    end_time = time.time()
+    worker_stat.time = end_time - start_time
+
+    check_worker_stop()
+
 if c.HEALTHCHECKS:
     requests.get(c.HEALTHCHECKS)
 
-end_time = time.time()
-worker_stat.time = end_time - start_time
-
-l.info(
-        f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items")
+l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items")
 
 session.add(worker_stat)
 session.commit()
