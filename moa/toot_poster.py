@@ -65,7 +65,6 @@ class TootPoster(Poster):
                                                   msg_type=post.type,
                                                   cw=post.cw,
                                                   visibility=visibility)
-                logger.info(f"Toot ID: {mastodon_last_id}")
 
                 if mastodon_last_id:
                     m = Mapping()
@@ -113,6 +112,7 @@ class TootPoster(Poster):
 
                 reply_to = post["id"]
                 post_success = True
+                logger.info(f"Toot ID: {reply_to}")
 
             except MastodonAPIError as e:
                 logger.error(e)
