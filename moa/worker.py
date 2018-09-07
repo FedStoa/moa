@@ -177,6 +177,7 @@ Subject: {mastodonhost.hostname} Deferred
 
     if c.SEND and len(new_toots) != 0:
         bridge.mastodon_last_id = int(new_toots[0]['id'])
+        bridge.updated = datetime.now()
     new_toots.reverse()
 
     #
@@ -218,6 +219,8 @@ Subject: {mastodonhost.hostname} Deferred
 
     if c.SEND and len(new_tweets) != 0:
         bridge.twitter_last_id = new_tweets[0].id
+        bridge.updated = datetime.now()
+
     new_tweets.reverse()
 
     #
