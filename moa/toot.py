@@ -181,7 +181,8 @@ class Toot(Message):
 
     def expected_status_length(self, string):
 
-        status_length = len(string.encode('utf-8'))
+        status_length = len(string.encode('utf-16-le')) // 2
+
         match = re.findall(URL_REGEXP, string)
         if len(match) >= 1:
             replaced_chars = len(''.join(map(lambda x: x[0], match)))
@@ -293,7 +294,7 @@ class Toot(Message):
 
         expected_length = self.expected_status_length(self.clean_content)
 
-        if expected_length < max_length:
+        if expected_length <= max_length:
             self.message_parts.append(self.clean_content)
 
         else:
