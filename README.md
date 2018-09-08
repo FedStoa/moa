@@ -29,7 +29,7 @@ Moa is a flask app and can be run with `python` or proxied behind something like
 * make a virtual environment `python3 -m venv .moa-venv`
 * activate `source .moa-venv/bin/activate`
 * `pip install -r requirements.txt`
-* `cp config.py.sample config.py` and fill in the blanks
+* `cp config.py.sample config.py` and override the settings from `defaults.py`
 * python app.py
 * run the worker with `python -m moa.worker`
 

@@ -1,0 +1,14 @@
+from defaults import DefaultConfig
+
+class ProductionConfig(DefaultConfig):
+    pass
+
+class DevelopmentConfig(DefaultConfig):
+    DEBUG = True
+    DEVELOPMENT = True
+    SEND = False
+
+class TestingConfig(DefaultConfig):
+    TESTING = True
+
+
