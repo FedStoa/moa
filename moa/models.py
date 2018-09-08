@@ -112,7 +112,7 @@ class Bridge(Base):
     updated = Column(DateTime)
 
     def __repr__(self):
-        return f"Twitter: {self.twitter_handle}  Mastodon: {self.mastodon_user}"
+        return f"{self.id}: Twitter: {self.twitter_handle}  Mastodon: {self.mastodon_user}"
 
 
 class Mapping(Base):

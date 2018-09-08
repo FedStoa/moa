@@ -17,6 +17,7 @@ from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError, \
     MastodonUnauthorizedError
 from sqlalchemy import exc, func
+from twitter import TwitterError
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted
@@ -179,13 +180,17 @@ def catch_up_twitter(bridge):
             access_token_secret=session['twitter']['oauth_token_secret'],
             tweet_mode='extended'  # Allow tweets longer than 140 raw characters
         )
-        tl = twitter_api.GetUserTimeline()
-        if len(tl) > 0:
-            bridge.twitter_last_id = tl[0].id
+        try:
+            tl = twitter_api.GetUserTimeline()
+        except TwitterError as e:
+            flash(f"Twitter error: {e}")
         else:
-            bridge.twitter_last_id = 0
+            if len(tl) > 0:
+                bridge.twitter_last_id = tl[0].id
+            else:
+                bridge.twitter_last_id = 0
 
-        db.session.commit()
+            db.session.commit()
 
 
 def catch_up_mastodon(bridge):
