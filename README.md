@@ -30,8 +30,8 @@ Moa is a flask app and can be run with `python` or proxied behind something like
 * activate `source .moa-venv/bin/activate`
 * `pip install -r requirements.txt`
 * `cp config.py.sample config.py` and override the settings from `defaults.py`
-* python app.py
-* run the worker with `python -m moa.worker`
+* `MOA_CONFIG=config.DevelopmentConfig` python app.py
+* run the worker with `MOA_CONFIG=config.DevelopmentConfig python -m moa.worker`
 
 ## Features
 * preserves image alt text
