@@ -225,9 +225,9 @@ Subject: {mastodonhost.hostname} Deferred
         try:
             recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
         except Exception as e:
-            l.error(f"Instagram Error: {e.__dict__}")
+            l.error(f"Instagram Error: {type(e).__name__} {e.__dict__}")
 
-            # if 'OAuthAccessTokenException' in e.message:
+            # if e.error_type is 'OAuthAccessTokenException':
             #     bridge.instagram_access_code = None
             #     bridge.instagram_account_id = 0
             #     bridge.instagram_handle = None
