@@ -250,7 +250,7 @@ Subject: {mastodonhost.hostname} Deferred
     # Post Toots to Twitter
     #
 
-    l.debug(f"{bridge.id}: {bridge.mastodon_user}@{mastodonhost.hostname}")
+    l.debug(f"{bridge.id}: M - {bridge.mastodon_user}@{mastodonhost.hostname}")
 
     if bridge.t_settings.post_to_twitter_enabled and len(new_toots) != 0:
         l.info(f"{len(new_toots)} new toots found")
@@ -272,7 +272,7 @@ Subject: {mastodonhost.hostname} Deferred
     # Post Tweets to Mastodon
     #
 
-    l.debug(f"{bridge.id}: @{bridge.twitter_handle}")
+    l.debug(f"{bridge.id}: T - @{bridge.twitter_handle}")
 
     if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) != 0:
         l.info(f"{len(new_tweets)} new tweets found")
@@ -295,7 +295,7 @@ Subject: {mastodonhost.hostname} Deferred
     #
 
     if len(new_instas) > 0:
-        l.debug(f"{bridge.id}: {bridge.instagram_handle}")
+        l.debug(f"{bridge.id}: I - {bridge.instagram_handle}")
 
         if bridge.t_settings.instagram_post_to_mastodon or bridge.t_settings.instagram_post_to_twitter:
             l.info(f"{len(new_toots)} new instas found")
