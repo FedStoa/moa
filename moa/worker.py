@@ -11,7 +11,7 @@ from typing import Any, List
 
 import requests
 import twitter
-from instagram import InstagramAPI
+from instagram import InstagramAPI, InstagramAPIError
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
@@ -224,15 +224,15 @@ Subject: {mastodonhost.hostname} Deferred
 
         try:
             recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
-        except Exception as e:
-            l.error(f"Instagram Error: {type(e).__name__} {e.__dict__}")
+        except InstagramAPIError as e:
+            l.error(f"Instagram Error: {e.error_message}")
 
-            # if e.error_type is 'OAuthAccessTokenException':
-            #     bridge.instagram_access_code = None
-            #     bridge.instagram_account_id = 0
-            #     bridge.instagram_handle = None
-            #     bridge.updated = datetime.now()
-            #     session.commit()
+            if e.error_type is 'OAuthAccessTokenException':
+                bridge.instagram_access_code = None
+                bridge.instagram_account_id = 0
+                bridge.instagram_handle = None
+                bridge.updated = datetime.now()
+                session.commit()
         else:
             for media in recent_media:
 
