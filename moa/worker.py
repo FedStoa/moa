@@ -288,8 +288,8 @@ Subject: {mastodonhost.hostname} Deferred
     # Post Instagram
     #
 
-    l.debug(f"{bridge.id}: {bridge.instagram_handle}")
     if len(new_instas) > 0:
+        l.debug(f"{bridge.id}: {bridge.instagram_handle}")
 
         if bridge.t_settings.instagram_post_to_mastodon or bridge.t_settings.instagram_post_to_twitter:
             l.info(f"{len(new_toots)} new instas found")
