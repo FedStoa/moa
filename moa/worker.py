@@ -225,20 +225,26 @@ Subject: {mastodonhost.hostname} Deferred
         try:
             recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
         except Exception as e:
-            l.error(e)
-            continue
+            l.error(f"Instagram Error: {e}")
 
-        for media in recent_media:
+            # if 'OAuthAccessTokenException' in e.message:
+            #     bridge.instagram_access_code = None
+            #     bridge.instagram_account_id = 0
+            #     bridge.instagram_handle = None
+            #     bridge.updated = datetime.now()
+            #     session.commit()
+        else:
+            for media in recent_media:
 
-            ts = datetime_to_timestamp(media.created_time)
+                ts = datetime_to_timestamp(media.created_time)
 
-            if ts > bridge.instagram_last_id:
-                new_instas.append(media)
+                if ts > bridge.instagram_last_id:
+                    new_instas.append(media)
 
-        if c.SEND and len(new_instas) != 0:
-            bridge.instagram_last_id = datetime_to_timestamp(new_instas[0].created_time)
+            if c.SEND and len(new_instas) != 0:
+                bridge.instagram_last_id = datetime_to_timestamp(new_instas[0].created_time)
 
-    new_instas.reverse()
+            new_instas.reverse()
 
     #
     # Post Toots to Twitter
