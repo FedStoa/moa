@@ -134,7 +134,6 @@ for bridge in bridges:
     #
 
     new_toots: List[Any] = []
-    l.debug(f"-- {bridge.id}: {bridge.mastodon_user}@{mastodonhost.hostname} --")
 
     try:
         new_toots = mast_api.account_statuses(
@@ -171,10 +170,6 @@ Subject: {mastodonhost.hostname} Deferred
 
         continue
 
-    if bridge.t_settings.post_to_twitter_enabled and len(new_toots) != 0:
-        # l.info(f"Mastodon: {bridge.mastodon_user} {mastodon_last_id} -> Twitter: {bridge.twitter_handle}")
-        l.info(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {len(new_toots)} new toots found")
-
     if c.SEND and len(new_toots) != 0:
         bridge.mastodon_last_id = int(new_toots[0]['id'])
         bridge.updated = datetime.now()
@@ -185,7 +180,6 @@ Subject: {mastodonhost.hostname} Deferred
     #
 
     new_tweets: List[Any] = []
-    l.debug(f"-- {bridge.id}: @{bridge.twitter_handle} --")
 
     try:
         new_tweets = twitter_api.GetUserTimeline(
@@ -212,11 +206,6 @@ Subject: {mastodonhost.hostname} Deferred
     except ConnectionError as e:
         continue
 
-    if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) != 0:
-        l.info(f"@{bridge.twitter_handle}: {len(new_tweets)} new tweets found")
-        # l.info(f"Twitter: {bridge.twitter_handle} {twitter_last_id} -> Mastodon: {bridge.mastodon_user}")
-        # l.info(f"{len(new_tweets)} new tweets found")
-
     if c.SEND and len(new_tweets) != 0:
         bridge.twitter_last_id = new_tweets[0].id
         bridge.updated = datetime.now()
@@ -230,8 +219,6 @@ Subject: {mastodonhost.hostname} Deferred
     new_instas = []
 
     if bridge.instagram_access_code:
-
-        l.debug(f"-- INSTAGRAM: {bridge.instagram_handle} --")
 
         api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=c.INSTAGRAM_SECRET)
 
@@ -250,11 +237,17 @@ Subject: {mastodonhost.hostname} Deferred
 
         if c.SEND and len(new_instas) != 0:
             bridge.instagram_last_id = datetime_to_timestamp(new_instas[0].created_time)
+
     new_instas.reverse()
 
     #
     # Post Toots to Twitter
     #
+
+    l.debug(f"{bridge.id}: {bridge.mastodon_user}@{mastodonhost.hostname}")
+
+    if bridge.t_settings.post_to_twitter_enabled and len(new_toots) != 0:
+        l.info(f"{len(new_toots)} new toots found")
 
     tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
@@ -273,6 +266,11 @@ Subject: {mastodonhost.hostname} Deferred
     # Post Tweets to Mastodon
     #
 
+    l.debug(f"{bridge.id}: @{bridge.twitter_handle}")
+
+    if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) != 0:
+        l.info(f"{len(new_tweets)} new tweets found")
+
     toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
 
     if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) > 0:
@@ -290,7 +288,11 @@ Subject: {mastodonhost.hostname} Deferred
     # Post Instagram
     #
 
+    l.debug(f"{bridge.id}: {bridge.instagram_handle}")
     if len(new_instas) > 0:
+
+        if bridge.t_settings.instagram_post_to_mastodon or bridge.t_settings.instagram_post_to_twitter:
+            l.info(f"{len(new_toots)} new instas found")
 
         for data in new_instas:
             stat_recorded = False
