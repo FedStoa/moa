@@ -188,6 +188,7 @@ class TweetPoster(Poster):
                 logger.error(f"Twitter upload: {e.message}")
                 return False
 
-            temp_file_read.close()
-            os.unlink(upload_file_name)
+            finally:
+                temp_file_read.close()
+                os.unlink(upload_file_name)
         return True

@@ -166,7 +166,6 @@ class TootPoster(Poster):
 
             try:
                 self.media_ids.append(self.api.media_post(upload_file_name, description=attachment_desc))
-                os.unlink(upload_file_name)
 
             except MastodonAPIError as e:
                 logger.error(e)
@@ -175,5 +174,8 @@ class TootPoster(Poster):
             except MastodonNetworkError as e:
                 logger.error(e)
                 return False
+
+            finally:
+                os.unlink(upload_file_name)
 
         return True
