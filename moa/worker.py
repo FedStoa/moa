@@ -328,7 +328,7 @@ Subject: {mastodonhost.hostname} Deferred
 if c.HEALTHCHECKS:
     requests.get(c.HEALTHCHECKS)
 
-l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items")
+l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {len(bridges)} Bridges")
 
 session.add(worker_stat)
 session.commit()
