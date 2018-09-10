@@ -87,6 +87,8 @@ bridges = session.query(Bridge).filter_by(enabled=True)
 if not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())
 
+bridge_count = 0
+
 for bridge in bridges:
     # l.debug(bridge.t_settings.__dict__)
     total_time = time.time() - start_time
@@ -322,13 +324,14 @@ Subject: {mastodonhost.hostname} Deferred
 
     end_time = time.time()
     worker_stat.time = end_time - start_time
+    bridge_count = bridge_count + 1
 
     check_worker_stop()
 
 if c.HEALTHCHECKS:
     requests.get(c.HEALTHCHECKS)
 
-l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {len(list(bridges))} Bridges")
+l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {bridge_count} Bridges")
 
 session.add(worker_stat)
 session.commit()
