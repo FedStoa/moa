@@ -164,6 +164,8 @@ class TweetPoster(Poster):
             # ffs
             if file_extension == '.jpe':
                 file_extension = '.jpg'
+            elif file_extension is None:
+                file_extension = ''
 
             upload_file_name = temp_file.name + file_extension
             os.rename(temp_file.name, upload_file_name)
