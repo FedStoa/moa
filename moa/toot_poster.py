@@ -9,6 +9,7 @@ import pprint as pp
 
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
+from requests.exceptions import SSLError
 
 from moa.message import Message
 from moa.models import Mapping
@@ -142,7 +143,12 @@ class TootPoster(Poster):
             attachment_desc = attachment.get("description")
 
             logger.info(f"Downloading {attachment_desc}  {attachment_url}")
-            attachment_file = requests.get(attachment_url, stream=True)
+            try:
+                attachment_file = requests.get(attachment_url, stream=True)
+            except SSLError as e:
+                logger.error(f"{e}")
+                return False
+
             attachment_file.raw.decode_content = True
             temp_file = tempfile.NamedTemporaryFile(delete=False)
             temp_file.write(attachment_file.raw.read())

@@ -237,7 +237,7 @@ Subject: {mastodonhost.hostname} Deferred
                 session.commit()
         except InstagramClientError as e:
             l.error(f"Instagram Client Error: {e.error_message}")
-            
+
         else:
             for media in recent_media:
 

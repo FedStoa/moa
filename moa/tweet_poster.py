@@ -7,6 +7,7 @@ import time
 from typing import Optional
 
 import requests
+from requests.exceptions import SSLError
 from twitter import TwitterError
 
 from moa.message import Message
@@ -146,7 +147,12 @@ class TweetPoster(Poster):
             attachment_url = attachment.get("url")
 
             logger.info(f'Downloading {attachment_url}')
-            attachment_file = requests.get(attachment_url, stream=True)
+            try:
+                attachment_file = requests.get(attachment_url, stream=True)
+            except SSLError as e:
+                logger.error(f"{e}")
+                return False
+
             attachment_file.raw.decode_content = True
 
             temp_file = tempfile.NamedTemporaryFile(delete=False)
