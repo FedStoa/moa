@@ -331,8 +331,9 @@ Subject: {mastodonhost.hostname} Deferred
 
     check_worker_stop()
 
-if c.HEALTHCHECKS:
-    requests.get(c.HEALTHCHECKS)
+if len(c.HEALTHCHECKS) >= args.worker:
+    url = c.HEALTHCHECKS[args.worker - 1]
+    requests.get(url)
 
 l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {bridge_count} Bridges")
 

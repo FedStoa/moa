@@ -12,7 +12,7 @@ class DefaultConfig(object):
     # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
     SEND = True
     SENTRY_DSN = ''
-    HEALTHCHECKS = ''
+    HEALTHCHECKS = []
     MAIL_SERVER = None
     MAIL_PORT = 587
     MAIL_USE_TLS = True
