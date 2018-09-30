@@ -29,6 +29,7 @@ class SettingsForm(FlaskForm):
     instagram_enabled = BooleanField('Import posts from Instagram?')
     instagram_post_to_twitter = BooleanField('Post Instagrams to Twitter?')
     instagram_post_to_mastodon = BooleanField('Post Instagrams to Mastodon?')
+    instagram_include_link = BooleanField('Include link to instagram post')
 
 
 class MastodonIDForm(FlaskForm):

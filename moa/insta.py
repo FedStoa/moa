@@ -83,8 +83,12 @@ class Insta(Message):
         return False
 
     def prepare_for_post(self, length=1):
-        suffix = f"\n{self.url}"
 
+        if self.settings.instagram_include_link:
+            suffix = f"\n{self.url}"
+        else:
+            suffix = ""
+            
         content = self.clean_content
 
         if len(content + suffix) > length:
