@@ -343,13 +343,13 @@ Subject: {mastodonhost.hostname} Deferred
 
             insta = Insta(bridge.t_settings, data)
 
-            if bridge.t_settings.instagram_post_to_mastodon:
+            if not insta.should_skip_mastodon:
                 result = toot_poster.post(insta)
                 if result:
                     worker_stat.add_insta()
                     stat_recorded = True
 
-            if bridge.t_settings.instagram_post_to_twitter:
+            if not insta.should_skip_twitter:
 
                 result = tweet_poster.post(insta)
                 if result and not stat_recorded:

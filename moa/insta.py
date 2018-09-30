@@ -75,6 +75,34 @@ class Insta(Message):
         return False
 
     @property
+    def should_skip_mastodon(self) -> bool:
+
+        if not self.settings.instagram_post_to_mastodon:
+            return True
+
+        elif self.settings.conditional_posting:
+            for ht in self.data.tags:
+                if ht.name == 'nm':
+                    logger.info(f'Skipping because #nm found')
+                    return True
+
+        return False
+
+    @property
+    def should_skip_twitter(self) -> bool:
+
+        if not self.settings.instagram_post_to_twitter:
+            return True
+
+        elif self.settings.conditional_posting:
+            for ht in self.data.tags:
+                if ht.name == 'nt':
+                    logger.info(f'Skipping because #nt found')
+                    return True
+
+        return False
+
+    @property
     def is_self_reply(self) -> bool:
         return False
 
@@ -88,7 +116,7 @@ class Insta(Message):
             suffix = f"\n{self.url}"
         else:
             suffix = ""
-            
+
         content = self.clean_content
 
         if len(content + suffix) > length:
