@@ -13,3 +13,4 @@ config.py
 /.mypy_cache/
 .DS_Store
 /worker_stop
+worker_*.lock

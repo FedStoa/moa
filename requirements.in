@@ -7,6 +7,7 @@ Flask-WTF
 Mastodon.py
 pandas
 pip-tools
+psutil
 pygal
 python-twitter
 PyMySQL
