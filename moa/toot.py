@@ -146,6 +146,15 @@ class Toot(Message):
             # If it's a boost and boosts are allowed then post it even
             # if public toots aren't allowed
             pass
+        elif self.settings.conditional_posting:
+
+            for ht in self.data['tags']:
+
+                if ht.name == 'nt':
+                    logger.info(f'Skipping because #nt found')
+                    return True
+            else:
+                return False
         else:
             if self.visibility == 'public' and not self.settings.post_to_twitter:
                 logger.info(f'Skipping: Not Posting Public toots.')

@@ -31,6 +31,7 @@ class TSettings(Base):
 
     id = Column(Integer, primary_key=True)
     bridge = relationship('Bridge', backref='t_settings', lazy='dynamic')
+    conditional_posting = Column(Boolean, nullable=False, default=False)
 
     # Masto -> Twitter
     post_to_twitter = Column(Boolean, nullable=False, default=True)  # This means post public toots

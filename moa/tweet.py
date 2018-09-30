@@ -97,6 +97,16 @@ class Tweet(Message):
             # Posting retweets
             pass
 
+        elif self.settings.conditional_posting:
+
+            for ht in self.data.hashtags:
+
+                if ht.text == 'nm':
+                    logger.info(f'Skipping because #nm found')
+                    return True
+            else:
+                return False
+
         elif not self.settings.post_to_mastodon:
             logger.info(f'Skipping regular tweets.')
             return True
