@@ -45,7 +45,14 @@ class Tweet(Message):
                 target_id = self.data.retweeted_status.id
 
             elif self.is_quoted:
-                target_id = self.data.quoted_status.id
+
+                if len(self.data.media) > 0:
+                    # Does the user's tweet have media?
+                    target_id = self.data.id
+                else:
+                    # If not, use the media from the quoted tweet
+                    target_id = self.data.quoted_status.id
+
             else:
                 target_id = self.data.id
 
