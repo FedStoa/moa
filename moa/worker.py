@@ -168,7 +168,7 @@ for bridge in bridges:
                 since_id=bridge.mastodon_last_id
         )
     except MastodonAPIError as e:
-        l.error(f"Error with user {bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+        l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
 
         if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
             l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
@@ -177,7 +177,7 @@ for bridge in bridges:
         continue
 
     except MastodonNetworkError as e:
-        l.error(f"Error with user {bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+        l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
         mastodonhost.defer()
         session.commit()
 
@@ -215,7 +215,7 @@ Subject: {mastodonhost.hostname} Deferred
                 exclude_replies=False)
 
     except TwitterError as e:
-        l.error(f"Error with on user @{bridge.twitter_handle}: {e}")
+        l.error(f"@{bridge.twitter_handle}: {e}")
 
         if 'Unknown' in e.message:
             continue
@@ -252,16 +252,17 @@ Subject: {mastodonhost.hostname} Deferred
         try:
             recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
         except InstagramAPIError as e:
-            l.error(f"Instagram API Error: {e.error_message}")
+            l.error(f"{bridge.instagram_handle}: {e.error_message}")
 
             if e.error_type is 'OAuthAccessTokenException':
+                l.error(f"{bridge.instagram_handle}: Removing OAUTH token")
                 bridge.instagram_access_code = None
                 bridge.instagram_account_id = 0
                 bridge.instagram_handle = None
                 bridge.updated = datetime.now()
                 session.commit()
         except InstagramClientError as e:
-            l.error(f"Instagram Client Error: {e.error_message}")
+            l.error(f"{bridge.instagram_handle}: Client Error: {e.error_message}")
 
         else:
             for media in recent_media:
