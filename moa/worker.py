@@ -255,7 +255,7 @@ Subject: {mastodonhost.hostname} Deferred
         try:
             recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
         except InstagramAPIError as e:
-            l.error(f"{bridge.instagram_handle}: {e.error_message}")
+            l.error(f"{bridge.instagram_handle}: {e.error_type} {e.error_message}")
 
             if e.error_type is 'OAuthAccessTokenException':
                 l.error(f"{bridge.instagram_handle}: Removing OAUTH token")
