@@ -173,6 +173,9 @@ for bridge in bridges:
         if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
             l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
             bridge.enabled = False
+        else:
+            mastodonhost.defer()
+            session.commit()
 
         continue
 
