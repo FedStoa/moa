@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, List
 
+import psutil
 import requests
 import twitter
 from instagram import InstagramAPI, InstagramAPIError, InstagramClientError
@@ -81,6 +82,30 @@ def check_worker_stop():
 
 
 check_worker_stop()
+
+lockfile = Path(f'worker_{args.worker}.lock')
+
+if Path(lockfile).exists():
+    l.info("Worker lock found")
+    with lockfile.open() as f:
+        pid = f.readline()
+        try:
+            pid = int(pid)
+        except ValueError:
+            l.info("Corrupt lock file found")
+            lockfile.unlink()
+
+        else:
+            if pid in psutil.pids():
+                l.info("Worker process still running...exiting")
+                session.commit()
+                session.close()
+                exit(0)
+            else:
+                l.info("Stale Worker found")
+
+with lockfile.open('wt') as f:
+    f.write(str(psutil.Process().pid))
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
@@ -340,3 +365,5 @@ l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.
 session.add(worker_stat)
 session.commit()
 session.close()
+
+lockfile.unlink()
