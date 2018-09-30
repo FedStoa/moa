@@ -450,8 +450,14 @@ def mastodon_oauthorized():
                         access_token_key=bridge.twitter_oauth_token,
                         access_token_secret=bridge.twitter_oauth_secret
                 )
-                follower_list = twitter_api.GetFollowerIDs()
-                follower_count = len(follower_list)
+                try:
+                    follower_list = twitter_api.GetFollowerIDs()
+
+                except TwitterError as e:
+                    follower_count = e
+
+                else:
+                    follower_count = len(follower_list)
 
                 body = render_template('new_user_email.txt.j2',
                                        bridge=bridge,
