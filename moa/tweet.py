@@ -46,7 +46,7 @@ class Tweet(Message):
 
             elif self.is_quoted:
 
-                if len(self.data.media) > 0:
+                if self.data.media and len(self.data.media) > 0:
                     # Does the user's tweet have media?
                     target_id = self.data.id
                 else:
