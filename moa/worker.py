@@ -17,6 +17,7 @@ from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
 from requests import ConnectionError
+from requests.exceptions import SSLError
 from sqlalchemy import create_engine, exc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
@@ -365,7 +366,10 @@ Subject: {mastodonhost.hostname} Deferred
 
 if len(c.HEALTHCHECKS) >= args.worker:
     url = c.HEALTHCHECKS[args.worker - 1]
-    requests.get(url)
+    try:
+        requests.get(url)
+    except SSLError:
+        pass
 
 l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {bridge_count} Bridges")
 
