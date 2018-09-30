@@ -51,7 +51,7 @@ class TSettings(Base):
 
     instagram_post_to_twitter = Column(Boolean, nullable=False, default=False)
     instagram_post_to_mastodon = Column(Boolean, nullable=False, default=False)
-    instagram_include_link = Column(Boolean, nullable=False, server_default="SELECT 1")
+    instagram_include_link = Column(Boolean, nullable=True, default=True)
 
     def import_settings(self, old_settings):
 
