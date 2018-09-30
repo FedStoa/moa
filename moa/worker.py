@@ -267,6 +267,9 @@ Subject: {mastodonhost.hostname} Deferred
         except InstagramClientError as e:
             l.error(f"{bridge.instagram_handle}: Client Error: {e.error_message}")
 
+        except ConnectionResetError:
+            continue
+
         else:
             for media in recent_media:
 
