@@ -45,7 +45,7 @@ args = parser.parse_args()
 worker_stat = WorkerStat(worker=args.worker)
 worker_stat.time = 0
 
-FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
+FORMAT = "%(asctime)-15s [%(process)d] [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 logging.basicConfig(format=FORMAT)
 
