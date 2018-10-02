@@ -18,6 +18,13 @@ form {
     border: 0.6rem double;
 }
 
+@media only screen and (max-width: 768px) {
+    /* For mobile phones: */
+    .center {
+        width: 100%;
+    }
+}
+
 a:link {
     text-decoration: none;
 }
