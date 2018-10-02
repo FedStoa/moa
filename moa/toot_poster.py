@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import pprint as pp
 
 import requests
-from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
+from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
 from requests.exceptions import SSLError
 
 from moa.message import Message
@@ -178,6 +178,10 @@ class TootPoster(Poster):
                 return False
 
             except MastodonNetworkError as e:
+                logger.error(e)
+                return False
+
+            except MastodonRatelimitError as e:
                 logger.error(e)
                 return False
 

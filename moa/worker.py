@@ -146,7 +146,8 @@ for bridge in bridges:
             api_base_url=f"https://{mastodonhost.hostname}",
             access_token=bridge.mastodon_access_code,
             debug_requests=False,
-            request_timeout=15
+            request_timeout=15,
+            ratelimit_method='throw'
     )
 
     twitter_api = twitter.Api(
