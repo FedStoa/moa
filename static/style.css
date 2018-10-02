@@ -13,18 +13,35 @@ form {
 
 .center {
     margin: auto;
-    width: 50%;
-    padding: 10px;
-    border: 0.6rem double;
 }
 
-@media only screen and (min-width: 320px) {
-    /* For mobile phones: */
-    .center {
-        width: 100%;
-        border: none;
-        padding: 5px;
-    }
+@media only screen and (min-width : 320px) {
+    .center { width: 100%; border: none; padding: 5px; }
+
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (min-width : 480px) {
+    .center { width: 100%; border: none; padding: 5px; }
+
+}
+
+/* Small Devices, Tablets */
+@media only screen and (min-width : 768px) {
+    .center { width: 100%; border: none; padding: 5px; }
+
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (min-width : 992px) {
+    .center { width: 50%; padding: 10px;border: 0.6rem double; }
+
+}
+
+/* Large Devices, Wide Screens */
+@media only screen and (min-width : 1200px) {
+    .center { width: 50%; padding: 10px;border: 0.6rem double; }
+
 }
 
 a:link {
