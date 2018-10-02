@@ -18,7 +18,7 @@
         {% else %}
             <form action="{{ url_for('mastodon_login') }}" method="POST">
                 [
-                ] {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance', size=30) }}
+                ] {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance', size=30, type="email") }}
                 {{ form.csrf_token }}
                 <input type=submit value="OK">
             </form>

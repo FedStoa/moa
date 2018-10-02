@@ -75,7 +75,7 @@ input[type="checkbox"]:checked:after {
     content: "✔]"
 }
 
-input[type="text"] {
+input[type="text"],input[type="email"] {
     color: #444444;
     background: #CCCCCC;
 
