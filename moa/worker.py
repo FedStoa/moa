@@ -202,6 +202,10 @@ Subject: {mastodonhost.hostname} Deferred
 
         continue
 
+    if len(new_toots) > c.MAX_MESSAGES_PER_RUN:
+        l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: Limiting to {c.MAX_MESSAGES_PER_RUN} messages")
+        new_toots = new_toots[-c.MAX_MESSAGES_PER_RUN:]
+
     if c.SEND and len(new_toots) != 0:
         bridge.mastodon_last_id = int(new_toots[0]['id'])
         bridge.updated = datetime.now()
@@ -237,6 +241,10 @@ Subject: {mastodonhost.hostname} Deferred
 
     except ConnectionError as e:
         continue
+
+    if len(new_tweets) > c.MAX_MESSAGES_PER_RUN:
+        l.error(f"@{bridge.twitter_handle}: Limiting to {c.MAX_MESSAGES_PER_RUN} messages")
+        new_tweets = new_tweets[-c.MAX_MESSAGES_PER_RUN:]
 
     if c.SEND and len(new_tweets) != 0:
         bridge.twitter_last_id = new_tweets[0].id

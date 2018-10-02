@@ -22,6 +22,7 @@ class DefaultConfig(object):
     MAIL_DEFAULT_SENDER = ''
     TWITTER_BLACKLIST = []
     WORKER_JOBS = 1
+    MAX_MESSAGES_PER_RUN = 5
 
     # This option prevents twitter replies and mentions from occuring when a toot contains @user@twitter.com. This
     # behavior is against twitter's rules.
