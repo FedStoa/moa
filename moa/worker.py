@@ -15,7 +15,7 @@ import twitter
 from instagram import InstagramAPI, InstagramAPIError, InstagramClientError
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
-from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError
+from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
 from requests import ConnectionError
 from requests.exceptions import SSLError
 from sqlalchemy import create_engine, exc, func
@@ -201,6 +201,9 @@ Subject: {mastodonhost.hostname} Deferred
                 l.error(e)
 
         continue
+
+    except MastodonRatelimitError as e:
+        l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
 
     if len(new_toots) > c.MAX_MESSAGES_PER_RUN:
         l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: Limiting to {c.MAX_MESSAGES_PER_RUN} messages")
