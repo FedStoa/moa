@@ -70,6 +70,7 @@ select {
     color: inherit;
     border: 0;
     margin-left: 0px;
+    white-space: nowrap;
 }
 
 input[type="radio"]:before,
