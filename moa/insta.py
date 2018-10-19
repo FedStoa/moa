@@ -45,7 +45,7 @@ class Insta(Message):
             else:
                 self.__content = ""
 
-            mentions = re.findall(r'[@][a-zA-Z0-9_]*', self.__content)
+            mentions = re.findall(r'@[a-zA-Z0-9_]{1,30}', self.__content)
 
             for mention in mentions:
                 # Replace all mentions for an equivalent to clearly signal their origin on Twitter
