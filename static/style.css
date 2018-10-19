@@ -71,11 +71,13 @@ select {
     border: 0;
     margin-left: 0px;
     white-space: nowrap;
+    background: none;
+    width: auto;
 }
 
 input[type="radio"]:before,
 input[type="checkbox"]:before {
-    content: "[ ";
+    content: "[\00a0\00a0";
 }
 
 input[type="radio"]:checked:before,
@@ -85,12 +87,12 @@ input[type="checkbox"]:checked:before {
 
 input[type="radio"]:after,
 input[type="checkbox"]:after {
-    content: "]";
+    content: "]\00a0";
 }
 
 input[type="radio"]:checked:after,
 input[type="checkbox"]:checked:after {
-    content: "✔]"
+    content: "✔]\00a0"
 }
 
 input[type="text"],input[type="email"] {
