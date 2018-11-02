@@ -151,11 +151,7 @@ class TootPoster(Poster):
                 temp_file.write(attachment_file.raw.read())
                 temp_file.close()
 
-            except SSLError as e:
-                logger.error(f"{e}")
-                return False
-
-            except ProtocolError as e:
+            except (SSLError, ProtocolError, ConnectionError) as e:
                 logger.error(f"{e}")
                 return False
 
