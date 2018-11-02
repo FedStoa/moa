@@ -9,6 +9,7 @@ from typing import Optional
 import requests
 from requests.exceptions import SSLError
 from twitter import TwitterError
+from urllib3.exceptions import ProtocolError
 
 from moa.message import Message
 from moa.models import Mapping
@@ -149,15 +150,15 @@ class TweetPoster(Poster):
             logger.info(f'Downloading {attachment_url}')
             try:
                 attachment_file = requests.get(attachment_url, stream=True)
-            except SSLError as e:
+                attachment_file.raw.decode_content = True
+
+                temp_file = tempfile.NamedTemporaryFile(delete=False)
+                temp_file.write(attachment_file.raw.read())
+                temp_file.close()
+
+            except (SSLError, ProtocolError, ConnectionError) as e:
                 logger.error(f"{e}")
                 return False
-
-            attachment_file.raw.decode_content = True
-
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_file.write(attachment_file.raw.read())
-            temp_file.close()
 
             fsize = os.path.getsize(temp_file.name)
 
