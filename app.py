@@ -13,6 +13,7 @@ from flask_oauthlib.client import OAuth, OAuthException
 from flask_sqlalchemy import SQLAlchemy
 from instagram.client import InstagramAPI
 from instagram.helper import datetime_to_timestamp
+from instagram.oauth2 import OAuth2AuthExchangeError
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError, \
     MastodonUnauthorizedError
@@ -501,8 +502,13 @@ def instagram_oauthorized():
         client_secret = app.config['INSTAGRAM_SECRET']
         redirect_uri = url_for('instagram_oauthorized', _external=True)
         api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
-        access_token = api.exchange_code_for_access_token(code)
 
+        try:
+            access_token = api.exchange_code_for_access_token(code)
+        except OAuth2AuthExchangeError as e:
+            flash("Instagram authorization failed")
+            return redirect(url_for('index'))
+            
         # look up settings
         bridge = db.session.query(Bridge).filter_by(
             mastodon_user=session['mastodon']['username'],
