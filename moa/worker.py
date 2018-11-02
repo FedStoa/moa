@@ -6,6 +6,7 @@ import smtplib
 import sys
 import time
 from datetime import datetime
+from http.client import IncompleteRead
 from pathlib import Path
 from typing import Any, List
 
@@ -280,7 +281,8 @@ Subject: {mastodonhost.hostname} Deferred
         except InstagramClientError as e:
             l.error(f"{bridge.instagram_handle}: Client Error: {e.error_message}")
 
-        except ConnectionResetError:
+        except (ConnectionResetError, IncompleteRead) as e:
+            l.error(f"{e}")
             continue
 
         else:
