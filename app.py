@@ -508,7 +508,7 @@ def instagram_oauthorized():
         except OAuth2AuthExchangeError as e:
             flash("Instagram authorization failed")
             return redirect(url_for('index'))
-            
+
         # look up settings
         bridge = db.session.query(Bridge).filter_by(
             mastodon_user=session['mastodon']['username'],
@@ -523,8 +523,11 @@ def instagram_oauthorized():
 
         user_api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=client_secret)
 
-        latest_media, _ = user_api.user_recent_media(user_id=bridge.instagram_account_id, count=1)
-
+        try:
+            latest_media, _ = user_api.user_recent_media(user_id=bridge.instagram_account_id, count=1)
+        except Exception:
+            latest_media = []
+            
         if len(latest_media) > 0:
             bridge.instagram_last_id = datetime_to_timestamp(latest_media[0].created_time)
         else:
