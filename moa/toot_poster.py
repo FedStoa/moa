@@ -10,6 +10,7 @@ import pprint as pp
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
 from requests.exceptions import SSLError
+from urllib3.exceptions import ProtocolError
 
 from moa.message import Message
 from moa.models import Mapping
@@ -145,14 +146,18 @@ class TootPoster(Poster):
             logger.info(f"Downloading {attachment_desc}  {attachment_url}")
             try:
                 attachment_file = requests.get(attachment_url, stream=True)
+                attachment_file.raw.decode_content = True
+                temp_file = tempfile.NamedTemporaryFile(delete=False)
+                temp_file.write(attachment_file.raw.read())
+                temp_file.close()
+
             except SSLError as e:
                 logger.error(f"{e}")
                 return False
 
-            attachment_file.raw.decode_content = True
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_file.write(attachment_file.raw.read())
-            temp_file.close()
+            except ProtocolError as e:
+                logger.error(f"{e}")
+                return False
 
             path = urlparse(attachment_url).path
             file_extension = splitext(path)[1]
