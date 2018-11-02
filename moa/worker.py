@@ -382,7 +382,7 @@ if len(c.HEALTHCHECKS) >= args.worker:
     url = c.HEALTHCHECKS[args.worker - 1]
     try:
         requests.get(url)
-    except SSLError:
+    except Exception:
         pass
 
 l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {bridge_count} Bridges")
