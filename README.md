@@ -26,8 +26,10 @@ https://moa.party
 Moa is a flask app and can be run with `python` or proxied behind something like nginx/passenger.
 
 * clone it
+* On Debian/Ubuntu you'll need to `apt install python-dev python3-dev build-essential`
 * make a virtual environment `python3 -m venv .moa-venv`
 * activate `source .moa-venv/bin/activate`
+* `pip install --upgrade setuptools wheel`
 * `pip install -r requirements.txt`
 * `cp config.py.sample config.py` and override the settings from `defaults.py`
 * `MOA_CONFIG=config.DevelopmentConfig python -m moa.models` to create the DB tables
