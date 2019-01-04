@@ -27,14 +27,12 @@ Moa is a flask app and can be run with `python` or proxied behind something like
 
 * clone it
 * On Debian/Ubuntu you'll need to `apt install python-dev python3-dev build-essential`
-* make a virtual environment `python3 -m venv .moa-venv`
-* activate `source .moa-venv/bin/activate`
-* `pip install --upgrade setuptools wheel`
-* `pip install -r requirements.txt`
+* Install pipenv `pip3 install pipenv`
+* `PIPENV_VENV_IN_PROJECT=1 pipenv install`
 * `cp config.py.sample config.py` and override the settings from `defaults.py`
-* `MOA_CONFIG=config.DevelopmentConfig python -m moa.models` to create the DB tables
-* `MOA_CONFIG=config.DevelopmentConfig` python app.py
-* run the worker with `MOA_CONFIG=DevelopmentConfig python -m moa.worker`
+* `MOA_CONFIG=config.DevelopmentConfig /usr/local/bin/pipenv run python -m moa.models` to create the DB tables
+* `MOA_CONFIG=config.DevelopmentConfig /usr/local/bin/pipenv run python app.py`
+* run the worker with `MOA_CONFIG=DevelopmentConfig /usr/local/bin/pipenv run python -m moa.worker`
 
 ## Features
 * preserves image alt text
@@ -72,7 +70,7 @@ server {
     
     passenger_enabled on;
     passenger_app_env production;
-    passenger_python /var/www/moa/.moa-venv/bin/python3;
+    passenger_python /var/www/moa/.venv/bin/python3;
     passenger_env_var MOA_CONFIG config.ProductionConfig;
     
     root /var/www/moa/public;
