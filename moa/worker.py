@@ -18,7 +18,6 @@ from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
 from requests import ConnectionError
-from requests.exceptions import SSLError
 from sqlalchemy import create_engine, exc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
@@ -73,6 +72,8 @@ except exc.SQLAlchemyError as e:
 
 session = Session(engine)
 
+lockfile = Path(f'worker_{args.worker}.lock')
+
 
 def check_worker_stop():
     if Path('worker_stop').exists():
@@ -80,12 +81,15 @@ def check_worker_stop():
         session.add(worker_stat)
         session.commit()
         session.close()
+        try:
+            lockfile.unlink()
+        except FileNotFoundError:
+            pass
+
         exit(0)
 
 
 check_worker_stop()
-
-lockfile = Path(f'worker_{args.worker}.lock')
 
 if Path(lockfile).exists():
     l.info("Worker lock found")
@@ -108,6 +112,9 @@ if Path(lockfile).exists():
 
 with lockfile.open('wt') as f:
     f.write(str(psutil.Process().pid))
+
+if not c.SEND:
+    l.warning("SENDING IS NOT ENABLED")
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
@@ -132,129 +139,129 @@ for bridge in bridges:
     if args.worker != (bridge.id % c.WORKER_JOBS) + 1:
         continue
 
-    mastodon_last_id = bridge.mastodon_last_id
-    twitter_last_id = bridge.twitter_last_id
-
-    mastodonhost = bridge.mastodon_host
-
-    if mastodonhost.defer_until and mastodonhost.defer_until > datetime.now():
-        l.warning(f"Deferring connections to {mastodonhost.hostname}")
-        continue
-
-    mast_api = Mastodon(
-            client_id=mastodonhost.client_id,
-            client_secret=mastodonhost.client_secret,
-            api_base_url=f"https://{mastodonhost.hostname}",
-            access_token=bridge.mastodon_access_code,
-            debug_requests=False,
-            request_timeout=15,
-            ratelimit_method='throw'
-    )
-
-    twitter_api = twitter.Api(
-            consumer_key=c.TWITTER_CONSUMER_KEY,
-            consumer_secret=c.TWITTER_CONSUMER_SECRET,
-            access_token_key=bridge.twitter_oauth_token,
-            access_token_secret=bridge.twitter_oauth_secret,
-            tweet_mode='extended'  # Allow tweets longer than 140 raw characters
-    )
-
     #
     # Fetch from Mastodon
     #
-
     new_toots: List[Any] = []
 
-    try:
-        new_toots = mast_api.account_statuses(
-                bridge.mastodon_account_id,
-                since_id=bridge.mastodon_last_id
-        )
-    except MastodonAPIError as e:
-        l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+    if bridge.mastodon_access_code:
+        mastodon_last_id = bridge.mastodon_last_id
+        mastodonhost = bridge.mastodon_host
 
-        if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
-            l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
-            bridge.enabled = False
-        else:
+        if mastodonhost.defer_until and mastodonhost.defer_until > datetime.now():
+            l.warning(f"Deferring connections to {mastodonhost.hostname}")
+            continue
+
+        mast_api = Mastodon(
+                client_id=mastodonhost.client_id,
+                client_secret=mastodonhost.client_secret,
+                api_base_url=f"https://{mastodonhost.hostname}",
+                access_token=bridge.mastodon_access_code,
+                debug_requests=False,
+                request_timeout=15,
+                ratelimit_method='throw'
+        )
+
+        try:
+            new_toots = mast_api.account_statuses(
+                    bridge.mastodon_account_id,
+                    since_id=bridge.mastodon_last_id
+            )
+        except MastodonAPIError as e:
+            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+
+            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
+                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.enabled = False
+            else:
+                mastodonhost.defer()
+                session.commit()
+
+            continue
+
+        except MastodonNetworkError as e:
+            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
             mastodonhost.defer()
             session.commit()
 
-        continue
+            if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
 
-    except MastodonNetworkError as e:
-        l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
-        mastodonhost.defer()
-        session.commit()
+                try:
+                    message = f"""From: {c.MAIL_DEFAULT_SENDER}
+    To: {c.MAIL_TO}
+    Subject: {mastodonhost.hostname} Deferred
+    
+    """
+                    smtpObj = smtplib.SMTP(c.MAIL_SERVER)
+                    smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
 
-        if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
+                except smtplib.SMTPException as e:
+                    l.error(e)
 
-            try:
-                message = f"""From: {c.MAIL_DEFAULT_SENDER}
-To: {c.MAIL_TO}
-Subject: {mastodonhost.hostname} Deferred
+            continue
 
-"""
-                smtpObj = smtplib.SMTP(c.MAIL_SERVER)
-                smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
+        except MastodonRatelimitError as e:
+            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
 
-            except smtplib.SMTPException as e:
-                l.error(e)
+        if len(new_toots) > c.MAX_MESSAGES_PER_RUN:
+            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: Limiting to {c.MAX_MESSAGES_PER_RUN} messages")
+            new_toots = new_toots[-c.MAX_MESSAGES_PER_RUN:]
 
-        continue
-
-    except MastodonRatelimitError as e:
-        l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
-
-    if len(new_toots) > c.MAX_MESSAGES_PER_RUN:
-        l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: Limiting to {c.MAX_MESSAGES_PER_RUN} messages")
-        new_toots = new_toots[-c.MAX_MESSAGES_PER_RUN:]
-
-    if c.SEND and len(new_toots) != 0:
-        bridge.mastodon_last_id = int(new_toots[0]['id'])
-        bridge.updated = datetime.now()
-    new_toots.reverse()
+        if c.SEND and len(new_toots) != 0:
+            bridge.mastodon_last_id = int(new_toots[0]['id'])
+            bridge.updated = datetime.now()
+        new_toots.reverse()
 
     #
     # Fetch from Twitter
     #
-
     new_tweets: List[Any] = []
 
-    try:
-        new_tweets = twitter_api.GetUserTimeline(
-                since_id=bridge.twitter_last_id,
-                include_rts=True,
-                exclude_replies=False)
+    if bridge.twitter_oauth_token:
+        twitter_last_id = bridge.twitter_last_id
 
-    except TwitterError as e:
-        l.error(f"@{bridge.twitter_handle}: {e}")
+        twitter_api = twitter.Api(
+                consumer_key=c.TWITTER_CONSUMER_KEY,
+                consumer_secret=c.TWITTER_CONSUMER_SECRET,
+                access_token_key=bridge.twitter_oauth_token,
+                access_token_secret=bridge.twitter_oauth_secret,
+                tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+        )
 
-        if 'Unknown' in e.message:
+        try:
+            new_tweets = twitter_api.GetUserTimeline(
+                    since_id=bridge.twitter_last_id,
+                    include_rts=True,
+                    exclude_replies=False)
+
+        except TwitterError as e:
+            l.error(f"@{bridge.twitter_handle}: {e}")
+
+            if 'Unknown' in e.message:
+                continue
+            # elif 'OAuthAccessTokenException' in e.message:
+            #     l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
+            #     bridge.enabled = False
+
+            elif isinstance(e.message, list) and len(e.message) > 0:
+                if e.message[0]['code'] in [89, 326]:
+                    l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
+                    bridge.enabled = False
+
             continue
-        # elif 'OAuthAccessTokenException' in e.message:
-        #     l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
-        #     bridge.enabled = False
 
-        elif isinstance(e.message, list) and len(e.message) > 0:
-            if e.message[0]['code'] in [89, 326]:
-                l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
-                bridge.enabled = False
+        except ConnectionError as e:
+            continue
 
-        continue
+        if len(new_tweets) > c.MAX_MESSAGES_PER_RUN:
+            l.error(f"@{bridge.twitter_handle}: Limiting to {c.MAX_MESSAGES_PER_RUN} messages")
+            new_tweets = new_tweets[-c.MAX_MESSAGES_PER_RUN:]
 
-    except ConnectionError as e:
-        continue
+        if c.SEND and len(new_tweets) != 0:
+            bridge.twitter_last_id = new_tweets[0].id
+            bridge.updated = datetime.now()
 
-    if len(new_tweets) > c.MAX_MESSAGES_PER_RUN:
-        l.error(f"@{bridge.twitter_handle}: Limiting to {c.MAX_MESSAGES_PER_RUN} messages")
-        new_tweets = new_tweets[-c.MAX_MESSAGES_PER_RUN:]
-
-    if c.SEND and len(new_tweets) != 0:
-        bridge.twitter_last_id = new_tweets[0].id
-        bridge.updated = datetime.now()
-
-    new_tweets.reverse()
+        new_tweets.reverse()
 
     #
     # Instagram
@@ -302,45 +309,51 @@ Subject: {mastodonhost.hostname} Deferred
     # Post Toots to Twitter
     #
 
-    l.debug(f"{bridge.id}: M - {bridge.mastodon_user}@{mastodonhost.hostname}")
+    if bridge.twitter_oauth_token:
+        tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
-    if bridge.t_settings.post_to_twitter_enabled and len(new_toots) != 0:
-        l.info(f"{len(new_toots)} new toots found")
+        if bridge.mastodon_access_code:
+            l.debug(f"{bridge.id}: M - {bridge.mastodon_user}@{mastodonhost.hostname}")
 
-    tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
+            if bridge.t_settings.post_to_twitter_enabled and len(new_toots) != 0:
+                l.info(f"{len(new_toots)} new toots found")
 
-    if bridge.t_settings.post_to_twitter_enabled and len(new_toots) > 0:
+            tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
-        for toot in new_toots:
+            if bridge.t_settings.post_to_twitter_enabled and len(new_toots) > 0:
 
-            t = Toot(bridge.t_settings, toot, c)
+                for toot in new_toots:
 
-            result = tweet_poster.post(t)
+                    t = Toot(bridge.t_settings, toot, c)
 
-            if result:
-                worker_stat.add_toot()
+                    result = tweet_poster.post(t)
+
+                    if result:
+                        worker_stat.add_toot()
 
     #
     # Post Tweets to Mastodon
     #
 
-    l.debug(f"{bridge.id}: T - @{bridge.twitter_handle}")
+    if bridge.mastodon_access_code:
+        toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
 
-    if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) != 0:
-        l.info(f"{len(new_tweets)} new tweets found")
+        if bridge.twitter_oauth_token:
+            l.debug(f"{bridge.id}: T - @{bridge.twitter_handle}")
 
-    toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
+            if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) != 0:
+                l.info(f"{len(new_tweets)} new tweets found")
 
-    if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) > 0:
+            if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) > 0:
 
-        for status in new_tweets:
+                for status in new_tweets:
 
-            tweet = Tweet(bridge.t_settings, status, twitter_api)
+                    tweet = Tweet(bridge.t_settings, status, twitter_api)
 
-            result = toot_poster.post(tweet)
+                    result = toot_poster.post(tweet)
 
-            if result:
-                worker_stat.add_tweet()
+                    if result:
+                        worker_stat.add_tweet()
 
     #
     # Post Instagram
@@ -357,13 +370,13 @@ Subject: {mastodonhost.hostname} Deferred
 
             insta = Insta(bridge.t_settings, data)
 
-            if not insta.should_skip_mastodon:
+            if not insta.should_skip_mastodon and bridge.mastodon_access_code:
                 result = toot_poster.post(insta)
                 if result:
                     worker_stat.add_insta()
                     stat_recorded = True
 
-            if not insta.should_skip_twitter:
+            if not insta.should_skip_twitter and bridge.twitter_oauth_token:
 
                 result = tweet_poster.post(insta)
                 if result and not stat_recorded:

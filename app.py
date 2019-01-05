@@ -7,7 +7,6 @@ import pandas as pd
 import pygal
 import twitter
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
-from flask_mail import Mail, Message
 from flask_migrate import Migrate
 from flask_oauthlib.client import OAuth, OAuthException
 from flask_sqlalchemy import SQLAlchemy
@@ -21,7 +20,7 @@ from sqlalchemy import exc, func
 from twitter import TwitterError
 
 from moa.forms import MastodonIDForm, SettingsForm
-from moa.helpers import blacklisted
+from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email
 from moa.models import Bridge, MastodonHost, WorkerStat, metadata, TSettings
 
 app = Flask(__name__)
@@ -43,7 +42,6 @@ app.logger.info("Starting up...")
 
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
 app.config.from_object(config)
-mail = Mail(app)
 
 if app.config['SENTRY_DSN']:
     from raven.contrib.flask import Sentry
@@ -69,22 +67,15 @@ twitter_oauth = oauth.remote_app(
 
 @app.before_request
 def before_request():
-    g.t_user = None
-    g.m_user = None
+
     g.bridge = None
-
-    if 'twitter' in session:
-        g.t_user = session['twitter']
-
-    if 'mastodon' in session:
-        g.m_user = session['mastodon']
 
     try:
         db.engine.execute('SELECT 1 from bridge')
     except exc.SQLAlchemyError as e:
         return "Moa is unavailable at the moment", 503
 
-    # app.logger.info(session)
+    app.logger.info(session)
 
 
 @app.route('/')
@@ -95,65 +86,48 @@ def index():
     mform = MastodonIDForm()
     settings = TSettings()
     enabled = True
-    found_settings = False
+    form = SettingsForm(obj=settings)
 
-    if 'twitter' in session and 'mastodon' in session:
-        # look up settings
-        bridge = db.session.query(Bridge).filter_by(
-            mastodon_user=session['mastodon']['username'],
-            twitter_handle=session['twitter']['screen_name'],
-        ).first()
+    if 'bridge_id' in session:
+        bridge = db.session.query(Bridge).filter_by(id=session['bridge_id']).first()
 
         if bridge:
-            found_settings = True
-            settings = bridge.t_settings
-            enabled = bridge.enabled
             g.bridge = bridge
+            settings = bridge.t_settings
             app.logger.debug(f"Existing settings found: {enabled} {settings.__dict__}")
 
-    form = SettingsForm(obj=settings)
+            form = SettingsForm(obj=settings)
+
+            if not bridge.mastodon_access_code or not bridge.twitter_oauth_token:
+                form.remove_masto_and_twitter_fields()
 
     return render_template('index.html.j2',
                            form=form,
                            mform=mform,
-                           enabled=enabled,
-                           found_settings=found_settings
                            )
 
 
 @app.route('/options', methods=["POST"])
 def options():
+
+    if 'bridge_id' in session:
+        bridge = db.session.query(Bridge).filter_by(id=session['bridge_id']).first()
+    else:
+        flash('ERROR: Please log in to an account')
+        return redirect(url_for('index'))
+
     form = SettingsForm()
+
+    if not bridge.mastodon_access_code or not bridge.twitter_oauth_token:
+        form.remove_masto_and_twitter_fields()
 
     if form.validate_on_submit():
 
-        bridge = db.session.query(Bridge).filter_by(
-            mastodon_user=session['mastodon']['username'],
-            twitter_handle=session['twitter']['screen_name'],
-        ).first()
-
-        if bridge:
-            app.logger.debug("Existing settings found")
-            form.populate_obj(bridge.t_settings)
-
-        else:
-            bridge = Bridge()
-            settings = TSettings()
-            form.populate_obj(settings)
+        app.logger.debug("Existing settings found")
+        form.populate_obj(bridge.t_settings)
 
         bridge.enabled = form.enabled.data
-        # bridge.t_settings = settings
         bridge.updated = datetime.now()
-        bridge.twitter_oauth_token = session['twitter']['oauth_token']
-        bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
-        bridge.twitter_handle = session['twitter']['screen_name']
-        bridge.mastodon_access_code = session['mastodon']['access_code']
-        bridge.mastodon_user = session['mastodon']['username']
-        bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
-
-        if not bridge.mastodon_host:
-            flash(f"There was a problem connecting to {session['mastodon']['host']}")
-            return redirect(url_for('index'))
 
         catch_up_twitter(bridge)
         catch_up_mastodon(bridge)
@@ -172,13 +146,13 @@ def options():
 
 def catch_up_twitter(bridge):
 
-    if bridge.twitter_last_id == 0:
+    if bridge.twitter_last_id == 0 and bridge.twitter_oauth_token:
         # get twitter ID
         twitter_api = twitter.Api(
             consumer_key=app.config['TWITTER_CONSUMER_KEY'],
             consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
-            access_token_key=session['twitter']['oauth_token'],
-            access_token_secret=session['twitter']['oauth_token_secret'],
+            access_token_key=bridge.twitter_oauth_token,
+            access_token_secret=bridge.twitter_oauth_secret,
             tweet_mode='extended'  # Allow tweets longer than 140 raw characters
         )
         try:
@@ -195,11 +169,11 @@ def catch_up_twitter(bridge):
 
 
 def catch_up_mastodon(bridge):
-    if bridge.mastodon_last_id == 0:
+    if bridge.mastodon_last_id == 0 and bridge.mastodon_access_code:
 
         # get mastodon ID
-        api = mastodon_api(session['mastodon']['host'],
-                           access_code=session['mastodon']['access_code'])
+        api = mastodon_api(bridge.mastodon_host.hostname,
+                           access_code=bridge.mastodon_access_code)
 
         bridge.mastodon_account_id = api.account_verify_credentials()["id"]
 
@@ -218,16 +192,12 @@ def catch_up_mastodon(bridge):
 
 @app.route('/delete', methods=["POST"])
 def delete():
-    if 'twitter' in session and 'mastodon' in session:
-        # look up settings
-        bridge = db.session.query(Bridge).filter_by(
-            mastodon_user=session['mastodon']['username'],
-            twitter_handle=session['twitter']['screen_name'],
-        ).first()
+
+    if 'bridge_id' in session:
+        bridge = db.session.query(Bridge).filter_by(id=session['bridge_id']).first()
 
         if bridge:
-            app.logger.info(
-                f"Deleting settings for {session['mastodon']['username']} {session['twitter']['screen_name']}")
+            app.logger.info(f"Deleting settings for Bridge {bridge.id}")
             settings = bridge.t_settings
             db.session.delete(bridge)
             db.session.delete(settings)
@@ -265,21 +235,25 @@ def twitter_oauthorized():
 
     elif blacklisted(resp['screen_name'], app.config.get('TWITTER_BLACKLIST', [])):
         flash('ERROR: Access Denied.')
-
-        if app.config.get('MAIL_SERVER', None):
-            body = render_template('access_denied.txt.j2', user=f"https://twitter.com/{resp['screen_name']}")
-            msg = Message(subject="moa access denied",
-                          body=body,
-                          recipients=[app.config.get('MAIL_TO', None)])
-
-            try:
-                mail.send(msg)
-
-            except Exception as e:
-                app.logger.error(e)
+        send_blacklisted_email(app, resp['screen_name'])
 
     else:
-        session['twitter'] = resp
+        if 'bridge_id' in session:
+            bridge = get_or_create_bridge(bridge_id=session['bridge_id'])
+
+            if not bridge:
+                pass  # this should be an error
+        else:
+            bridge = get_or_create_bridge()
+
+        bridge.twitter_oauth_token = resp['oauth_token']
+        bridge.twitter_oauth_secret = resp['oauth_token_secret']
+        bridge.twitter_handle = resp['screen_name']
+        db.session.commit()
+
+        catch_up_twitter(bridge)
+
+        email_bridge_details(app, bridge)
 
     return redirect(url_for('index'))
 
@@ -333,6 +307,25 @@ def mastodon_api(hostname, access_code=None):
 
         return api
     return None
+
+
+def get_or_create_bridge(bridge_id=None):
+
+    if bridge_id:
+        bridge = db.session.query(Bridge).filter_by(id=bridge_id).first()
+
+    else:
+        bridge = Bridge()
+        bridge.enabled = True
+        bridge.t_settings = TSettings()
+
+        db.session.add(bridge.t_settings)
+        db.session.add(bridge)
+        db.session.commit()
+
+        session['bridge_id'] = bridge.id
+
+    return bridge
 
 
 @app.route('/mastodon_login', methods=['POST'])
@@ -389,6 +382,7 @@ def mastodon_oauthorized():
         session.pop('mastodon_host', None)
 
         api = mastodon_api(host)
+        masto_host = get_or_create_host(host)
 
         try:
             access_code = api.log_in(
@@ -406,77 +400,38 @@ def mastodon_oauthorized():
         api.access_code = access_code
 
         try:
-            session['mastodon'] = {
-                'host': host,
-                'access_code': access_code,
-                'username': api.account_verify_credentials()["username"]
-            }
+            creds = api.account_verify_credentials()
 
         except MastodonUnauthorizedError as e:
             flash(f"There was a problem connecting to the mastodon server. The error was {e}")
             return redirect(url_for('index'))
 
-        bridge = db.session.query(Bridge).filter_by(
-            mastodon_user=session['mastodon']['username'],
-            twitter_handle=session['twitter']['screen_name'],
-        ).first()
+        username = creds["username"]
+        account_id = creds["id"]
+
+        bridge = db.session.query(Bridge).filter_by(mastodon_account_id=account_id, mastodon_host_id=masto_host.id).first()
 
         if bridge:
-            app.logger.debug("Existing settings found")
+            session['bridge_id'] = bridge.id
+
         else:
-
-            bridge = Bridge()
-            bridge.enabled = True
-            bridge.t_settings = TSettings()
-            bridge.twitter_oauth_token = session['twitter']['oauth_token']
-            bridge.twitter_oauth_secret = session['twitter']['oauth_token_secret']
-            bridge.twitter_handle = session['twitter']['screen_name']
-            bridge.mastodon_access_code = session['mastodon']['access_code']
-            bridge.mastodon_user = session['mastodon']['username']
-            bridge.mastodon_host = get_or_create_host(session['mastodon']['host'])
-
-            db.session.add(bridge.t_settings)
-            db.session.add(bridge)
+            bridge = get_or_create_bridge()
+            bridge.mastodon_host = get_or_create_host(host)
+            bridge.mastodon_account_id = account_id
+            email_bridge_details(app, bridge)
             db.session.commit()
 
+        if not bridge.mastodon_access_code:
+            # in case they deactivated this account and are logging in again
+            bridge.mastodon_access_code = access_code
+            bridge.mastodon_user = username
             catch_up_mastodon(bridge)
-            catch_up_twitter(bridge)
-
-            if app.config.get('MAIL_SERVER', None):
-
-                # Fetch twitter follower count
-                twitter_api = twitter.Api(
-                        consumer_key=app.config['TWITTER_CONSUMER_KEY'],
-                        consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
-                        access_token_key=bridge.twitter_oauth_token,
-                        access_token_secret=bridge.twitter_oauth_secret
-                )
-                try:
-                    follower_list = twitter_api.GetFollowerIDs()
-
-                except TwitterError as e:
-                    follower_count = e
-
-                else:
-                    follower_count = len(follower_list)
-
-                body = render_template('new_user_email.txt.j2',
-                                       bridge=bridge,
-                                       follower_count=follower_count)
-                msg = Message(subject="New moa.party user",
-                              body=body,
-                              recipients=[app.config.get('MAIL_TO', None)])
-
-                try:
-                    mail.send(msg)
-
-                except Exception as e:
-                    app.logger.error(e)
+            db.session.commit()
 
     return redirect(url_for('index'))
 
 
-@app.route('/instagram_activate', methods=["POST"])
+@app.route('/instagram_activate', methods=["GET"])
 def instagram_activate():
 
     client_id = app.config['INSTAGRAM_CLIENT_ID']
@@ -496,7 +451,7 @@ def instagram_oauthorized():
 
     code = request.args.get('code', None)
 
-    if 'twitter' in session and 'mastodon' in session and code:
+    if code:
 
         client_id = app.config['INSTAGRAM_CLIENT_ID']
         client_secret = app.config['INSTAGRAM_SECRET']
@@ -509,11 +464,13 @@ def instagram_oauthorized():
             flash("Instagram authorization failed")
             return redirect(url_for('index'))
 
-        # look up settings
-        bridge = db.session.query(Bridge).filter_by(
-            mastodon_user=session['mastodon']['username'],
-            twitter_handle=session['twitter']['screen_name'],
-        ).first()
+        if 'bridge_id' in session:
+            bridge = get_or_create_bridge(bridge_id=session['bridge_id'])
+
+            if not bridge:
+                pass  # this should be an error
+        else:
+            bridge = get_or_create_bridge()
 
         bridge.instagram_access_code = access_token[0]
 
@@ -527,7 +484,7 @@ def instagram_oauthorized():
             latest_media, _ = user_api.user_recent_media(user_id=bridge.instagram_account_id, count=1)
         except Exception:
             latest_media = []
-            
+
         if len(latest_media) > 0:
             bridge.instagram_last_id = datetime_to_timestamp(latest_media[0].created_time)
         else:
@@ -543,8 +500,7 @@ def instagram_oauthorized():
 
 @app.route('/logout')
 def logout():
-    session.pop('twitter', None)
-    session.pop('mastodon', None)
+    session.pop('bridge_id', None)
     return redirect(url_for('index'))
 
 
@@ -554,6 +510,35 @@ def stats():
 
     return render_template('stats.html.j2',
                            hours=hours)
+
+
+@app.route('/deactivate_account')
+def deactivate():
+    atype = request.args.get('type', None)
+
+    if 'bridge_id' in session:
+        bridge = get_or_create_bridge(bridge_id=session['bridge_id'])
+
+        if atype == 'twitter':
+            bridge.twitter_oauth_secret = None
+            bridge.twitter_oauth_token = None
+            bridge.twitter_last_id = 0
+            bridge.twitter_handle = None
+
+        elif atype == 'mastodon':
+            bridge.mastodon_access_code = None
+            bridge.mastodon_last_id = 0
+            bridge.mastodon_user = None
+
+        elif atype == 'instagram':
+            bridge.instagram_access_code = None
+            bridge.instagram_last_id = 0
+            bridge.instagram_account_id = None
+            bridge.instagram_handle = None
+
+        db.session.commit()
+
+    return redirect(url_for('index'))
 
 
 def timespan(hours):

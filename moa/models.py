@@ -89,16 +89,16 @@ class Bridge(Base):
     __tablename__ = 'bridge'
 
     id = Column(Integer, primary_key=True)
-    twitter_oauth_token = Column(String(80), nullable=False)
-    twitter_oauth_secret = Column(String(80), nullable=False)
+    twitter_oauth_token = Column(String(80))
+    twitter_oauth_secret = Column(String(80))
     twitter_last_id = Column(BigInteger, default=0)
-    twitter_handle = Column(String(15), nullable=False)
+    twitter_handle = Column(String(15))
 
-    mastodon_access_code = Column(String(80), nullable=False)
+    mastodon_access_code = Column(String(80))
     mastodon_last_id = Column(BigInteger, default=0)
     mastodon_account_id = Column(BigInteger, default=0)
-    mastodon_user = Column(String(30), nullable=False)
-    mastodon_host_id = Column(Integer, ForeignKey('mastodon_host.id'), nullable=False)
+    mastodon_user = Column(String(30))
+    mastodon_host_id = Column(Integer, ForeignKey('mastodon_host.id'))
 
     enabled = Column(Boolean, nullable=False, default=False)
 

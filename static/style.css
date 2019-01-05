@@ -34,13 +34,13 @@ form {
 
 /* Medium Devices, Desktops */
 @media only screen and (min-width : 992px) {
-    .center { width: 50%; padding: 10px;border: 0.6rem double; }
+    .center { width: 60%; padding: 10px;border: 0.6rem double; }
 
 }
 
 /* Large Devices, Wide Screens */
 @media only screen and (min-width : 1200px) {
-    .center { width: 50%; padding: 10px;border: 0.6rem double; }
+    .center { width: 60%; padding: 10px;border: 0.6rem double; }
 
 }
 
@@ -56,6 +56,11 @@ a:link {
 .message:before {
     content: "»";
     margin-right: 6px;
+}
+
+.red {
+    font-weight: bold;
+    color: red;
 }
 
 input,
@@ -77,7 +82,7 @@ select {
 
 input[type="radio"]:before,
 input[type="checkbox"]:before {
-    content: "[\00a0\00a0";
+    content: "[\00a0";
 }
 
 input[type="radio"]:checked:before,

@@ -32,6 +32,23 @@ class SettingsForm(FlaskForm):
     instagram_post_to_mastodon = BooleanField('Post Instagrams to Mastodon?')
     instagram_include_link = BooleanField('Include link to instagram post')
 
+    def remove_masto_and_twitter_fields(self):
+        del self.post_to_twitter
+        del self.post_private_to_twitter
+        del self.post_unlisted_to_twitter
+        del self.post_boosts_to_twitter
+        del self.split_twitter_messages
+        del self.post_sensitive_behind_link
+        del self.sensitive_link_text
+
+        del self.post_rts_to_mastodon
+        del self.post_quotes_to_mastodon
+        del self.post_to_mastodon
+        del self.toot_visibility
+
+        del self.tweets_behind_cw
+        del self.tweet_cw_text
+
 
 class MastodonIDForm(FlaskForm):
-    mastodon_id = StringField('Enter your Mastodon ID', validators=[DataRequired(), Email()])
+    mastodon_id = StringField('Enter your Mastodon ID', validators=[DataRequired()])

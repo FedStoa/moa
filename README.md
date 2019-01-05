@@ -15,7 +15,7 @@
                      └──────────────┘
 ```
 
-A Mastodon <-> Twitter Cross-poster
+Link your Mastodon account to twitter and Instagram
 
 https://moa.party
 
@@ -23,7 +23,7 @@ https://moa.party
 
 #### Requires python 3.6+
 
-Moa is a flask app and can be run with `python` or proxied behind something like nginx/passenger.
+Moa is a flask app and can be run with `python` or proxied via WSGI.
 
 * clone it
 * On Debian/Ubuntu you'll need to `apt install python-dev python3-dev build-essential`

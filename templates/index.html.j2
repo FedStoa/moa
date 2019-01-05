@@ -1,97 +1,88 @@
 {% extends "layout.html.j2" %}
 {% block body %}
 
-    <p>
-        {#    Twitter    #}
-        {% if g.t_user %}
-            Twitter: <strong>{{ g.t_user.screen_name }}</strong>
-        {% else %}
-            <a href="{{ url_for('twitter_login') }}">[ ] Connect to Twitter</a>
-        {% endif %}
-
-    </p>
-
     {#    Mastodon    #}
-    {% if g.t_user %}
-        {% if g.m_user %}
-            <p>Mastodon: <strong>{{ g.m_user.username }}@{{ g.m_user.host }}</strong></p>
-        {% else %}
-            <form action="{{ url_for('mastodon_login') }}" method="POST">
-                [
-                ] {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='yourid@mastodon.instance', size=30, type="email") }}
-                {{ form.csrf_token }}
-                <input type=submit value="OK">
-            </form>
-        {% endif %}
-    {% endif %}
-    {% if g.t_user and g.m_user %}
-        {% if g.bridge.instagram_access_code %}
-            <p>Instagram: <strong>{{ g.bridge.instagram_handle }}</strong></p>
-
-        {% else %}
-            <form method="POST" action="{{ url_for('instagram_activate') }}">
-                <input type="submit" value="Add Instagram">
-            </form>
-        {% endif %}
+    {% if g.bridge.mastodon_access_code %}
+        <p>Mastodon: <strong>@{{ g.bridge.mastodon_user }}@{{ g.bridge.mastodon_host.hostname }}</strong> <a class="red" href="{{ url_for('deactivate', type='mastodon') }}">[X]</a></p>
+    {% else %}
+        <form action="{{ url_for('mastodon_login') }}" method="POST">
+            [ ] {{ mform.mastodon_id.label }}:{{ mform.mastodon_id(placeholder='@yourid@mastodon.instance', size=30) }}
+            {{ form.csrf_token }}
+            <input type=submit value="OK">
+        </form>
     {% endif %}
 
+    {% if g.bridge.mastodon_access_code %}
 
+    {#    Twitter    #}
+    {% if g.bridge.twitter_oauth_token %}
+        <p>Twitter: <strong>@{{ g.bridge.twitter_handle }}</strong> <a class="red" href="{{ url_for('deactivate', type='twitter') }}">[X]</a></p>
+    {% else %}
+        <p><a href="{{ url_for('twitter_login') }}">[ ] Connect to Twitter</a></p>
+    {% endif %}
+
+    {#    Instagram    #}
+    {% if g.bridge.instagram_access_code %}
+        <p>Instagram: <strong>{{ g.bridge.instagram_handle }}</strong> <a class="red" href="{{ url_for('deactivate', type='instagram') }}">[X]</a></p>
+
+    {% else %}
+        <p><a href="{{ url_for('instagram_activate') }}">[ ] Connect to Instagram</a></p>
+
+    {% endif %}
 
     {#    Options    #}
+    <form method="POST" action="{{ url_for('options') }}">
+        <ul>
+            {% if g.bridge.twitter_oauth_token or g.bridge.instagram_access_code %}
+            <hr>
+            <li>{{ form.enabled(checked=g.bridge.enabled) }}{{ form.enabled.label }}</li>
+            <li>{{ form.conditional_posting }}{{ form.conditional_posting.label }}</li>
+            {% endif %}
 
-    {% if g.t_user and g.m_user %}
+            {% if g.bridge.twitter_oauth_token and g.bridge.mastodon_access_code %}
+            <hr>
 
-        <form method="POST" action="{{ url_for('options') }}">
-            <ul>
+            <li>{{ form.post_to_twitter }}{{ form.post_to_twitter.label }}</li>
+            <li>{{ form.post_private_to_twitter }}{{ form.post_private_to_twitter.label }}</li>
+            <li>{{ form.post_unlisted_to_twitter }}{{ form.post_unlisted_to_twitter.label }}</li>
+            <li>{{ form.post_boosts_to_twitter }}{{ form.post_boosts_to_twitter.label }}</li>
+            <li>{{ form.split_twitter_messages }}{{ form.split_twitter_messages.label }}</li>
+            <li>{{ form.post_sensitive_behind_link }}{{ form.post_sensitive_behind_link.label }} {{ form.sensitive_link_text(size=14) }}</li>
+
+            <hr>
+            <li>{{ form.post_to_mastodon }}{{ form.post_to_mastodon.label }}</li>
+            <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
+            <li>{{ form.post_rts_to_mastodon }}{{ form.post_rts_to_mastodon.label }}</li>
+            <li>{{ form.post_quotes_to_mastodon }}{{ form.post_quotes_to_mastodon.label }}</li>
+            <div>NOTE: Retweets are always posted as 'Unlisted'.</div>
+            <li>{{ form.tweets_behind_cw }}{{ form.tweets_behind_cw.label }} {{ form.tweet_cw_text }}</li>
+            <div>NOTE: Tweets containing "CW: phrase" will have a Content Warning when converted to a toot.</div>
+            {% endif %}
+
+            {% if g.bridge.instagram_access_code %}
                 <hr>
-                <li>{{ form.enabled(checked=enabled) }}{{ form.enabled.label }}</li>
-                <li>{{ form.conditional_posting }}{{ form.conditional_posting.label }}</li>
-                <hr>
-                <li>{{ form.post_to_twitter }}{{ form.post_to_twitter.label }}</li>
-                <li>{{ form.post_private_to_twitter }}{{ form.post_private_to_twitter.label }}</li>
-                <li>{{ form.post_unlisted_to_twitter }}{{ form.post_unlisted_to_twitter.label }}</li>
-                <li>{{ form.post_boosts_to_twitter }}{{ form.post_boosts_to_twitter.label }}</li>
-                <li>{{ form.split_twitter_messages }}{{ form.split_twitter_messages.label }}</li>
-                <li>{{ form.post_sensitive_behind_link }}{{ form.post_sensitive_behind_link.label }} {{ form.sensitive_link_text(size=14) }}</li>
+                {% if g.bridge.twitter_oauth_token %} <li>{{ form.instagram_post_to_twitter }}{{ form.instagram_post_to_twitter.label }}</li>{% endif %}
+                {% if g.bridge.mastodon_access_code %}<li>{{ form.instagram_post_to_mastodon }}{{ form.instagram_post_to_mastodon.label }}</li>{% endif %}
+                <li>{{ form.instagram_include_link }}{{ form.instagram_include_link.label }}</li>
+            {% endif %}
 
-                <hr>
-                <li>{{ form.post_to_mastodon }}{{ form.post_to_mastodon.label }}</li>
-                <li>{{ form.post_rts_to_mastodon }}{{ form.post_rts_to_mastodon.label }}</li>
-                <li>{{ form.post_quotes_to_mastodon }}{{ form.post_quotes_to_mastodon.label }}</li>
-                <li>{{ form.toot_visibility.label }}: {{ form.toot_visibility }}</li>
-                <div>NOTE: Retweets are always posted as 'Unlisted'.</div>
-                <li>{{ form.tweets_behind_cw }}{{ form.tweets_behind_cw.label }} {{ form.tweet_cw_text }}</li>
-                <div>NOTE: Tweets containing "CW: phrase" will have a Content Warning when converted to a toot.</div>
-
-                {% if g.bridge.instagram_access_code %}
-                    <hr>
-                    <li>{{ form.instagram_post_to_twitter }}{{ form.instagram_post_to_twitter.label }}</li>
-                    <li>{{ form.instagram_post_to_mastodon }}{{ form.instagram_post_to_mastodon.label }}</li>
-                    <li>{{ form.instagram_include_link }}{{ form.instagram_include_link.label }}</li>
-                {% endif %}
-
-            </ul>
-            {{ form.csrf_token }}
-            <input type="submit" value="Save">
-        </form>
-
-        {% if found_settings %}
-            <form method="POST" action="{{ url_for('delete') }}">
-                <input type="submit" value="Delete">
-            </form>
-
+        </ul>
+        {{ form.csrf_token }}
+        {% if g.bridge.twitter_oauth_token or g.bridge.instagram_access_code %}
+        <input type="submit" value="Save">
         {% endif %}
 
+    </form>
 
+    {% if g.bridge.mastodon_access_code %}
+    <form method="POST" action="{{ url_for('delete') }}">
+        <input style="background: red;" type="submit" value="Delete">
+    </form>
+
+    <form action="{{ url_for('logout') }}" method="GET">
+        <input type="submit" value="Logout">
+    </form>
     {% endif %}
-
-    {#    Logout    #}
-
-    {% if g.t_user %}
-        <br><br>
-        <form action="{{ url_for('logout') }}" method="GET">
-            <input type="submit" value="Logout">
-        </form>
     {% endif %}
 
 {% endblock %}
