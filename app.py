@@ -165,6 +165,7 @@ def catch_up_twitter(bridge):
             else:
                 bridge.twitter_last_id = 0
 
+            bridge.updated = datetime.now()
             db.session.commit()
 
 
@@ -187,6 +188,7 @@ def catch_up_mastodon(bridge):
         except MastodonAPIError:
             bridge.mastodon_last_id = 0
 
+        bridge.updated = datetime.now()
         db.session.commit()
 
 
@@ -536,6 +538,7 @@ def deactivate():
             bridge.instagram_account_id = None
             bridge.instagram_handle = None
 
+        bridge.updated = datetime.now()
         db.session.commit()
 
     return redirect(url_for('index'))
