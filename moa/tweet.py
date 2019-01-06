@@ -187,7 +187,7 @@ class Tweet(Message):
 
                     content = content[:s] + replacement + content[e:]
 
-s                    index += 1
+                    index += 1
         return content
 
     @property
