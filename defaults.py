@@ -2,6 +2,7 @@ class DefaultConfig(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
+    # secret key for flask sessions http://flask.pocoo.org/docs/1.0/quickstart/#sessions
     SECRET_KEY = 'this-really-needs-to-be-changed'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TWITTER_CONSUMER_KEY = ''
