@@ -176,9 +176,8 @@ def catch_up_mastodon(bridge):
         api = mastodon_api(bridge.mastodon_host.hostname,
                            access_code=bridge.mastodon_access_code)
 
-        bridge.mastodon_account_id = api.account_verify_credentials()["id"]
-
         try:
+            bridge.mastodon_account_id = api.account_verify_credentials()["id"]
             statuses = api.account_statuses(bridge.mastodon_account_id)
             if len(statuses) > 0:
                 bridge.mastodon_last_id = statuses[0]["id"]
@@ -404,7 +403,7 @@ def mastodon_oauthorized():
         try:
             creds = api.account_verify_credentials()
 
-        except MastodonUnauthorizedError as e:
+        except (MastodonUnauthorizedError, MastodonAPIError) as e:
             flash(f"There was a problem connecting to the mastodon server. The error was {e}")
             return redirect(url_for('index'))
 
