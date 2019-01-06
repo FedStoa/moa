@@ -75,7 +75,7 @@ def before_request():
     except exc.SQLAlchemyError as e:
         return "Moa is unavailable at the moment", 503
 
-    app.logger.info(session)
+    app.logger.debug(session)
 
 
 @app.route('/')
