@@ -240,13 +240,17 @@ class Tweet(Message):
                     content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.com\n"
 
             elif self.is_quoted:
+                for attachment in self.media:
+                    # Remove the t.co link to the media
+                    quoted_text = re.sub(attachment.url, "", quoted_text)
+
                 possible_content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}@twitter.com\n{quoted_text}\n{self.url}"
 
                 if len(possible_content) > 500:
                     logger.info(f"Toot is too long: {len(possible_content)}")
                     diff = len(possible_content) - 500 + 1
                     quoted_text = quoted_text[:-diff]
-                    content = f"{content}\n\n{quoted_text}…\n{self.url}"
+                    content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}@twitter.com\n{quoted_text}…\n{self.url}"
                     logger.info(f"Length is now: {len(content)}")
 
                 else:
