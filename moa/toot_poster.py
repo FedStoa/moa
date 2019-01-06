@@ -58,6 +58,10 @@ class TootPoster(Poster):
                 if mapping:
                     reply_to = mapping.mastodon_id
                     logger.info(f"Replying to mastodon status {reply_to}")
+                else:
+                    # we don't know about this message which means it wasn't posted so let's skip it
+                    logger.info("Skipping reply to unknown message")
+                    return False
 
             if self.send:
                 mastodon_last_id = self.send_toot(post.message_parts[0],

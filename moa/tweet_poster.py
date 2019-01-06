@@ -61,6 +61,10 @@ class TweetPoster(Poster):
                 if mapping:
                     reply_to = mapping.twitter_id
                     logger.info(f"Replying to twitter status {reply_to} / masto status {post.in_reply_to_id}")
+                else:
+                    # we don't know about this message which means it wasn't posted so let's skip it
+                    logger.info("Skipping reply to unknown message")
+                    return False
 
             last_id = len(post.message_parts) - 1
             for index, status in enumerate(post.message_parts):
