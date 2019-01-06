@@ -169,22 +169,25 @@ class Tweet(Message):
     @property
     def mentions(self):
 
-        m = [u.screen_name for u in self.data.user_mentions]
-
-        m = list(set(m))
+        m = [(u.screen_name, u._json['indices']) for u in self.data.user_mentions]
 
         return m
 
     def expand_handles(self, content):
 
         if content:
-            # mentions = re.findall(r'[@][a-zA-Z0-9_]*', content)
 
             if self.mentions:
-                for mention in self.mentions:
-                    # Replace all mentions for an equivalent to clearly signal their origin on Twitter
-                    content = re.sub(f"@{mention}", f"@{mention}@twitter.com", content)
+                index = 0
+                for mention, indices in self.mentions:
+                    pad = index * 12
+                    s = indices[0] + pad
+                    e = indices[1] + pad
+                    replacement = f"@{mention}@twitter.com"
 
+                    content = content[:s] + replacement + content[e:]
+
+s                    index += 1
         return content
 
     @property
