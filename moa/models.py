@@ -107,7 +107,6 @@ class Bridge(Base):
     instagram_account_id = Column(BigInteger, default=0)
     instagram_handle = Column(String(30))
 
-    settings = Column(PickleType)
     t_settings_id = Column(Integer, ForeignKey('settings.id'), nullable=True)
 
     created = Column(DateTime, default=datetime.utcnow)
