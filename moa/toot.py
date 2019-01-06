@@ -210,7 +210,10 @@ class Toot(Message):
         tm = list(re.finditer(r'@(\w{1,15})', self.content))
 
         # find all masto handles so we can get their ranges
-        mm = list(re.finditer(r'@\w+@[\w\.]+', self.content))
+        mm = list(re.finditer(r'@\w+@[\w.]+', self.content))
+
+        # find all masto profile links
+        mm += list(re.finditer(r'https://[\w.]+/@[\w.]+', self.content))
 
         handles = set(tm)
 
