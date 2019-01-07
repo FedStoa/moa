@@ -74,7 +74,7 @@ class TestToots(unittest.TestCase):
         toot.split_toot(TWEET_LENGTH)
 
         self.assertEqual(
-            'Has anyone written a story where the Amish play a crucial role in future society because they deliberately choose which technology they let in to their communities, and can therefore be safe “wake-up zones” for those cry…\nhttps://wandering.shop/@phildini/99434181894510181',
+            'Has anyone written a story where the Amish play a crucial role in future society because they deliberately choose which technology they let in to their communities, and can therefore be safe “wake-up zones” for those cryogenically frozen or brought from the past in some way?',
             toot.message_parts[0])
 
     def test_twitter_sanitize(self):
@@ -95,9 +95,9 @@ xcxcxcxc."""
         self.assertEqual(toot.clean_content, expected_outcome)
 
     def test_toot_pagination(self):
-        part_1 = 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using \'Content here, content (1/2)'
+        part_1 = 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using \'Content here, content here\', making (1/2)'
 
-        part_2 = 'here\', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for \'lorem ipsum\' will uncover many web sites still in their infancy. Various (2/2)'
+        part_2 = 'it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for \'lorem ipsum\' will uncover many web sites still in their infancy. Various (2/2)'
 
         toot = Toot(self.settings, long_toot, self.c)
         toot.split_toot(TWEET_LENGTH)
