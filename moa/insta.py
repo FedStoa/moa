@@ -61,7 +61,11 @@ class Insta(Message):
             return [{"url": self.data.images['standard_resolution'].url}]
 
         elif self.data.type == 'carousel':
-            return [{"url": i['standard_resolution'].url} for i in self.data.carousel_media]
+            attachments = [{"url": i['standard_resolution'].url} for i in self.data.carousel_media]
+            if len(attachments) > 4:
+                attachments = attachments[:4]
+                return attachments
+
         else:
             return [{"url": self.data.videos['standard_resolution'].url}]
 
