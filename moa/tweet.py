@@ -179,8 +179,21 @@ class Tweet(Message):
 
             if self.mentions:
                 index = 0
+                rt_pad = 0
+
+                if self.is_retweet:
+                    rt_pad = len('RT @') + len(self.mentions[0][0]) + len('@twitter.com\n') + 1
+
                 for mention, indices in self.mentions:
-                    pad = index * 12
+
+                    # the mention in an RT needs to get dropped
+                    if self.is_retweet:
+
+                        if index == 0:
+                            index += 1
+                            continue
+
+                    pad = (index * 12) - rt_pad
                     s = indices[0] + pad
                     e = indices[1] + pad
                     replacement = f"@{mention}@twitter.com"
