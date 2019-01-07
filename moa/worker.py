@@ -240,12 +240,12 @@ for bridge in bridges:
             if 'Unknown' in e.message:
                 continue
             # elif 'OAuthAccessTokenException' in e.message:
-            #     l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
+            #     l.warning(f"Disabling bridge for Twitter user {bridge.twitter_handle}")
             #     bridge.enabled = False
 
             elif isinstance(e.message, list) and len(e.message) > 0:
                 if e.message[0]['code'] in [89, 326]:
-                    l.warning(f"Disabling bridge for twitter user {bridge.twitter_handle}")
+                    l.warning(f"Disabling bridge for Twitter user {bridge.twitter_handle}")
                     bridge.enabled = False
 
             continue
