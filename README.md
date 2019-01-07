@@ -40,6 +40,14 @@ Moa is a flask app and can be run with `python` or proxied via WSGI.
 
 Some code lifted from https://github.com/halcy/MastodonToTwitter
 
+## Twitter App setup
+
+If you plan to use twitter then you'll need to create a twitter app first so the required crednetials can be obtained.
+
+* Follow the steps here to get started https://python-twitter.readthedocs.io/en/latest/getting_started.html
+* For the Callback URL use [moa_base_url]/twitter_oauthorized e.g. https://example.com/twitter_oauthorized
+* Access Permissions need to be "read" and "write"
+
 
 ## Example nginx/passenger configuration
 
