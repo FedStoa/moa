@@ -1,4 +1,5 @@
 import html
+import json
 import logging
 import re
 from datetime import datetime, timezone
@@ -28,7 +29,7 @@ class Tweet(Message):
         return self.data.id
 
     def dump_data(self):
-        return self.data.__dict__
+        return json.dumps(self.data._json)
 
     @property
     def too_old(self) -> bool:
