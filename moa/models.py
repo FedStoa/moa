@@ -54,23 +54,27 @@ class TSettings(Base):
     instagram_post_to_mastodon = Column(Boolean, nullable=False, default=False)
     instagram_include_link = Column(Boolean, nullable=False, default=True)
 
-    def import_settings(self, old_settings):
+    def __init__(self, **kwargs):
+        kwargs.setdefault('post_to_twitter', True)
+        kwargs.setdefault('post_private_to_twitter', False)
+        kwargs.setdefault('post_unlisted_to_twitter', False)
+        kwargs.setdefault('split_twitter_messages', True)
+        kwargs.setdefault('post_boosts_to_twitter', True)
+        kwargs.setdefault('post_sensitive_behind_link', False)
+        kwargs.setdefault('sensitive_link_text', '(NSFW Image)')
 
-        self.post_to_twitter = old_settings.post_to_twitter
-        self.post_private_to_twitter = old_settings.post_private_to_twitter
-        self.post_unlisted_to_twitter = old_settings.post_unlisted_to_twitter
-        self.split_twitter_messages = old_settings.split_twitter_messages
-        self.post_boosts_to_twitter = old_settings.post_boosts_to_twitter
+        kwargs.setdefault('post_to_mastodon', True)
+        kwargs.setdefault('post_rts_to_mastodon', True)
+        kwargs.setdefault('post_quotes_to_mastodon', True)
+        kwargs.setdefault('toot_visibility', 'public')
+        kwargs.setdefault('tweets_behind_cw', False)
+        kwargs.setdefault('tweet_cw_text', "From birdsite")
 
-        self.post_to_mastodon = old_settings.post_to_mastodon
-        self.post_rts_to_mastodon = old_settings.post_rts_to_mastodon
-        self.post_quotes_to_mastodon = old_settings.post_quotes_to_mastodon
-        self.toot_visibility = old_settings.toot_visibility
-        self.tweets_behind_cw = old_settings.tweets_behind_cw
-        self.tweet_cw_text = str(old_settings.tweet_cw_text)
+        kwargs.setdefault('instagram_post_to_twitter', False)
+        kwargs.setdefault('instagram_post_to_mastodon', False)
+        kwargs.setdefault('instagram_include_link', True)
 
-        self.instagram_post_to_twitter = old_settings.instagram_post_to_twitter
-        self.instagram_post_to_mastodon = old_settings.instagram_post_to_mastodon
+        super(TSettings, self).__init__(**kwargs)
 
     @property
     def post_to_twitter_enabled(self):
