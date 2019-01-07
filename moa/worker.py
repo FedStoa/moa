@@ -363,7 +363,7 @@ for bridge in bridges:
         l.debug(f"{bridge.id}: I - {bridge.instagram_handle}")
 
         if bridge.t_settings.instagram_post_to_mastodon or bridge.t_settings.instagram_post_to_twitter:
-            l.info(f"{len(new_toots)} new instas found")
+            l.info(f"{len(new_instas)} new instas found")
 
         for data in new_instas:
             stat_recorded = False
