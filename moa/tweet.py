@@ -169,7 +169,10 @@ class Tweet(Message):
     @property
     def mentions(self):
 
-        m = [(u.screen_name, u._json['indices']) for u in self.data.user_mentions]
+        if self.is_retweet:
+            m = [(u.screen_name, u._json['indices']) for u in self.data.retweeted_status.user_mentions]
+        else:
+            m = [(u.screen_name, u._json['indices']) for u in self.data.user_mentions]
 
         return m
 
@@ -181,17 +184,7 @@ class Tweet(Message):
                 index = 0
                 rt_pad = 0
 
-                if self.is_retweet:
-                    rt_pad = len('RT @') + len(self.mentions[0][0]) + len('@twitter.com\n') + 1
-
                 for mention, indices in self.mentions:
-
-                    # the mention in an RT needs to get dropped
-                    if self.is_retweet:
-
-                        if index == 0:
-                            index += 1
-                            continue
 
                     pad = (index * 12) - rt_pad
                     s = indices[0] + pad
