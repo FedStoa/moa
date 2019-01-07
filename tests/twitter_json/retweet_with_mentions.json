@@ -1,0 +1,236 @@
+{
+  "created_at": "Mon Jan 07 18:20:47 +0000 2019",
+  "id": 1082341291013197825,
+  "id_str": "1082341291013197825",
+  "full_text": "RT @lorddeath: Tbh I need to find time to email @aaisp and be prepared to do some troubleshooting, as my \u201c@a.1\u201d line drops pretty much dail\u2026",
+  "truncated": false,
+  "display_text_range": [
+    0,
+    140
+  ],
+  "entities": {
+    "hashtags": [],
+    "symbols": [],
+    "user_mentions": [
+      {
+        "screen_name": "lorddeath",
+        "name": "Andrew \ud83c\udff3\u200d\ud83c\udf08 | \ud83d\udc18 @aziraphale@gravitas.cafe",
+        "id": 18414634,
+        "id_str": "18414634",
+        "indices": [
+          3,
+          13
+        ]
+      },
+      {
+        "screen_name": "aaisp",
+        "name": "Andrews & Arnold Ltd",
+        "id": 21086622,
+        "id_str": "21086622",
+        "indices": [
+          48,
+          54
+        ]
+      },
+      {
+        "screen_name": "a",
+        "name": "Andrei Zmievski",
+        "id": 940631,
+        "id_str": "940631",
+        "indices": [
+          106,
+          108
+        ]
+      }
+    ],
+    "urls": []
+  },
+  "source": "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>",
+  "in_reply_to_status_id": null,
+  "in_reply_to_status_id_str": null,
+  "in_reply_to_user_id": null,
+  "in_reply_to_user_id_str": null,
+  "in_reply_to_screen_name": null,
+  "user": {
+    "id": 925031723233972224,
+    "id_str": "925031723233972224",
+    "name": "Moa Bridge Test",
+    "screen_name": "moabridge",
+    "location": "",
+    "description": "",
+    "url": null,
+    "entities": {
+      "description": {
+        "urls": []
+      }
+    },
+    "protected": true,
+    "followers_count": 0,
+    "friends_count": 1,
+    "listed_count": 0,
+    "created_at": "Mon Oct 30 16:08:43 +0000 2017",
+    "favourites_count": 0,
+    "utc_offset": null,
+    "time_zone": null,
+    "geo_enabled": false,
+    "verified": false,
+    "statuses_count": 234,
+    "lang": "en",
+    "contributors_enabled": false,
+    "is_translator": false,
+    "is_translation_enabled": false,
+    "profile_background_color": "F5F8FA",
+    "profile_background_image_url": null,
+    "profile_background_image_url_https": null,
+    "profile_background_tile": false,
+    "profile_image_url": "http://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    "profile_image_url_https": "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    "profile_link_color": "1DA1F2",
+    "profile_sidebar_border_color": "C0DEED",
+    "profile_sidebar_fill_color": "DDEEF6",
+    "profile_text_color": "333333",
+    "profile_use_background_image": true,
+    "has_extended_profile": false,
+    "default_profile": true,
+    "default_profile_image": true,
+    "following": false,
+    "follow_request_sent": false,
+    "notifications": false,
+    "translator_type": "none"
+  },
+  "geo": null,
+  "coordinates": null,
+  "place": null,
+  "contributors": null,
+  "retweeted_status": {
+    "created_at": "Sun Dec 30 10:29:29 +0000 2018",
+    "id": 1079323580675092482,
+    "id_str": "1079323580675092482",
+    "full_text": "Tbh I need to find time to email @aaisp and be prepared to do some troubleshooting, as my \u201c@a.1\u201d line drops pretty much daily :( Even @aaisp can't force BT OpenReach to give me fully-stable lines :p",
+    "truncated": false,
+    "display_text_range": [
+      0,
+      198
+    ],
+    "entities": {
+      "hashtags": [],
+      "symbols": [],
+      "user_mentions": [
+        {
+          "screen_name": "aaisp",
+          "name": "Andrews & Arnold Ltd",
+          "id": 21086622,
+          "id_str": "21086622",
+          "indices": [
+            33,
+            39
+          ]
+        },
+        {
+          "screen_name": "a",
+          "name": "Andrei Zmievski",
+          "id": 940631,
+          "id_str": "940631",
+          "indices": [
+            91,
+            93
+          ]
+        },
+        {
+          "screen_name": "aaisp",
+          "name": "Andrews & Arnold Ltd",
+          "id": 21086622,
+          "id_str": "21086622",
+          "indices": [
+            134,
+            140
+          ]
+        }
+      ],
+      "urls": []
+    },
+    "source": "<a href=\"http://twitter.com/download/android\" rel=\"nofollow\">Twitter for Android</a>",
+    "in_reply_to_status_id": 1079323579030876160,
+    "in_reply_to_status_id_str": "1079323579030876160",
+    "in_reply_to_user_id": 18414634,
+    "in_reply_to_user_id_str": "18414634",
+    "in_reply_to_screen_name": "lorddeath",
+    "user": {
+      "id": 18414634,
+      "id_str": "18414634",
+      "name": "Andrew \ud83c\udff3\u200d\ud83c\udf08 | \ud83d\udc18 @aziraphale@gravitas.cafe",
+      "screen_name": "lorddeath",
+      "location": "Wiltshire, UK | enby (he/they)",
+      "description": "PHP Web dev \u3030 computing; gardening; photography; electronics; 3DPrinting \u3030 Pansexual; furry; spoonie (pain; ADHD); poly; sex-positive; leftist/feminist/SJRanger",
+      "url": "https://t.co/V8buOOSrMg",
+      "entities": {
+        "url": {
+          "urls": [
+            {
+              "url": "https://t.co/V8buOOSrMg",
+              "expanded_url": "https://pronouny.xyz/u/aziraphale",
+              "display_url": "pronouny.xyz/u/aziraphale",
+              "indices": [
+                0,
+                23
+              ]
+            }
+          ]
+        },
+        "description": {
+          "urls": []
+        }
+      },
+      "protected": false,
+      "followers_count": 283,
+      "friends_count": 308,
+      "listed_count": 37,
+      "created_at": "Sat Dec 27 21:04:25 +0000 2008",
+      "favourites_count": 2572,
+      "utc_offset": null,
+      "time_zone": null,
+      "geo_enabled": true,
+      "verified": false,
+      "statuses_count": 38862,
+      "lang": "en",
+      "contributors_enabled": false,
+      "is_translator": false,
+      "is_translation_enabled": false,
+      "profile_background_color": "000000",
+      "profile_background_image_url": "http://abs.twimg.com/images/themes/theme5/bg.gif",
+      "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme5/bg.gif",
+      "profile_background_tile": false,
+      "profile_image_url": "http://pbs.twimg.com/profile_images/1066749537165946880/dLtv7XtK_normal.jpg",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1066749537165946880/dLtv7XtK_normal.jpg",
+      "profile_banner_url": "https://pbs.twimg.com/profile_banners/18414634/1368025143",
+      "profile_link_color": "9266CC",
+      "profile_sidebar_border_color": "000000",
+      "profile_sidebar_fill_color": "000000",
+      "profile_text_color": "000000",
+      "profile_use_background_image": false,
+      "has_extended_profile": true,
+      "default_profile": false,
+      "default_profile_image": false,
+      "following": false,
+      "follow_request_sent": false,
+      "notifications": false,
+      "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "is_quote_status": false,
+    "retweet_count": 0,
+    "favorite_count": 1,
+    "favorited": false,
+    "retweeted": true,
+    "lang": "en"
+  },
+  "is_quote_status": false,
+  "retweet_count": 0,
+  "favorite_count": 0,
+  "favorited": false,
+  "retweeted": true,
+  "lang": "en"
+}
