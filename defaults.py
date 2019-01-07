@@ -1,5 +1,6 @@
 class DefaultConfig(object):
     DEBUG = False
+    DEVELOPMENT = False
     TESTING = False
     CSRF_ENABLED = True
     # secret key for flask sessions http://flask.pocoo.org/docs/1.0/quickstart/#sessions
