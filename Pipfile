@@ -4,7 +4,8 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-coverage = "==4.5.1"
+coverage = "*"
+instagram = {editable = true,git = "git@github.com/foozmeat/python-instagram.git"}
 
 [packages]
 certifi = ">=2018.11.29"
