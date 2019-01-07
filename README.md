@@ -15,7 +15,7 @@
                      └──────────────┘
 ```
 
-Link your Mastodon account to twitter and Instagram
+Link your Mastodon account to Twitter and Instagram
 
 https://moa.party
 

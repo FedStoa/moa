@@ -60,7 +60,7 @@ class TweetPoster(Poster):
 
                 if mapping:
                     reply_to = mapping.twitter_id
-                    logger.info(f"Replying to twitter status {reply_to} / masto status {post.in_reply_to_id}")
+                    logger.info(f"Replying to Twitter status {reply_to} / masto status {post.in_reply_to_id}")
                 else:
                     # we don't know about this message which means it wasn't posted so let's skip it
                     logger.info("Skipping reply to unknown message")
@@ -131,7 +131,7 @@ class TweetPoster(Poster):
                     # tweet being replied to is gone
                     return None
                 elif e.message[0]['code'] == 89:
-                    logger.warning(f"Disabling bridge for twitter user @{self.bridge.twitter_handle}")
+                    logger.warning(f"Disabling bridge for Twitter user @{self.bridge.twitter_handle}")
                     self.bridge.enabled = False
                     return None
 
