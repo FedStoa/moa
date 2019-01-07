@@ -1,4 +1,4 @@
 id: {{ bridge.id }}
-{% if bridge.mastodon_user %}mastodon: https://{{ bridge.mastodon_host.hostname }}/@{{ bridge.mastodon_user }}{% endif %}
+mastodon: https://{{ bridge.mastodon_host.hostname }}/@{{ bridge.mastodon_user }}
 {% if bridge.twitter_handle %}twitter: https://twitter.com/{{ bridge.twitter_handle }} - Followers: {{ twitter_follower_count }}{% endif %}
 {% if bridge.instagram_handle %}instagram: https://instagram.com/{{ bridge.instagram_handle }}{% endif %}
