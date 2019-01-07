@@ -57,8 +57,11 @@ class Insta(Message):
     def media_attachments(self):
         """ Array of { 'url': 'blah', 'description': 'blah'} """
 
-        if self.data.type in ["image", "carousel"]:
+        if self.data.type == "image":
             return [{"url": self.data.images['standard_resolution'].url}]
+
+        elif self.data.type == 'carousel':
+            return [{"url": i['standard_resolution'].url} for i in self.data.carousel_media]
         else:
             return [{"url": self.data.videos['standard_resolution'].url}]
 
