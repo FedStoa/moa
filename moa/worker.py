@@ -118,7 +118,7 @@ if not c.SEND:
 
 bridges = session.query(Bridge).filter_by(enabled=True)
 
-if not c.DEVELOPMENT:
+if 'sqlite' not in c.SQLALCHEMY_DATABASE_URI and not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())
 
 bridge_count = 0
