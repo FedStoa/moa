@@ -201,7 +201,7 @@ class Tweet(Message):
     def clean_content(self):
 
         quoted_text = None
-        cw_regex = r'[Cc][Ww]: ([\w ]+)'
+        cw_regex = r'[TtCc][Ww]: (.*)\n'
 
         if not self.__content:
 
