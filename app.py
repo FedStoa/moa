@@ -419,7 +419,7 @@ def mastodon_oauthorized():
             bridge = get_or_create_bridge()
             bridge.mastodon_host = get_or_create_host(host)
             bridge.mastodon_account_id = account_id
-            email_bridge_details(app, bridge)
+            # email_bridge_details(app, bridge)
             db.session.commit()
 
         if not bridge.mastodon_access_code:
