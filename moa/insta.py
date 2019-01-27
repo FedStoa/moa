@@ -65,7 +65,7 @@ class Insta(Message):
             for i in self.data.carousel_media:
                 img = i.get('standard_resolution', None)
                 if img:
-                    attachments.append(img.url)
+                    attachments.append({'url': img.url})
             # attachments = [{"url": i['standard_resolution'].url} for i in self.data.carousel_media]
             if len(attachments) > 4:
                 attachments = attachments[:4]
