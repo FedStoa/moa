@@ -208,7 +208,11 @@ for bridge in bridges:
             new_toots = new_toots[-c.MAX_MESSAGES_PER_RUN:]
 
         if c.SEND and len(new_toots) != 0:
-            bridge.mastodon_last_id = int(new_toots[0]['id'])
+            try:
+                bridge.mastodon_last_id = int(new_toots[0]['id'])
+            except ValueError:
+                continue
+                
             bridge.updated = datetime.now()
         new_toots.reverse()
 
