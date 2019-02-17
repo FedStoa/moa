@@ -289,6 +289,11 @@ def get_or_create_host(hostname):
             app.logger.error(e)
             return None
 
+        except KeyError as e:
+            # Hubzilla doesn't return a client_id
+            app.logger.error(e)
+            return None
+
     app.logger.debug(f"Using Mastodon Host: {mastodonhost.hostname}")
 
     return mastodonhost
