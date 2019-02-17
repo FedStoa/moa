@@ -348,7 +348,11 @@ def mastodon_login():
         if user_id[0] == '@':
             user_id = user_id[1:]
 
-        username, host = user_id.split('@')
+        try:
+            username, host = user_id.split('@')
+        except ValueError:
+            flash('Invalid Mastodon ID')
+            return redirect(url_for('index'))
 
         session['mastodon_host'] = host
 
