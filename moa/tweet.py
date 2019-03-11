@@ -98,6 +98,10 @@ class Tweet(Message):
             # Posting retweets
             pass
 
+        elif self.settings.conditional_posting_faves and not self.is_favorited:
+            logger.info(f'Skipping: Not posting unfavorited tweet')
+            return True
+
         elif self.settings.conditional_posting:
 
             for ht in self.data.hashtags:
@@ -137,6 +141,10 @@ class Tweet(Message):
     @property
     def is_quoted(self):
         return self.data.quoted_status is not None
+
+    @property
+    def is_favorited(self):
+        return self.data.favorited
 
     @property
     def is_reply(self):

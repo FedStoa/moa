@@ -153,7 +153,7 @@ class Toot(Message):
 
         elif self.settings.conditional_posting_faves and not self.is_favourited:
             logger.info(f'Skipping: Not posting unfavourited toot')
-            pass
+            return True
 
         elif self.settings.conditional_posting:
 
