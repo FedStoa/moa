@@ -37,6 +37,7 @@
             <hr>
             <li>{{ form.enabled(checked=g.bridge.enabled) }}{{ form.enabled.label }}</li>
             <li>{{ form.conditional_posting }}{{ form.conditional_posting.label }}</li>
+            <li>{{ form.conditional_posting_faves }}{{ form.conditional_posting_faves.label }}</li>
             {% endif %}
 
             {% if g.bridge.twitter_oauth_token and g.bridge.mastodon_access_code %}
