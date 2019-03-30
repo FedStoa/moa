@@ -234,9 +234,9 @@ class Tweet(Message):
                     content = content.replace(whole_cw, '').strip()
                     self.cw = m.group(1)
 
+            content = self.expand_handles(content)  # The mention indices assume the content has not been unescaped yet
             content = html.unescape(content)
 
-            content = self.expand_handles(content)
             quoted_text = self.expand_handles(quoted_text)
 
             for url in self.urls:
