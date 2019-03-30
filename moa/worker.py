@@ -141,7 +141,10 @@ for bridge in bridges:
     #
     new_toots: List[Any] = []
 
-    if bridge.mastodon_access_code:
+    if not bridge.mastodon_access_code:
+        bridge.enabled = False
+        session.commit()
+    else:
         mastodon_last_id = bridge.mastodon_last_id
         mastodonhost = bridge.mastodon_host
 
