@@ -116,7 +116,7 @@ with lockfile.open('wt') as f:
 if not c.SEND:
     l.warning("SENDING IS NOT ENABLED")
 
-bridges = session.query(Bridge).filter_by(enabled=True)
+bridges = session.query(Bridge).filter_by(enabled=True).filter_by(worker_id=args.worker)
 
 if 'sqlite' not in c.SQLALCHEMY_DATABASE_URI and not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())
@@ -134,9 +134,6 @@ for bridge in bridges:
         _ = bridge.id
     except ObjectDeletedError:
         # in case the row is removed during a run
-        continue
-
-    if args.worker != (bridge.id % c.WORKER_JOBS) + 1:
         continue
 
     #
@@ -212,7 +209,7 @@ for bridge in bridges:
                 bridge.mastodon_last_id = int(new_toots[0]['id'])
             except ValueError:
                 continue
-                
+
             bridge.updated = datetime.now()
         new_toots.reverse()
 
