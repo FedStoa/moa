@@ -16,6 +16,7 @@ from instagram.oauth2 import OAuth2AuthExchangeError
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError, \
     MastodonUnauthorizedError
+from pymysql import DataError
 from sqlalchemy import exc, func
 from twitter import TwitterError
 
@@ -429,14 +430,23 @@ def mastodon_oauthorized():
             bridge.mastodon_host = get_or_create_host(host)
             bridge.mastodon_account_id = account_id
             # email_bridge_details(app, bridge)
-            db.session.commit()
+
+            try:
+                db.session.commit()
+            except DataError as e:
+                flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+                return redirect(url_for('index'))
 
         if not bridge.mastodon_access_code:
             # in case they deactivated this account and are logging in again
             bridge.mastodon_access_code = access_code
             bridge.mastodon_user = username
             catch_up_mastodon(bridge)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except DataError as e:
+                flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+                return redirect(url_for('index'))
 
     return redirect(url_for('index'))
 
