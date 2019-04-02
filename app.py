@@ -1,7 +1,6 @@
 import logging
 import os
 from datetime import datetime, timedelta
-from logging.handlers import TimedRotatingFileHandler
 
 import pandas as pd
 import pygal
@@ -22,7 +21,7 @@ from twitter import TwitterError
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email
-from moa.models import Bridge, MastodonHost, WorkerStat, metadata, TSettings
+from moa.models import Bridge, MastodonHost, TSettings, WorkerStat, metadata
 
 app = Flask(__name__)
 
@@ -31,7 +30,7 @@ FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 formatter = logging.Formatter(FORMAT)
 
 # initialize the log handler
-logHandler = TimedRotatingFileHandler('logs/app.log', when='D', backupCount=7)
+logHandler = logging.FileHandler('logs/app.log')
 logHandler.setFormatter(formatter)
 
 # set the app logger level
