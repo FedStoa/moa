@@ -3,8 +3,6 @@ __pycache__
 config.py
 /.idea
 /.moa-venv
-/moa/tmp/restart.txt
-/logs/*
 /moa.egg-info
 /.moa_venv
 /scratch.ipynb
