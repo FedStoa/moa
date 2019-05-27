@@ -13,6 +13,7 @@ from typing import Any, List
 import psutil
 import requests
 import twitter
+from httplib2 import ServerNotFoundError
 from instagram import InstagramAPI, InstagramAPIError, InstagramClientError
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
@@ -302,7 +303,7 @@ for bridge in bridges:
         except InstagramClientError as e:
             l.error(f"{bridge.instagram_handle}: Client Error: {e.error_message}")
 
-        except (ConnectionResetError, IncompleteRead) as e:
+        except (ConnectionResetError, IncompleteRead, ServerNotFoundError) as e:
             l.error(f"{e}")
             continue
 
