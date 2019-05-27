@@ -37,8 +37,13 @@ c = getattr(importlib.import_module('config'), moa_config)
 
 if c.SENTRY_DSN:
     import sentry_sdk
+    from sentry_sdk.integrations.logging import LoggingIntegration
 
-    sentry_sdk.init( dsn=c.SENTRY_DSN)
+    sentry_logging = LoggingIntegration(
+            level=logging.INFO,  # Capture info and above as breadcrumbs
+            event_level=logging.FATAL  # Only send fatal errors as events
+    )
+    sentry_sdk.init( dsn=c.SENTRY_DSN, integrations=[sentry_logging])
 
 parser = argparse.ArgumentParser(description='Moa Worker')
 parser.add_argument('--worker', dest='worker', type=int, required=False, default=1)
