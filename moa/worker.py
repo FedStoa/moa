@@ -15,8 +15,8 @@ import requests
 import twitter
 from instagram import InstagramAPI, InstagramAPIError, InstagramClientError
 from instagram.helper import datetime_to_timestamp
-from mastodon import Mastodon, MastodonServerError
-from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
+from mastodon import Mastodon
+from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError, MastodonServerError
 from requests import ConnectionError
 from sqlalchemy import create_engine, exc, func
 from sqlalchemy.orm import Session
