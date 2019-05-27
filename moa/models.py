@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
-PENALTY_TIME = 600  # 10 minutes
+PENALTY_TIME = 3600  # 1 hours
 
 
 class MastodonHost(Base):
