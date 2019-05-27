@@ -15,7 +15,7 @@ import requests
 import twitter
 from instagram import InstagramAPI, InstagramAPIError, InstagramClientError
 from instagram.helper import datetime_to_timestamp
-from mastodon import Mastodon
+from mastodon import Mastodon, MastodonServerError
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
 from requests import ConnectionError
 from sqlalchemy import create_engine, exc, func
@@ -183,6 +183,11 @@ for bridge in bridges:
                 session.commit()
 
             continue
+
+        except MastodonServerError as e:
+            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+            mastodonhost.defer()
+            session.commit()
 
         except MastodonNetworkError as e:
             l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
