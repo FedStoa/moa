@@ -44,9 +44,13 @@ config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
 app.config.from_object(config)
 
 if app.config['SENTRY_DSN']:
-    from raven.contrib.flask import Sentry
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
 
-    sentry = Sentry(app, dsn=app.config['SENTRY_DSN'])
+    sentry_sdk.init(
+        dsn=app.config['SENTRY_DSN'],
+        integrations=[FlaskIntegration()]
+    )
 
 db = SQLAlchemy(metadata=metadata)
 migrate = Migrate(app, db)

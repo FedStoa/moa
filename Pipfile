@@ -23,8 +23,8 @@ pygal = "==2.4.0"
 python-twitter = "==3.5"
 requests-oauthlib = "==1.0.0" # this has to be kept back until Flask-OAuthlib is updated
 PyMySQL = "==0.9.3"
-raven = {extras = ["flask"],version = "*"}
 pip-check = "*"
+'sentry-sdk[flask]' = "*"
 
 [requires]
 python_version = "3.6"

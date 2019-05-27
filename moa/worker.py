@@ -36,9 +36,9 @@ moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
 
 if c.SENTRY_DSN:
-    from raven import Client
+    import sentry_sdk
 
-    client = Client(c.SENTRY_DSN)
+    sentry_sdk.init( dsn=c.SENTRY_DSN)
 
 parser = argparse.ArgumentParser(description='Moa Worker')
 parser.add_argument('--worker', dest='worker', type=int, required=False, default=1)
