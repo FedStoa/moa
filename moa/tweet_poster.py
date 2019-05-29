@@ -208,7 +208,8 @@ class TweetPoster(Poster):
             logger.info(f'Uploading {description} {upload_file_name}')
 
             try:
-                media_id = self.api.UploadMediaChunked(media=temp_file_read)
+                media_id = self.api.UploadMediaChunked(media=temp_file_read,
+                                                       media_category='tweet_video')
 
                 if description:
                     self.api.PostMediaMetadata(media_id, alt_text=description)
