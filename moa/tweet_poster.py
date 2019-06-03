@@ -132,7 +132,7 @@ class TweetPoster(Poster):
                 elif e.message[0]['code'] == 144:
                     # tweet being replied to is gone
                     return None
-                elif e.message[0]['code'] == 89:
+                elif e.message[0]['code'] in [64, 89]:
                     logger.warning(f"Disabling bridge for Twitter user @{self.bridge.twitter_handle}")
                     self.bridge.enabled = False
                     return None
