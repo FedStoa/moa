@@ -57,6 +57,9 @@ session.query(Mapping).filter(Mapping.created < target_date).delete()
 target_date = datetime.now() - timedelta(days=120)
 session.query(WorkerStat).filter(WorkerStat.created < target_date).delete()
 
-session.query(MastodonHost).filter(~MastodonHost.bridges.any()).delete()
+mhs = session.query(MastodonHost).filter(~MastodonHost.bridges.any()).all()
+
+for m in mhs:
+    session.delete(m)
 
 session.commit()
