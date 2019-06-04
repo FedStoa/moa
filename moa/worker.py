@@ -26,7 +26,7 @@ from twitter import TwitterError
 
 from moa.helpers import email_deferral
 from moa.insta import Insta
-from moa.models import Bridge, WorkerStat
+from moa.models import Bridge, WorkerStat, DEFER_OK, DEFER_FAILED
 from moa.toot import Toot
 from moa.toot_poster import TootPoster
 from moa.tweet import Tweet
@@ -174,40 +174,25 @@ for bridge in bridges:
                     bridge.mastodon_account_id,
                     since_id=bridge.mastodon_last_id
             )
-        except MastodonAPIError as e:
+        except [MastodonAPIError, MastodonServerError, MastodonNetworkError] as e:
             msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonAPIError: {e}"
             l.error(msg)
 
-            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request']):
+            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
+                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
                 bridge.enabled = False
-                session.commit()
             else:
-                mastodonhost.defer()
-                session.commit()
-                email_deferral(c, bridge, mastodonhost, l, msg)
+                r = mastodonhost.defer()
 
-            continue
+                if r == DEFER_OK:
+                    email_deferral(c, mastodonhost, l, msg)
 
-        except MastodonServerError as e:
-            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonServerError: {e}"
-            l.error(msg)
-            mastodonhost.defer()
+                elif r == DEFER_FAILED:
+                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                    bridge.enabled = False
+
             session.commit()
-            email_deferral(c, bridge, mastodonhost, l, msg)
-            continue
-
-        except MastodonNetworkError as e:
-            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonNetworkError: {e}"
-            l.error(msg)
-            if any(x in repr(e) for x in ['Name or service not known', 'certificate verify failed', 'CertificateError']):
-                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
-                bridge.enabled = False
-                session.commit()
-            else:
-                mastodonhost.defer()
-                session.commit()
-                email_deferral(c, bridge, mastodonhost, l, msg)
 
             continue
 
@@ -225,8 +210,9 @@ for bridge in bridges:
                 continue
 
             bridge.updated = datetime.now()
-        new_toots.reverse()
 
+        new_toots.reverse()
+        mastodonhost.defer_reset()
     #
     # Fetch from Twitter
     #

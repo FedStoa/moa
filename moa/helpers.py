@@ -112,7 +112,7 @@ def b62_decode(string, alphabet=BASE62):
     return num
 
 
-def email_deferral(c, bridge, mastodonhost, l, msg):
+def email_deferral(c, mastodonhost, l, msg):
     if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
 
         try:
