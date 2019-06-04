@@ -203,6 +203,8 @@ for bridge in bridges:
     Subject: {mastodonhost.hostname} Deferred
     
     {bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}
+    
+    
     """
                     smtpObj = smtplib.SMTP(c.MAIL_SERVER)
                     smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
