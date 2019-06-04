@@ -44,7 +44,7 @@ if c.SENTRY_DSN:
             level=logging.INFO,  # Capture info and above as breadcrumbs
             event_level=logging.FATAL  # Only send fatal errors as events
     )
-    sentry_sdk.init( dsn=c.SENTRY_DSN, integrations=[sentry_logging])
+    sentry_sdk.init(dsn=c.SENTRY_DSN, integrations=[sentry_logging])
 
 parser = argparse.ArgumentParser(description='Moa Worker')
 parser.add_argument('--worker', dest='worker', type=int, required=False, default=1)
@@ -198,14 +198,14 @@ for bridge in bridges:
             if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
 
                 try:
-                    message = f"""From: {c.MAIL_DEFAULT_SENDER}
-    To: {c.MAIL_TO}
-    Subject: {mastodonhost.hostname} Deferred
-    
-    {bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}
-    
-    
-    """
+                    message = (f"From: {c.MAIL_DEFAULT_SENDER}\n" +
+                               f"To: {c.MAIL_TO}\n" +
+                               f"Subject: {mastodonhost.hostname} Deferred\n" +
+                               f"\n" +
+                               f"{bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}\n" +
+                               f"\n"
+                               )
+
                     smtpObj = smtplib.SMTP(c.MAIL_SERVER)
                     smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
 
