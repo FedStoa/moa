@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 
-from moa.models import Bridge, Mapping, WorkerStat
+from moa.models import Bridge, Mapping, WorkerStat, MastodonHost
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
@@ -56,5 +56,11 @@ session.query(Mapping).filter(Mapping.created < target_date).delete()
 # Remove worker stats older than 4 months
 target_date = datetime.now() - timedelta(days=120)
 session.query(WorkerStat).filter(WorkerStat.created < target_date).delete()
+
+mh = session.query(MastodonHost) \
+    .filter(MastodonHost.bridges is None) \
+    .order_by(MastodonHost.hostname) \
+    .all()
+print(mh)
 
 session.commit()
