@@ -13,9 +13,14 @@ moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
 
 if c.SENTRY_DSN:
-    from raven import Client
+    import sentry_sdk
+    from sentry_sdk.integrations.logging import LoggingIntegration
 
-    client = Client(c.SENTRY_DSN)
+    sentry_logging = LoggingIntegration(
+            level=logging.INFO,  # Capture info and above as breadcrumbs
+            event_level=logging.FATAL  # Only send fatal errors as events
+    )
+    sentry_sdk.init(dsn=c.SENTRY_DSN, integrations=[sentry_logging])
 
 FORMAT = "%(asctime)-15s [%(process)d] [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
