@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from twitter import TwitterError
 
+from moa.helpers import email_deferral
 from moa.insta import Insta
 from moa.models import Bridge, WorkerStat
 from moa.toot import Toot
@@ -174,7 +175,8 @@ for bridge in bridges:
                     since_id=bridge.mastodon_last_id
             )
         except MastodonAPIError as e:
-            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}")
+            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonAPIError: {e}"
+            l.error(msg)
 
             if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
@@ -182,47 +184,24 @@ for bridge in bridges:
             else:
                 mastodonhost.defer()
                 session.commit()
+                email_deferral(c, bridge, mastodonhost, l, msg)
 
             continue
 
         except MastodonServerError as e:
-            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}")
+            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonServerError: {e}"
+            l.error(msg)
             mastodonhost.defer()
             session.commit()
+            email_deferral(c, bridge, mastodonhost, l, msg)
+            continue
 
         except MastodonNetworkError as e:
-            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}")
+            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonNetworkError: {e}"
+            l.error(msg)
             mastodonhost.defer()
             session.commit()
-
-            if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
-
-                try:
-                    message = (f"From: {c.MAIL_DEFAULT_SENDER}\n" +
-                               f"To: {c.MAIL_TO}\n" +
-                               f"Subject: {mastodonhost.hostname} Deferred\n" +
-                               f"\n" +
-                               f"{bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}\n" +
-                               f"\n"
-                               )
-
-                    smtpObj = smtplib.SMTP(c.MAIL_SERVER, c.MAIL_PORT)
-                    smtpObj.ehlo()
-                    
-                    if c.MAIL_USE_TLS:
-                        smtpObj.starttls()
-
-                    if c.MAIL_USERNAME:
-                        smtpObj.login(c.MAIL_USERNAME, password=c.MAIL_PASSWORD)
-
-                    smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
-                    smtpObj.quit()
-
-                except smtplib.SMTPException as e:
-                    l.error(e)
-
-                except TimeoutError as e:
-                    l.error(e)
+            email_deferral(c, bridge, mastodonhost, l, msg)
 
             continue
 

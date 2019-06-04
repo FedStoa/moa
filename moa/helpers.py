@@ -1,4 +1,5 @@
 import re
+import smtplib
 
 import twitter
 from flask import render_template
@@ -68,6 +69,8 @@ def send_blacklisted_email(app, username):
 
 
 BASE62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
 # Taken from https://stackoverflow.com/questions/1119722/base-62-conversion
 
 
@@ -107,3 +110,34 @@ def b62_decode(string, alphabet=BASE62):
         idx += 1
 
     return num
+
+
+def email_deferral(c, bridge, mastodonhost, l, msg):
+    if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
+
+        try:
+            message = (f"From: {c.MAIL_DEFAULT_SENDER}\n" +
+                       f"To: {c.MAIL_TO}\n" +
+                       f"Subject: {mastodonhost.hostname} Deferred\n" +
+                       f"\n" +
+                       f"{msg}\n" +
+                       f"\n"
+                       )
+
+            smtpObj = smtplib.SMTP(c.MAIL_SERVER, c.MAIL_PORT)
+            smtpObj.ehlo()
+
+            if c.MAIL_USE_TLS:
+                smtpObj.starttls()
+
+            if c.MAIL_USERNAME:
+                smtpObj.login(c.MAIL_USERNAME, password=c.MAIL_PASSWORD)
+
+            smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
+            smtpObj.quit()
+
+        except smtplib.SMTPException as e:
+            l.error(e)
+
+        except TimeoutError as e:
+            l.error(e)
