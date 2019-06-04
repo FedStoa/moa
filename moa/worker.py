@@ -213,6 +213,9 @@ for bridge in bridges:
                 except smtplib.SMTPException as e:
                     l.error(e)
 
+                except TimeoutError as e:
+                    l.error(e)
+
             continue
 
         except MastodonRatelimitError as e:
