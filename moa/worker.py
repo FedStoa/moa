@@ -178,7 +178,7 @@ for bridge in bridges:
             msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonAPIError: {e}"
             l.error(msg)
 
-            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
+            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
                 bridge.enabled = False
                 session.commit()
@@ -200,7 +200,7 @@ for bridge in bridges:
         except MastodonNetworkError as e:
             msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonNetworkError: {e}"
             l.error(msg)
-            if any(x in repr(e) for x in ['Name or service not known']):
+            if any(x in repr(e) for x in ['Name or service not known', 'certificate verify failed', 'CertificateError']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
                 bridge.enabled = False
                 session.commit()
