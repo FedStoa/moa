@@ -208,8 +208,13 @@ for bridge in bridges:
 
                     smtpObj = smtplib.SMTP(c.MAIL_SERVER, c.MAIL_PORT)
                     smtpObj.ehlo()
-                    smtpObj.starttls()
-                    smtpObj.login(c.MAIL_USERNAME, password=c.MAIL_PASSWORD)
+                    
+                    if c.MAIL_USE_TLS:
+                        smtpObj.starttls()
+
+                    if c.MAIL_USERNAME:
+                        smtpObj.login(c.MAIL_USERNAME, password=c.MAIL_PASSWORD)
+
                     smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
                     smtpObj.quit()
 
