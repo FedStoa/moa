@@ -57,10 +57,6 @@ session.query(Mapping).filter(Mapping.created < target_date).delete()
 target_date = datetime.now() - timedelta(days=120)
 session.query(WorkerStat).filter(WorkerStat.created < target_date).delete()
 
-mh = session.query(MastodonHost) \
-    .filter(MastodonHost.bridges is None) \
-    .order_by(MastodonHost.hostname) \
-    .all()
-print(mh)
+session.query(MastodonHost).filter(~MastodonHost.bridges.any()).delete()
 
 session.commit()
