@@ -206,7 +206,10 @@ for bridge in bridges:
                                f"\n"
                                )
 
-                    smtpObj = smtplib.SMTP(c.MAIL_SERVER)
+                    smtpObj = smtplib.SMTP(c.MAIL_SERVER, c.MAIL_PORT)
+                    smtpObj.ehlo()
+                    smtpObj.starttls()
+                    smtpObj.login(c.MAIL_USERNAME, password=c.MAIL_PASSWORD)
                     smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
                     smtpObj.quit()
 
