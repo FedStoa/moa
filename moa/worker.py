@@ -174,8 +174,52 @@ for bridge in bridges:
                     bridge.mastodon_account_id,
                     since_id=bridge.mastodon_last_id
             )
-        except [MastodonAPIError, MastodonServerError, MastodonNetworkError] as e:
+        except MastodonAPIError as e:
             msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonAPIError: {e}"
+            l.error(msg)
+
+            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
+                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
+                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.enabled = False
+            else:
+                r = mastodonhost.defer()
+
+                if r == DEFER_OK:
+                    email_deferral(c, mastodonhost, l, msg)
+
+                elif r == DEFER_FAILED:
+                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                    bridge.enabled = False
+
+            session.commit()
+
+            continue
+
+        except MastodonServerError as e:
+            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonServerError: {e}"
+            l.error(msg)
+
+            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
+                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
+                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.enabled = False
+            else:
+                r = mastodonhost.defer()
+
+                if r == DEFER_OK:
+                    email_deferral(c, mastodonhost, l, msg)
+
+                elif r == DEFER_FAILED:
+                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                    bridge.enabled = False
+
+            session.commit()
+
+            continue
+
+        except MastodonNetworkError as e:
+            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonNetworkError: {e}"
             l.error(msg)
 
             if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
