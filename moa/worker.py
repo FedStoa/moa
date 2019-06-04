@@ -174,7 +174,7 @@ for bridge in bridges:
                     since_id=bridge.mastodon_last_id
             )
         except MastodonAPIError as e:
-            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}")
 
             if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
@@ -186,12 +186,12 @@ for bridge in bridges:
             continue
 
         except MastodonServerError as e:
-            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}")
             mastodonhost.defer()
             session.commit()
 
         except MastodonNetworkError as e:
-            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname} Error: {e}")
             mastodonhost.defer()
             session.commit()
 
