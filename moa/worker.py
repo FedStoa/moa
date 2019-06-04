@@ -181,6 +181,7 @@ for bridge in bridges:
             if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
                 bridge.enabled = False
+                session.commit()
             else:
                 mastodonhost.defer()
                 session.commit()
@@ -199,9 +200,14 @@ for bridge in bridges:
         except MastodonNetworkError as e:
             msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonNetworkError: {e}"
             l.error(msg)
-            mastodonhost.defer()
-            session.commit()
-            email_deferral(c, bridge, mastodonhost, l, msg)
+            if any(x in repr(e) for x in ['Name or service not known']):
+                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.enabled = False
+                session.commit()
+            else:
+                mastodonhost.defer()
+                session.commit()
+                email_deferral(c, bridge, mastodonhost, l, msg)
 
             continue
 
