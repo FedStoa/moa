@@ -208,6 +208,7 @@ for bridge in bridges:
 
                     smtpObj = smtplib.SMTP(c.MAIL_SERVER)
                     smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
+                    smtpObj.quit()
 
                 except smtplib.SMTPException as e:
                     l.error(e)
