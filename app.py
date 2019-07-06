@@ -46,10 +46,14 @@ app.config.from_object(config)
 if app.config['SENTRY_DSN']:
     import sentry_sdk
     from sentry_sdk.integrations.flask import FlaskIntegration
+    sentry_logging = LoggingIntegration(
+            level=logging.INFO,  # Capture info and above as breadcrumbs
+            event_level=logging.FATAL  # Only send fatal errors as events
+    )
 
     sentry_sdk.init(
-        dsn=app.config['SENTRY_DSN'],
-        integrations=[FlaskIntegration()]
+            dsn=app.config['SENTRY_DSN'],
+            integrations=[FlaskIntegration(), sentry_logging]
     )
 
 db = SQLAlchemy(metadata=metadata)
