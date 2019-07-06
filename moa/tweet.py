@@ -67,7 +67,7 @@ class Tweet(Message):
                 )
                 self.__fetched_attachments = fetched_tweet.media
 
-            except TwitterError as e:
+            except (TwitterError, ConnectionError) as e:
                 logger.error(e)
 
             if not self.__fetched_attachments:
@@ -317,23 +317,34 @@ class Tweet(Message):
 
                     attachment_url = variants[index]['url']
 
-                    response = requests.head(attachment_url)
-                    if response.ok:
-                        size = int(response.headers['content-length'])
+                    try:
+                        response = requests.head(attachment_url)
 
-                        if size > (8 * 1024 * 1024):
-                            logger.info(f"Too large")
+                        if response.ok:
+                            size = int(response.headers['content-length'])
+
+                            if size > (8 * 1024 * 1024):
+                                logger.info(f"Too large")
+                                attachment_url = None
+                                index += 1
+
+                                if index > max:
+                                    continue
+                        else:
                             attachment_url = None
                             index += 1
 
                             if index > max:
                                 continue
-                    else:
+
+                    except ConnectionError as e:
+                        logger.error(f"{e}")
                         attachment_url = None
                         index += 1
 
                         if index > max:
                             continue
+
             else:
                 attachment_url = attachment.media_url
 

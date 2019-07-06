@@ -219,7 +219,7 @@ class TweetPoster(Poster):
 
                 self.media_ids.append(media_id)
 
-            except TwitterError as e:
+            except (TwitterError, ConnectionError) as e:
                 logger.error(f"Twitter upload error: {e.message}")
                 return False
 
