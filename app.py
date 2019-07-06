@@ -17,6 +17,7 @@ from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError, \
     MastodonUnauthorizedError
 from pymysql import DataError
+from sentry_sdk.integrations.logging import LoggingIntegration
 from sqlalchemy import exc, func
 from twitter import TwitterError
 
