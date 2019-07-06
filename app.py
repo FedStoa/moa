@@ -442,7 +442,12 @@ def mastodon_oauthorized():
         else:
             bridge = get_or_create_bridge()
             bridge.mastodon_host = get_or_create_host(host)
-            bridge.mastodon_account_id = account_id
+            try:
+                bridge.mastodon_account_id = int(account_id)
+            except ValueError:
+                flash(f"Your server isn't supported by moa.")
+                return redirect(url_for('index'))
+
             # email_bridge_details(app, bridge)
 
             try:
