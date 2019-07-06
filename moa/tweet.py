@@ -220,7 +220,7 @@ class Tweet(Message):
 
                 quoted_text = self.data.quoted_status.full_text
                 quoted_text = html.unescape(quoted_text)
-                
+
                 for url in self.data.quoted_status.urls:
                     # Unshorten URLs
                     quoted_text = re.sub(url.url, url.expanded_url, quoted_text)
@@ -318,16 +318,22 @@ class Tweet(Message):
                     attachment_url = variants[index]['url']
 
                     response = requests.head(attachment_url)
-                    size = int(response.headers['content-length'])
+                    if response.ok:
+                        size = int(response.headers['content-length'])
 
-                    if size > (8 * 1024 * 1024):
-                        logger.info(f"Too large")
+                        if size > (8 * 1024 * 1024):
+                            logger.info(f"Too large")
+                            attachment_url = None
+                            index += 1
+
+                            if index > max:
+                                continue
+                    else:
                         attachment_url = None
                         index += 1
 
                         if index > max:
                             continue
-
             else:
                 attachment_url = attachment.media_url
 
