@@ -9,6 +9,7 @@ from flask import Flask, flash, g, redirect, render_template, request, session, 
 from flask_migrate import Migrate
 from flask_oauthlib.client import OAuth, OAuthException
 from flask_sqlalchemy import SQLAlchemy
+from httplib2 import ServerNotFoundError
 from instagram.client import InstagramAPI
 from instagram.helper import datetime_to_timestamp
 from instagram.oauth2 import OAuth2AuthExchangeError
@@ -488,6 +489,9 @@ def instagram_oauthorized():
         try:
             access_token = api.exchange_code_for_access_token(code)
         except OAuth2AuthExchangeError as e:
+            flash("Instagram authorization failed")
+            return redirect(url_for('index'))
+        except ServerNotFoundError as e:
             flash("Instagram authorization failed")
             return redirect(url_for('index'))
 
