@@ -1,6 +1,7 @@
 import logging
 import os
 from datetime import datetime, timedelta
+from urllib.error import URLError
 
 import pandas as pd
 import pygal
@@ -231,8 +232,12 @@ def twitter_login():
 
     app.logger.debug(callback_url)
 
-    return twitter_oauth.authorize(callback=callback_url)
-
+    try:
+        twitter_url = twitter_oauth.authorize(callback=callback_url)
+        return twitter_url
+    except URLError as e:
+        flash("The was a problem connecting to twitter")
+        redirect(url_for('index'))
 
 @app.route('/twitter_oauthorized')
 def twitter_oauthorized():
