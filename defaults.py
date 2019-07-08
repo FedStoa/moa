@@ -31,4 +31,5 @@ class DefaultConfig(object):
     SANITIZE_TWITTER_HANDLES = True
 
     SEND_DEFERRED_EMAIL = False
+    SEND_DEFER_FAILED_EMAIL = False
     MAINTENANCE_MODE = False

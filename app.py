@@ -239,6 +239,7 @@ def twitter_login():
         flash("The was a problem connecting to twitter")
         redirect(url_for('index'))
 
+
 @app.route('/twitter_oauthorized')
 def twitter_oauthorized():
     try:

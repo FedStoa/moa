@@ -134,6 +134,8 @@ class TweetPoster(Poster):
                     return None
                 elif e.message[0]['code'] in [64, 89]:
                     logger.warning(f"Disabling bridge for Twitter user @{self.bridge.twitter_handle}")
+                    self.bridge.twitter_oauth_token = None
+                    self.bridge.twitter_oauth_secret = None
                     self.bridge.enabled = False
                     return None
 

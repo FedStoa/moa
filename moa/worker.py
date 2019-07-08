@@ -179,17 +179,21 @@ for bridge in bridges:
             l.error(msg)
 
             if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
-                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
+                                          'Name or service not known',]):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.mastodon_access_code = None
                 bridge.enabled = False
             else:
                 r = mastodonhost.defer()
 
-                if r == DEFER_OK:
+                if r == DEFER_OK and c.SEND_DEFERRED_EMAIL:
                     email_deferral(c, mastodonhost, l, msg)
 
-                elif r == DEFER_FAILED:
-                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                elif r == DEFER_FAILED and c.SEND_DEFER_FAILED_EMAIL:
+                    msg2 = f"Server Defer failed Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}"
+                    email_deferral(c, mastodonhost, l, f"{msg}\n{msg2}")
+                    l.warning(msg2)
+                    bridge.mastodon_access_code = None
                     bridge.enabled = False
 
             session.commit()
@@ -201,17 +205,21 @@ for bridge in bridges:
             l.error(msg)
 
             if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
-                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
+                                          'Name or service not known']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.mastodon_access_code = None
                 bridge.enabled = False
             else:
                 r = mastodonhost.defer()
 
-                if r == DEFER_OK:
+                if r == DEFER_OK and c.SEND_DEFERRED_EMAIL:
                     email_deferral(c, mastodonhost, l, msg)
 
-                elif r == DEFER_FAILED:
-                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                elif r == DEFER_FAILED and c.SEND_DEFER_FAILED_EMAIL:
+                    msg2 = f"Server Defer failed Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}"
+                    email_deferral(c, mastodonhost, l, f"{msg}\n{msg2}")
+                    l.warning(msg2)
+                    bridge.mastodon_access_code = None
                     bridge.enabled = False
 
             session.commit()
@@ -223,17 +231,21 @@ for bridge in bridges:
             l.error(msg)
 
             if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
-                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
+                                          'Name or service not known']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.mastodon_access_code = None
                 bridge.enabled = False
             else:
                 r = mastodonhost.defer()
 
-                if r == DEFER_OK:
+                if r == DEFER_OK and c.SEND_DEFERRED_EMAIL:
                     email_deferral(c, mastodonhost, l, msg)
 
-                elif r == DEFER_FAILED:
-                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                elif r == DEFER_FAILED and c.SEND_DEFER_FAILED_EMAIL:
+                    msg2 = f"Server Defer failed Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}"
+                    email_deferral(c, mastodonhost, l, f"{msg}\n{msg2}")
+                    l.warning(msg2)
+                    bridge.mastodon_access_code = None
                     bridge.enabled = False
 
             session.commit()
@@ -291,6 +303,8 @@ for bridge in bridges:
             elif isinstance(e.message, list) and len(e.message) > 0:
                 if e.message[0]['code'] in [89, 326]:
                     l.warning(f"Disabling bridge for Twitter user {bridge.twitter_handle}")
+                    bridge.twitter_oauth_token = None
+                    bridge.twitter_oauth_secret = None
                     bridge.enabled = False
 
             continue
