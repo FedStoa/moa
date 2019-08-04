@@ -11,7 +11,7 @@ from typing import Optional
 import requests
 from requests.exceptions import SSLError
 from twitter import TwitterError
-from urllib3.exceptions import ProtocolError
+from urllib3.exceptions import ProtocolError, NewConnectionError
 
 from moa.message import Message
 from moa.models import Mapping
@@ -164,7 +164,7 @@ class TweetPoster(Poster):
                 temp_file.write(attachment_file.raw.read())
                 temp_file.close()
 
-            except (SSLError, ProtocolError, ConnectionError) as e:
+            except (SSLError, ProtocolError, ConnectionError, NewConnectionError) as e:
                 logger.error(f"{e}")
                 return False
 
@@ -221,7 +221,7 @@ class TweetPoster(Poster):
 
                 self.media_ids.append(media_id)
 
-            except (TwitterError, ConnectionError) as e:
+            except (TwitterError, ConnectionError, NewConnectionError) as e:
                 logger.error(f"Twitter upload error: {e.message}")
                 return False
 

@@ -20,6 +20,7 @@ from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError, MastodonServerError
 from requests import ConnectionError
 from sqlalchemy import create_engine, exc, func
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from twitter import TwitterError
@@ -69,7 +70,12 @@ else:
 
 l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
-engine.connect()
+try:
+    engine.connect()
+except OperationalError as e:
+    print(e, file=sys.stderr)
+    l.error(e)
+    sys.exit(1)
 
 try:
     engine.execute('SELECT 1 from bridge')

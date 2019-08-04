@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 import requests
 from twitter import TwitterError
+from urllib3.exceptions import NewConnectionError
 
 from moa.message import Message
 
@@ -337,7 +338,7 @@ class Tweet(Message):
                             if index > max:
                                 continue
 
-                    except ConnectionError as e:
+                    except (ConnectionError, NewConnectionError) as e:
                         logger.error(f"{e}")
                         attachment_url = None
                         index += 1

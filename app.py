@@ -481,9 +481,14 @@ def instagram_activate():
 
     scope = ["basic"]
     api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
-    redirect_uri = api.get_authorize_login_url(scope = scope)
 
-    return redirect(redirect_uri)
+    try:
+        redirect_uri = api.get_authorize_login_url(scope=scope)
+    except ServerNotFoundError as e:
+        flash(f"There was a problem connecting to Instagram. Please try again")
+        return redirect(url_for('index'))
+    else:
+        return redirect(redirect_uri)
 
 
 @app.route('/instagram_oauthorized')

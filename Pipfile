@@ -9,16 +9,16 @@ instagram = {editable = true,git = "git@github.com/foozmeat/python-instagram.git
 
 [packages]
 certifi = ">=2019.3.9"
-Flask = "==1.0.3"
+Flask = "==1.1.1"
 Flask-OAuthlib = "==0.9.5"
 Flask-SQLAlchemy = "==2.3.2"
 Flask-Mail = "==0.9.1"
-Flask-Migrate = "==2.4.0"
+Flask-Migrate = "==2.5.2"
 Flask-WTF = "==0.14.2"
 instagram = {editable = true,git = "https://github.com/foozmeat/python-instagram.git"}
-"Mastodon.py" = "==1.4.5"
+"Mastodon.py" = "==1.4.6"
 pandas = "*"
-psutil = "==5.6.2"
+psutil = "*"
 pygal = "==2.4.0"
 python-twitter = "==3.5"
 requests-oauthlib = "==1.0.0" # this has to be kept back until Flask-OAuthlib is updated
