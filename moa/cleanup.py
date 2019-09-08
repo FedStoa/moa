@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 
-from moa.models import Bridge, Mapping, WorkerStat, MastodonHost
+from moa.models import Bridge, Mapping, WorkerStat, MastodonHost, TSettings
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
@@ -53,14 +53,17 @@ for b in bridges:
     settings = b.t_settings
     session.delete(b)
     session.delete(settings)
-    session.commit()
 
 bridges = session.query(Bridge).filter_by(enabled=False).filter(Bridge.updated < target_date)
 for b in bridges:
     settings = b.t_settings
     session.delete(b)
     session.delete(settings)
-    session.commit()
+
+orphaned_settings = session.query(TSettings).filter(~TSettings.bridge.any()).all()
+print(f"orphaned settings: {len(orphaned_settings)}")
+for s in orphaned_settings:
+    print(s.id)
 
 # Remove mappings older than 4 months
 target_date = datetime.now() - timedelta(days=120)
@@ -70,6 +73,7 @@ session.query(Mapping).filter(Mapping.created < target_date).delete()
 target_date = datetime.now() - timedelta(days=120)
 session.query(WorkerStat).filter(WorkerStat.created < target_date).delete()
 
+# Remove hosts with no bridges
 mhs = session.query(MastodonHost).filter(~MastodonHost.bridges.any()).all()
 
 for m in mhs:
