@@ -342,6 +342,7 @@ def get_or_create_bridge(bridge_id=None):
         bridge.enabled = True
         bridge.t_settings = TSettings()
         bridge.worker_id = random.randint(1, app.config['WORKER_JOBS'])
+        bridge.updated = datetime.now()
         db.session.add(bridge.t_settings)
         db.session.add(bridge)
         db.session.commit()
