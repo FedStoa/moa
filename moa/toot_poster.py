@@ -123,6 +123,9 @@ class TootPoster(Poster):
             except MastodonAPIError as e:
                 logger.error(e)
 
+                if 'Forbidden' in repr(e):
+                    self.bridge.enabled = False
+
                 if retry_counter < MASTODON_RETRIES:
                     retry_counter += 1
                     # time.sleep(MASTODON_RETRY_DELAY)
@@ -180,6 +183,8 @@ class TootPoster(Poster):
 
             except MastodonAPIError as e:
                 logger.error(e)
+                if 'Forbidden' in repr(e):
+                    self.bridge.enabled = False
                 return False
 
             except MastodonNetworkError as e:
