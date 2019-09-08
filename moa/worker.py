@@ -27,7 +27,7 @@ from twitter import TwitterError
 
 from moa.helpers import email_deferral
 from moa.insta import Insta
-from moa.models import Bridge, WorkerStat, DEFER_OK, DEFER_FAILED
+from moa.models import Bridge, WorkerStat, DEFER_OK, DEFER_FAILED, BridgeStat
 from moa.toot import Toot
 from moa.toot_poster import TootPoster
 from moa.tweet import Tweet
@@ -374,18 +374,21 @@ for bridge in bridges:
     # Post Toots to Twitter
     #
 
+    bridge_stat = None
+
     if bridge.twitter_oauth_token:
         tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
         if bridge.mastodon_access_code:
             l.debug(f"{bridge.id}: M - {bridge.mastodon_user}@{mastodonhost.hostname}")
 
-            if bridge.t_settings.post_to_twitter_enabled and len(new_toots) != 0:
-                l.info(f"{len(new_toots)} new toots found")
-
             tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
             if bridge.t_settings.post_to_twitter_enabled and len(new_toots) > 0:
+
+                l.info(f"{len(new_toots)} new toots found")
+
+                bridge_stat = BridgeStat(bridge.id)
 
                 for toot in new_toots:
 
@@ -395,6 +398,7 @@ for bridge in bridges:
 
                     if result:
                         worker_stat.add_toot()
+                        bridge_stat.add_toot()
 
     #
     # Post Tweets to Mastodon
@@ -406,10 +410,11 @@ for bridge in bridges:
         if bridge.twitter_oauth_token:
             l.debug(f"{bridge.id}: T - @{bridge.twitter_handle}")
 
-            if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) != 0:
+            if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) > 0:
                 l.info(f"{len(new_tweets)} new tweets found")
 
-            if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) > 0:
+                if not bridge_stat:
+                    bridge_stat = BridgeStat(bridge.id)
 
                 for status in new_tweets:
 
@@ -419,6 +424,7 @@ for bridge in bridges:
 
                     if result:
                         worker_stat.add_tweet()
+                        bridge_stat.add_tweet()
 
     #
     # Post Instagram
@@ -430,22 +436,29 @@ for bridge in bridges:
         if bridge.t_settings.instagram_post_to_mastodon or bridge.t_settings.instagram_post_to_twitter:
             l.info(f"{len(new_instas)} new instas found")
 
-        for data in new_instas:
-            stat_recorded = False
+            if not bridge_stat:
+                bridge_stat = BridgeStat(bridge.id)
 
-            insta = Insta(bridge.t_settings, data)
+            for data in new_instas:
+                stat_recorded = False
 
-            if not insta.should_skip_mastodon and bridge.mastodon_access_code:
-                result = toot_poster.post(insta)
-                if result:
-                    worker_stat.add_insta()
-                    stat_recorded = True
+                insta = Insta(bridge.t_settings, data)
 
-            if not insta.should_skip_twitter and bridge.twitter_oauth_token:
+                if not insta.should_skip_mastodon and bridge.mastodon_access_code:
+                    result = toot_poster.post(insta)
+                    if result:
+                        worker_stat.add_insta()
+                        stat_recorded = True
 
-                result = tweet_poster.post(insta)
-                if result and not stat_recorded:
-                    worker_stat.add_insta()
+                if not insta.should_skip_twitter and bridge.twitter_oauth_token:
+
+                    result = tweet_poster.post(insta)
+                    if result and not stat_recorded:
+                        worker_stat.add_insta()
+                        bridge_stat.add_insta()
+
+    if bridge_stat:
+        session.add(bridge_stat)
 
     if c.SEND:
         session.commit()
@@ -466,6 +479,7 @@ if len(c.HEALTHCHECKS) >= args.worker:
 l.info(f"-- All done -> Total time: {worker_stat.formatted_time} / {worker_stat.items} items / {bridge_count} Bridges")
 
 session.add(worker_stat)
+
 session.commit()
 session.close()
 

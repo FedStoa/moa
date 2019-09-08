@@ -188,6 +188,41 @@ class WorkerStat(Base):
         self.instas += 1
 
 
+class BridgeStat(Base):
+    __tablename__ = 'bridgestat'
+    id = Column(Integer, primary_key=True)
+    created = Column(DateTime, default=datetime.utcnow)
+    bridge_id = Column(Integer, ForeignKey('bridge.id'), nullable=True)
+
+    tweets = Column(Integer, default=0)
+    toots = Column(Integer, default=0)
+    instas = Column(Integer, default=0)
+
+    def __init__(self, bridge_id):
+        self.tweets = 0
+        self.toots = 0
+        self.instas = 0
+        self.bridge_id = bridge_id
+
+    @property
+    def formatted_time(self):
+        m, s = divmod(self.time, 60)
+        return f"{m:02.0f}:{s:02.0f}"
+
+    @property
+    def items(self):
+        return self.tweets + self.toots + self.instas
+
+    def add_toot(self):
+        self.toots += 1
+
+    def add_tweet(self):
+        self.tweets += 1
+
+    def add_insta(self):
+        self.instas += 1
+
+
 @event.listens_for(WorkerStat.time, 'set')
 def receive_time_set(target, value, oldvalue, initiator):
     if target.items > 0:
