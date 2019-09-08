@@ -125,6 +125,7 @@ class TootPoster(Poster):
 
                 if 'Forbidden' in repr(e):
                     self.bridge.enabled = False
+                    return None
 
                 if retry_counter < MASTODON_RETRIES:
                     retry_counter += 1
