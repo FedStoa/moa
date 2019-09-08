@@ -61,9 +61,8 @@ for b in bridges:
     session.delete(settings)
 
 orphaned_settings = session.query(TSettings).filter(~TSettings.bridge.any()).all()
-print(f"orphaned settings: {len(orphaned_settings)}")
 for s in orphaned_settings:
-    print(s.id)
+    session.delete(s)
 
 # Remove mappings older than 4 months
 target_date = datetime.now() - timedelta(days=120)
