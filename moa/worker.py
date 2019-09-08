@@ -457,7 +457,7 @@ for bridge in bridges:
                         worker_stat.add_insta()
                         bridge_stat.add_insta()
 
-    if bridge_stat:
+    if bridge_stat and bridge_stat.items > 0:
         session.add(bridge_stat)
 
     if c.SEND:
