@@ -47,8 +47,20 @@ session = Session(engine)
 
 # Remove disabled bridges older than 30 days
 target_date = datetime.now() - timedelta(days=30)
-session.query(Bridge).filter_by(enabled=False).filter(Bridge.updated == None).delete()
-session.query(Bridge).filter_by(enabled=False).filter(Bridge.updated < target_date).delete()
+
+bridges = session.query(Bridge).filter_by(enabled=False).filter_by(updated=None)
+for b in bridges:
+    settings = b.t_settings
+    session.delete(b)
+    session.delete(settings)
+    session.commit()
+
+bridges = session.query(Bridge).filter_by(enabled=False).filter(Bridge.updated < target_date)
+for b in bridges:
+    settings = b.t_settings
+    session.delete(b)
+    session.delete(settings)
+    session.commit()
 
 # Remove mappings older than 4 months
 target_date = datetime.now() - timedelta(days=120)
