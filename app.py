@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 from datetime import datetime, timedelta
 from urllib.error import URLError
 
@@ -340,7 +341,7 @@ def get_or_create_bridge(bridge_id=None):
         bridge = Bridge()
         bridge.enabled = True
         bridge.t_settings = TSettings()
-
+        bridge.worker_id = random.randint(1, app.config['WORKER_JOBS'])
         db.session.add(bridge.t_settings)
         db.session.add(bridge)
         db.session.commit()
