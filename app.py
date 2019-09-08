@@ -66,15 +66,16 @@ migrate = Migrate(app, db)
 db.init_app(app)
 oauth = OAuth(app)
 
-twitter_oauth = oauth.remote_app(
-    'twitter',
-    consumer_key=app.config['TWITTER_CONSUMER_KEY'],
-    consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
-    base_url='https://api.twitter.com/1.1/',
-    request_token_url='https://api.twitter.com/oauth/request_token',
-    access_token_url='https://api.twitter.com/oauth/access_token',
-    authorize_url='https://api.twitter.com/oauth/authorize'
-)
+if app.config.get('TWITTER_CONSUMER_KEY', None):
+    twitter_oauth = oauth.remote_app(
+        'twitter',
+        consumer_key=app.config['TWITTER_CONSUMER_KEY'],
+        consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
+        base_url='https://api.twitter.com/1.1/',
+        request_token_url='https://api.twitter.com/oauth/request_token',
+        access_token_url='https://api.twitter.com/oauth/access_token',
+        authorize_url='https://api.twitter.com/oauth/authorize'
+    )
 
 
 @app.before_request
