@@ -23,6 +23,7 @@ class DefaultConfig(object):
     MAIL_TO = ''
     MAIL_DEFAULT_SENDER = ''
     TWITTER_BLACKLIST = []
+    MASTODON_BLACKLIST = []
     WORKER_JOBS = 1
     MAX_MESSAGES_PER_RUN = 5
 

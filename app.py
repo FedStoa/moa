@@ -373,6 +373,10 @@ def mastodon_login():
             flash('Invalid Mastodon ID')
             return redirect(url_for('index'))
 
+        if host in app.config.get('MASTODON_BLACKLIST', []):
+            flash('Access Denied')
+            return redirect(url_for('index'))
+
         session['mastodon_host'] = host
 
         api = mastodon_api(host)
