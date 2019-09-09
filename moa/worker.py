@@ -445,12 +445,14 @@ for bridge in bridges:
                 insta = Insta(bridge.t_settings, data)
 
                 if not insta.should_skip_mastodon and bridge.mastodon_access_code:
+                    toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
                     result = toot_poster.post(insta)
                     if result:
                         worker_stat.add_insta()
                         stat_recorded = True
 
                 if not insta.should_skip_twitter and bridge.twitter_oauth_token:
+                    tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
                     result = tweet_poster.post(insta)
                     if result and not stat_recorded:
