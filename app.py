@@ -25,7 +25,7 @@ from twitter import TwitterError
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email
-from moa.models import Bridge, MastodonHost, TSettings, WorkerStat, metadata
+from moa.models import Bridge, MastodonHost, TSettings, WorkerStat, metadata, BridgeStat
 
 app = Flask(__name__)
 
@@ -213,6 +213,7 @@ def delete():
         if bridge:
             app.logger.info(f"Deleting settings for Bridge {bridge.id}")
             settings = bridge.t_settings
+            db.session.query(BridgeStat).filter_by(bridge_id=bridge.id).delete()
             db.session.delete(bridge)
             db.session.delete(settings)
             db.session.commit()
