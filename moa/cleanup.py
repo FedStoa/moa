@@ -53,24 +53,29 @@ for b in bridges:
     settings = b.t_settings
     session.delete(b)
     session.delete(settings)
+    session.commit()
 
 bridges = session.query(Bridge).filter_by(enabled=False).filter(Bridge.updated < target_date)
 for b in bridges:
     settings = b.t_settings
     session.delete(b)
     session.delete(settings)
+    session.commit()
 
 orphaned_settings = session.query(TSettings).filter(~TSettings.bridge.any()).all()
 for s in orphaned_settings:
     session.delete(s)
+    session.commit()
 
 # Remove mappings older than 4 months
 target_date = datetime.now() - timedelta(days=120)
 session.query(Mapping).filter(Mapping.created < target_date).delete()
+session.commit()
 
 # Remove worker stats older than 4 months
 target_date = datetime.now() - timedelta(days=120)
 session.query(WorkerStat).filter(WorkerStat.created < target_date).delete()
+session.commit()
 
 # Remove hosts with no bridges
 mhs = session.query(MastodonHost).filter(~MastodonHost.bridges.any()).all()
