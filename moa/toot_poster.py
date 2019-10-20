@@ -10,8 +10,9 @@ import pprint as pp
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
 from requests.exceptions import SSLError
-from urllib3.exceptions import ProtocolError
+from urllib3.exceptions import ProtocolError, ConnectionError
 
+from moa.helpers import MoaMediaUploadException
 from moa.message import Message
 from moa.models import Mapping
 from moa.poster import Poster
@@ -161,7 +162,7 @@ class TootPoster(Poster):
 
             except (SSLError, ProtocolError, ConnectionError, OSError) as e:
                 logger.error(f"{e}")
-                return False
+                raise MoaMediaUploadException()
 
             path = urlparse(attachment_url).path
             file_extension = splitext(path)[1]
@@ -186,15 +187,11 @@ class TootPoster(Poster):
                 logger.error(e)
                 if 'Forbidden' in repr(e):
                     self.bridge.enabled = False
-                return False
+                raise MoaMediaUploadException()
 
-            except MastodonNetworkError as e:
+            except (MastodonNetworkError, MastodonRatelimitError) as e:
                 logger.error(e)
-                return False
-
-            except MastodonRatelimitError as e:
-                logger.error(e)
-                return False
+                raise MoaMediaUploadException()
 
             finally:
                 os.unlink(upload_file_name)

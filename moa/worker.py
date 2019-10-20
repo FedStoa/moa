@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from twitter import TwitterError
 
-from moa.helpers import email_deferral
+from moa.helpers import email_deferral, MoaMediaUploadException
 from moa.insta import Insta
 from moa.models import Bridge, WorkerStat, DEFER_OK, DEFER_FAILED, BridgeStat
 from moa.toot import Toot
@@ -394,7 +394,10 @@ for bridge in bridges:
 
                     t = Toot(bridge.t_settings, toot, c)
 
-                    result = tweet_poster.post(t)
+                    try:
+                        result = tweet_poster.post(t)
+                    except MoaMediaUploadException:
+                        continue
 
                     if result:
                         worker_stat.add_toot()
@@ -420,7 +423,11 @@ for bridge in bridges:
 
                     tweet = Tweet(bridge.t_settings, status, twitter_api)
 
-                    result = toot_poster.post(tweet)
+                    try:
+                        result = toot_poster.post(tweet)
+
+                    except MoaMediaUploadException:
+                        continue
 
                     if result:
                         worker_stat.add_tweet()

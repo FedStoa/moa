@@ -6,8 +6,9 @@ from datetime import datetime, timezone
 
 import requests
 from twitter import TwitterError
-from urllib3.exceptions import NewConnectionError
+from urllib3.exceptions import NewConnectionError, ConnectionError
 
+from moa.helpers import MoaMediaUploadException
 from moa.message import Message
 
 logger = logging.getLogger('worker')
@@ -341,10 +342,7 @@ class Tweet(Message):
                     except (ConnectionError, NewConnectionError) as e:
                         logger.error(f"{e}")
                         attachment_url = None
-                        index += 1
-
-                        if index > max:
-                            continue
+                        raise MoaMediaUploadException()
 
             else:
                 attachment_url = attachment.media_url

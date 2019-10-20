@@ -11,8 +11,9 @@ from typing import Optional
 import requests
 from requests.exceptions import SSLError
 from twitter import TwitterError
-from urllib3.exceptions import ProtocolError, NewConnectionError
+from urllib3.exceptions import ProtocolError, NewConnectionError, ConnectionError
 
+from moa.helpers import MoaMediaUploadException
 from moa.message import Message
 from moa.models import Mapping
 from moa.poster import Poster
@@ -156,6 +157,7 @@ class TweetPoster(Poster):
             attachment_url = attachment.get("url")
 
             logger.info(f'Downloading {attachment_url}')
+
             try:
                 attachment_file = requests.get(attachment_url, stream=True)
                 attachment_file.raw.decode_content = True
@@ -166,7 +168,7 @@ class TweetPoster(Poster):
 
             except (SSLError, ProtocolError, ConnectionError, NewConnectionError) as e:
                 logger.error(f"{e}")
-                return False
+                raise MoaMediaUploadException()
 
             fsize = os.path.getsize(temp_file.name)
 
@@ -223,7 +225,7 @@ class TweetPoster(Poster):
 
             except (TwitterError, ConnectionError, NewConnectionError) as e:
                 logger.error(f"Twitter upload error: {e.message}")
-                return False
+                raise MoaMediaUploadException()
 
             finally:
                 temp_file_read.close()
