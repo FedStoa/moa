@@ -462,18 +462,18 @@ def mastodon_oauthorized():
             try:
                 db.session.commit()
             except DataError as e:
-                flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+                flash(f"There was a problem connecting to the server.")
                 return redirect(url_for('index'))
 
         if not bridge.mastodon_access_code:
             # in case they deactivated this account and are logging in again
             bridge.mastodon_access_code = access_code
             bridge.mastodon_user = username
-            catch_up_mastodon(bridge)
             try:
+                catch_up_mastodon(bridge)
                 db.session.commit()
             except DataError as e:
-                flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+                flash(f"There was a problem connecting to the server.")
                 return redirect(url_for('index'))
 
     return redirect(url_for('index'))
