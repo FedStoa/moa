@@ -187,11 +187,11 @@ class TootPoster(Poster):
                 logger.error(e)
                 if 'Forbidden' in repr(e) or 'Unauthorized' in repr(e):
                     self.bridge.enabled = False
-                raise MoaMediaUploadException("API Error uploading attachments")
+                raise MoaMediaUploadException("API Error uploading attachments") from e
 
             except (MastodonNetworkError, MastodonRatelimitError) as e:
                 logger.error(e)
-                raise MoaMediaUploadException("Connection Error uploading attachments")
+                raise MoaMediaUploadException("Connection Error uploading attachments") from e
 
             finally:
                 os.unlink(upload_file_name)

@@ -180,7 +180,7 @@ for bridge in bridges:
                     bridge.mastodon_account_id,
                     since_id=bridge.mastodon_last_id
             )
-        except MastodonAPIError as e:
+        except (MastodonAPIError, MastodonNetworkError) as e:
             msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonAPIError: {e}"
             l.error(msg)
 
@@ -206,57 +206,57 @@ for bridge in bridges:
 
             continue
 
-        except MastodonServerError as e:
-            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonServerError: {e}"
-            l.error(msg)
+        # except MastodonServerError as e:
+        #     msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonServerError: {e}"
+        #     l.error(msg)
+        #
+        #     if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
+        #                                   'Name or service not known']):
+        #         l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+        #         bridge.mastodon_access_code = None
+        #         bridge.enabled = False
+        #     else:
+        #         r = mastodonhost.defer()
+        #
+        #         if r == DEFER_OK and c.SEND_DEFERRED_EMAIL:
+        #             email_deferral(c, mastodonhost, l, msg)
+        #
+        #         elif r == DEFER_FAILED and c.SEND_DEFER_FAILED_EMAIL:
+        #             msg2 = f"Server Defer failed Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}"
+        #             email_deferral(c, mastodonhost, l, f"{msg}\n{msg2}")
+        #             l.warning(msg2)
+        #             bridge.mastodon_access_code = None
+        #             bridge.enabled = False
+        #
+        #     session.commit()
+        #
+        #     continue
 
-            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
-                                          'Name or service not known']):
-                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
-                bridge.mastodon_access_code = None
-                bridge.enabled = False
-            else:
-                r = mastodonhost.defer()
-
-                if r == DEFER_OK and c.SEND_DEFERRED_EMAIL:
-                    email_deferral(c, mastodonhost, l, msg)
-
-                elif r == DEFER_FAILED and c.SEND_DEFER_FAILED_EMAIL:
-                    msg2 = f"Server Defer failed Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}"
-                    email_deferral(c, mastodonhost, l, f"{msg}\n{msg2}")
-                    l.warning(msg2)
-                    bridge.mastodon_access_code = None
-                    bridge.enabled = False
-
-            session.commit()
-
-            continue
-
-        except MastodonNetworkError as e:
-            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonNetworkError: {e}"
-            l.error(msg)
-
-            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
-                                          'Name or service not known']):
-                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
-                bridge.mastodon_access_code = None
-                bridge.enabled = False
-            else:
-                r = mastodonhost.defer()
-
-                if r == DEFER_OK and c.SEND_DEFERRED_EMAIL:
-                    email_deferral(c, mastodonhost, l, msg)
-
-                elif r == DEFER_FAILED and c.SEND_DEFER_FAILED_EMAIL:
-                    msg2 = f"Server Defer failed Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}"
-                    email_deferral(c, mastodonhost, l, f"{msg}\n{msg2}")
-                    l.warning(msg2)
-                    bridge.mastodon_access_code = None
-                    bridge.enabled = False
-
-            session.commit()
-
-            continue
+        # except MastodonNetworkError as e:
+        #     msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonNetworkError: {e}"
+        #     l.error(msg)
+        #
+        #     if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
+        #                                   'Name or service not known']):
+        #         l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+        #         bridge.mastodon_access_code = None
+        #         bridge.enabled = False
+        #     else:
+        #         r = mastodonhost.defer()
+        #
+        #         if r == DEFER_OK and c.SEND_DEFERRED_EMAIL:
+        #             email_deferral(c, mastodonhost, l, msg)
+        #
+        #         elif r == DEFER_FAILED and c.SEND_DEFER_FAILED_EMAIL:
+        #             msg2 = f"Server Defer failed Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}"
+        #             email_deferral(c, mastodonhost, l, f"{msg}\n{msg2}")
+        #             l.warning(msg2)
+        #             bridge.mastodon_access_code = None
+        #             bridge.enabled = False
+        #
+        #     session.commit()
+        #
+        #     continue
 
         except MastodonRatelimitError as e:
             l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
@@ -453,7 +453,11 @@ for bridge in bridges:
 
                 if not insta.should_skip_mastodon and bridge.mastodon_access_code:
                     toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
-                    result = toot_poster.post(insta)
+                    try:
+                        result = toot_poster.post(insta)
+                    except MoaMediaUploadException as e:
+                        continue
+
                     if result:
                         worker_stat.add_insta()
                         stat_recorded = True
@@ -461,7 +465,11 @@ for bridge in bridges:
                 if not insta.should_skip_twitter and bridge.twitter_oauth_token:
                     tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
-                    result = tweet_poster.post(insta)
+                    try:
+                        result = tweet_poster.post(insta)
+                    except MoaMediaUploadException as e:
+                        continue
+
                     if result and not stat_recorded:
                         worker_stat.add_insta()
                         bridge_stat.add_insta()
