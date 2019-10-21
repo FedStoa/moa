@@ -71,7 +71,7 @@ else:
 l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
 try:
-    engine.connect()
+    db_connection = engine.connect()
 except OperationalError as e:
     print(e, file=sys.stderr)
     l.error(e)
@@ -499,5 +499,6 @@ session.add(worker_stat)
 
 session.commit()
 session.close()
+db_connection.close()
 
 lockfile.unlink()
