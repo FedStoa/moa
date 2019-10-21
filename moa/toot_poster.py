@@ -162,7 +162,7 @@ class TootPoster(Poster):
 
             except (SSLError, ProtocolError, ConnectionError, OSError) as e:
                 logger.error(f"{e}")
-                raise MoaMediaUploadException()
+                raise MoaMediaUploadException("Connection Error downloading attachments")
 
             path = urlparse(attachment_url).path
             file_extension = splitext(path)[1]
@@ -187,11 +187,11 @@ class TootPoster(Poster):
                 logger.error(e)
                 if 'Forbidden' in repr(e):
                     self.bridge.enabled = False
-                raise MoaMediaUploadException()
+                raise MoaMediaUploadException("Connection Error uploading attachments")
 
             except (MastodonNetworkError, MastodonRatelimitError) as e:
                 logger.error(e)
-                raise MoaMediaUploadException()
+                raise MoaMediaUploadException("Connection Error uploading attachments")
 
             finally:
                 os.unlink(upload_file_name)

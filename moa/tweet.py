@@ -342,7 +342,7 @@ class Tweet(Message):
                     except (ConnectionError, NewConnectionError) as e:
                         logger.error(f"{e}")
                         attachment_url = None
-                        raise MoaMediaUploadException()
+                        raise MoaMediaUploadException("Connection Error fetching attachments")
 
             else:
                 attachment_url = attachment.media_url

@@ -168,7 +168,7 @@ class TweetPoster(Poster):
 
             except (SSLError, ProtocolError, ConnectionError, NewConnectionError) as e:
                 logger.error(f"{e}")
-                raise MoaMediaUploadException()
+                raise MoaMediaUploadException("Connection Error fetching attachments")
 
             fsize = os.path.getsize(temp_file.name)
 
@@ -225,7 +225,7 @@ class TweetPoster(Poster):
 
             except (TwitterError, ConnectionError, NewConnectionError) as e:
                 logger.error(f"Twitter upload error: {e.message}")
-                raise MoaMediaUploadException()
+                raise MoaMediaUploadException("Connection Error uploading attachments")
 
             finally:
                 temp_file_read.close()
