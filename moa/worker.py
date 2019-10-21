@@ -396,7 +396,7 @@ for bridge in bridges:
 
                     try:
                         result = tweet_poster.post(t)
-                    except MoaMediaUploadException:
+                    except MoaMediaUploadException as e:
                         continue
 
                     if result:
@@ -426,7 +426,7 @@ for bridge in bridges:
                     try:
                         result = toot_poster.post(tweet)
 
-                    except MoaMediaUploadException:
+                    except MoaMediaUploadException as e:
                         continue
 
                     if result:

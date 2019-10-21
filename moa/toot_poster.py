@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import pprint as pp
 
 import requests
-from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
+from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError, MastodonUnauthorizedError
 from requests.exceptions import SSLError
 from urllib3.exceptions import ProtocolError, ConnectionError
 
@@ -183,11 +183,11 @@ class TootPoster(Poster):
             try:
                 self.media_ids.append(self.api.media_post(upload_file_name, description=attachment_desc))
 
-            except MastodonAPIError as e:
+            except (MastodonAPIError, MastodonUnauthorizedError) as e:
                 logger.error(e)
-                if 'Forbidden' in repr(e):
+                if 'Forbidden' in repr(e) or 'Unauthorized' in repr(e):
                     self.bridge.enabled = False
-                raise MoaMediaUploadException("Connection Error uploading attachments")
+                raise MoaMediaUploadException("API Error uploading attachments")
 
             except (MastodonNetworkError, MastodonRatelimitError) as e:
                 logger.error(e)
