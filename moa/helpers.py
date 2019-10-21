@@ -142,5 +142,6 @@ def email_deferral(c, mastodonhost, l, msg):
         except TimeoutError as e:
             l.error(e)
 
-def MoaMediaUploadException(Exception):
+
+class MoaMediaUploadException(Exception):
     pass
