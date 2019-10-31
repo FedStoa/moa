@@ -19,6 +19,7 @@ from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError, MastodonServerError
 from requests import ConnectionError
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sqlalchemy import create_engine, exc, func
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -46,7 +47,7 @@ if c.SENTRY_DSN:
             level=logging.INFO,  # Capture info and above as breadcrumbs
             event_level=logging.FATAL  # Only send fatal errors as events
     )
-    sentry_sdk.init(dsn=c.SENTRY_DSN, integrations=[sentry_logging])
+    sentry_sdk.init(dsn=c.SENTRY_DSN, integrations=[sentry_logging, SqlalchemyIntegration()])
 
 parser = argparse.ArgumentParser(description='Moa Worker')
 parser.add_argument('--worker', dest='worker', type=int, required=False, default=1)

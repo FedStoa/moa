@@ -20,6 +20,7 @@ from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, Ma
     MastodonUnauthorizedError
 from pymysql import DataError
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sqlalchemy import exc, func
 from twitter import TwitterError
 
@@ -57,7 +58,7 @@ if app.config['SENTRY_DSN']:
 
     sentry_sdk.init(
             dsn=app.config['SENTRY_DSN'],
-            integrations=[FlaskIntegration(), sentry_logging]
+            integrations=[FlaskIntegration(), sentry_logging, SqlalchemyIntegration()]
     )
 
 db = SQLAlchemy(metadata=metadata)
