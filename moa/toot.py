@@ -78,6 +78,10 @@ class Toot(Message):
         return self.is_reply and self.data['in_reply_to_account_id'] == self.data['account']['id']
 
     @property
+    def is_favourited(self):
+        return self.data['favourited']
+
+    @property
     def is_boost(self):
         return self.data['reblog'] is not None
 
@@ -146,6 +150,11 @@ class Toot(Message):
             # If it's a boost and boosts are allowed then post it even
             # if public toots aren't allowed
             pass
+
+        elif self.settings.conditional_posting_faves and not self.is_favourited:
+            logger.info(f'Skipping: Not posting unfavourited toot')
+            return True
+
         elif self.settings.conditional_posting:
 
             for ht in self.data['tags']:
