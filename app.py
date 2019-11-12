@@ -83,6 +83,8 @@ if app.config.get('TWITTER_CONSUMER_KEY', None):
             client_kwargs=None,
     )
 
+mastodon_scopes = ["write:statuses", "write:media", "read:accounts", "read:statuses"]
+
 
 @app.before_request
 def before_request():
@@ -293,11 +295,11 @@ def get_or_create_host(hostname):
 
         try:
             client_id, client_secret = Mastodon.create_app(
-                "Moa",
-                scopes=["read", "write"],
-                api_base_url=f"https://{hostname}",
-                website="https://moa.party/",
-                redirect_uris=url_for("mastodon_oauthorized", _external=True)
+                    "Moa",
+                    scopes=mastodon_scopes,
+                    api_base_url=f"https://{hostname}",
+                    website="https://moa.party/",
+                    redirect_uris=url_for("mastodon_oauthorized", _external=True)
             )
 
             app.logger.info(f"New host created for {hostname}")
@@ -326,11 +328,11 @@ def mastodon_api(hostname, access_code=None):
 
     if mastodonhost:
         api = Mastodon(
-            client_id=mastodonhost.client_id,
-            client_secret=mastodonhost.client_secret,
-            api_base_url=f"https://{mastodonhost.hostname}",
-            access_token=access_code,
-            debug_requests=False
+                client_id=mastodonhost.client_id,
+                client_secret=mastodonhost.client_secret,
+                api_base_url=f"https://{mastodonhost.hostname}",
+                access_token=access_code,
+                debug_requests=False
         )
 
         return api
@@ -386,10 +388,10 @@ def mastodon_login():
 
         if api:
             return redirect(
-                api.auth_request_url(
-                    scopes=['read', 'write'],
-                    redirect_uris=url_for("mastodon_oauthorized", _external=True)
-                )
+                    api.auth_request_url(
+                            scopes=mastodon_scopes,
+                            redirect_uris=url_for("mastodon_oauthorized", _external=True)
+                    )
             )
         else:
             flash(f"There was a problem connecting to the mastodon server.")
@@ -423,7 +425,7 @@ def mastodon_oauthorized():
         try:
             access_code = api.log_in(
                     code=authorization_code,
-                    scopes=["read", "write"],
+                    scopes=mastodon_scopes,
                     redirect_uri=url_for("mastodon_oauthorized", _external=True)
             )
         except MastodonIllegalArgumentError as e:
