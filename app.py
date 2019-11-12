@@ -9,7 +9,7 @@ import pygal
 import twitter
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from flask_migrate import Migrate
-from flask_oauthlib.client import OAuth, OAuthException
+from authlib.integrations.flask_client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from httplib2 import ServerNotFoundError
 from instagram.client import InstagramAPI
@@ -51,6 +51,7 @@ app.config.from_object(config)
 if app.config['SENTRY_DSN']:
     import sentry_sdk
     from sentry_sdk.integrations.flask import FlaskIntegration
+
     sentry_logging = LoggingIntegration(
             level=logging.INFO,  # Capture info and above as breadcrumbs
             event_level=logging.FATAL  # Only send fatal errors as events
@@ -68,20 +69,23 @@ db.init_app(app)
 oauth = OAuth(app)
 
 if app.config.get('TWITTER_CONSUMER_KEY', None):
-    twitter_oauth = oauth.remote_app(
-        'twitter',
-        consumer_key=app.config['TWITTER_CONSUMER_KEY'],
-        consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
-        base_url='https://api.twitter.com/1.1/',
-        request_token_url='https://api.twitter.com/oauth/request_token',
-        access_token_url='https://api.twitter.com/oauth/access_token',
-        authorize_url='https://api.twitter.com/oauth/authorize'
+    oauth.register(
+            name='twitter',
+            client_id=app.config['TWITTER_CONSUMER_KEY'],
+            client_secret=app.config['TWITTER_CONSUMER_SECRET'],
+            request_token_url='https://api.twitter.com/oauth/request_token',
+            request_token_params=None,
+            access_token_url='https://api.twitter.com/oauth/access_token',
+            access_token_params=None,
+            authorize_url='https://api.twitter.com/oauth/authenticate',
+            authorize_params=None,
+            api_base_url='https://api.twitter.com/1.1/',
+            client_kwargs=None,
     )
 
 
 @app.before_request
 def before_request():
-
     g.bridge = None
 
     try:
@@ -123,7 +127,6 @@ def index():
 
 @app.route('/options', methods=["POST"])
 def options():
-
     if 'bridge_id' in session:
         bridge = db.session.query(Bridge).filter_by(id=session['bridge_id']).first()
     else:
@@ -159,15 +162,14 @@ def options():
 
 
 def catch_up_twitter(bridge):
-
     if bridge.twitter_last_id == 0 and bridge.twitter_oauth_token:
         # get twitter ID
         twitter_api = twitter.Api(
-            consumer_key=app.config['TWITTER_CONSUMER_KEY'],
-            consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
-            access_token_key=bridge.twitter_oauth_token,
-            access_token_secret=bridge.twitter_oauth_secret,
-            tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+                consumer_key=app.config['TWITTER_CONSUMER_KEY'],
+                consumer_secret=app.config['TWITTER_CONSUMER_SECRET'],
+                access_token_key=bridge.twitter_oauth_token,
+                access_token_secret=bridge.twitter_oauth_secret,
+                tweet_mode='extended'  # Allow tweets longer than 140 raw characters
         )
         try:
             tl = twitter_api.GetUserTimeline()
@@ -207,7 +209,6 @@ def catch_up_mastodon(bridge):
 
 @app.route('/delete', methods=["POST"])
 def delete():
-
     if 'bridge_id' in session:
         bridge = db.session.query(Bridge).filter_by(id=session['bridge_id']).first()
 
@@ -237,7 +238,7 @@ def twitter_login():
     app.logger.debug(callback_url)
 
     try:
-        twitter_url = twitter_oauth.authorize(callback=callback_url)
+        twitter_url = oauth.twitter.authorize_redirect(callback_url)
         return twitter_url
     except URLError as e:
         flash("The was a problem connecting to twitter")
@@ -246,10 +247,11 @@ def twitter_login():
 
 @app.route('/twitter_oauthorized')
 def twitter_oauthorized():
-    try:
-        resp = twitter_oauth.authorized_response()
-    except OAuthException:
-        resp = None
+    # try:
+    resp = oauth.twitter.authorize_access_token()
+    # resp = twitter_oauth.authorized_response()
+    # except OAuthException:
+    #     resp = None
 
     if resp is None:
         flash('ERROR: You denied the request to sign in or have cookies disabled.')
@@ -336,7 +338,6 @@ def mastodon_api(hostname, access_code=None):
 
 
 def get_or_create_bridge(bridge_id=None):
-
     if bridge_id:
         bridge = db.session.query(Bridge).filter_by(id=bridge_id).first()
 
@@ -482,7 +483,6 @@ def mastodon_oauthorized():
 
 @app.route('/instagram_activate', methods=["GET"])
 def instagram_activate():
-
     client_id = app.config['INSTAGRAM_CLIENT_ID']
     client_secret = app.config['INSTAGRAM_SECRET']
     redirect_uri = url_for('instagram_oauthorized', _external=True)
@@ -502,7 +502,6 @@ def instagram_activate():
 
 @app.route('/instagram_oauthorized')
 def instagram_oauthorized():
-
     code = request.args.get('code', None)
 
     if code:
@@ -632,7 +631,7 @@ def time_graph():
     rs = {}
     l_1 = 0
     times = {}
-    main_times = pd.DataFrame({'A' : []})
+    main_times = pd.DataFrame({'A': []})
 
     chart = pygal.Line(title=f"Worker run time (s) ({timespan(hours)})",
                        stroke_style={'width': 2},

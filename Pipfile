@@ -10,7 +10,6 @@ instagram = {editable = true,git = "git@github.com/foozmeat/python-instagram.git
 [packages]
 certifi = ">=2019.3.9"
 Flask = "==1.1.1"
-Flask-OAuthlib = "==0.9.5"
 Flask-SQLAlchemy = "==2.4.1"
 Flask-Mail = "==0.9.1"
 Flask-Migrate = "==2.5.2"
@@ -21,10 +20,10 @@ pandas = "*"
 psutil = "*"
 pygal = "==2.4.0"
 python-twitter = "==3.5"
-requests-oauthlib = "==1.0.0" # this has to be kept back until Flask-OAuthlib is updated
 PyMySQL = "==0.9.3"
 pip-check = "*"
 'sentry-sdk[flask]' = "*"
+authlib = "==0.13"
 
 [requires]
 python_version = "3.6"
