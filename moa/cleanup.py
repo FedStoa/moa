@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 
-from moa.models import Bridge, Mapping, WorkerStat, MastodonHost, TSettings
+from moa.models import Bridge, Mapping, WorkerStat, MastodonHost, TSettings, BridgeStat
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
@@ -60,6 +60,9 @@ for b in bridges:
     settings = b.t_settings
     session.delete(b)
     session.delete(settings)
+
+    bridge_stats = session.query(BridgeStat).filter(BridgeStat.bridge_id == b.id).delete()
+
     session.commit()
 
 orphaned_settings = session.query(TSettings).filter(~TSettings.bridge.any()).all()
