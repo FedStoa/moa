@@ -83,7 +83,8 @@ if app.config.get('TWITTER_CONSUMER_KEY', None):
             client_kwargs=None,
     )
 
-mastodon_scopes = ["write:statuses", "write:media", "read:accounts", "read:statuses"]
+# mastodon_scopes = ["write:statuses", "write:media", "read:accounts", "read:statuses"]
+mastodon_scopes = ["write", "read"]
 
 
 @app.before_request
@@ -421,13 +422,19 @@ def mastodon_oauthorized():
 
         api = mastodon_api(host)
         masto_host = get_or_create_host(host)
+        local_scopes = mastodon_scopes
 
         try:
             access_code = api.log_in(
                     code=authorization_code,
-                    scopes=mastodon_scopes,
+                    scopes=local_scopes,
                     redirect_uri=url_for("mastodon_oauthorized", _external=True)
             )
+        except MastodonAPIError as e:
+            # Possibly a scopes problem?
+            flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+            return redirect(url_for('index'))
+
         except MastodonIllegalArgumentError as e:
 
             flash(f"There was a problem connecting to the mastodon server. The error was {e}")
