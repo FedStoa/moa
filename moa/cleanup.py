@@ -57,13 +57,14 @@ for b in bridges:
 
 bridges = session.query(Bridge).filter_by(enabled=False).filter(Bridge.updated < target_date)
 for b in bridges:
+    bridge_stats = session.query(BridgeStat).filter(BridgeStat.bridge_id == b.id).delete()
+    session.commit()
+
     settings = b.t_settings
     session.delete(b)
     session.delete(settings)
-
-    bridge_stats = session.query(BridgeStat).filter(BridgeStat.bridge_id == b.id).delete()
-
     session.commit()
+
 
 orphaned_settings = session.query(TSettings).filter(~TSettings.bridge.any()).all()
 for s in orphaned_settings:
