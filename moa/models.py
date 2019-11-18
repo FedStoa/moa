@@ -50,7 +50,7 @@ class TSettings(Base):
 
     id = Column(Integer, primary_key=True)
     bridge = relationship('Bridge', backref='t_settings', lazy='dynamic')
-    conditional_posting = Column(Boolean, nullable=False, default=False)
+    conditional_posting_old = Column(Boolean, nullable=False, default=False)
 
     # Masto -> Twitter
     post_to_twitter = Column(Boolean, nullable=False, default=True)  # This means post public toots
@@ -203,11 +203,6 @@ class BridgeStat(Base):
         self.toots = 0
         self.instas = 0
         self.bridge_id = bridge_id
-
-    @property
-    def formatted_time(self):
-        m, s = divmod(self.time, 60)
-        return f"{m:02.0f}:{s:02.0f}"
 
     @property
     def items(self):

@@ -146,7 +146,7 @@ class Toot(Message):
             # If it's a boost and boosts are allowed then post it even
             # if public toots aren't allowed
             pass
-        elif self.settings.conditional_posting:
+        elif self.settings.conditional_posting_old:
 
             for ht in self.data['tags']:
 

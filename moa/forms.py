@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Email, Length
 
 class SettingsForm(FlaskForm):
     enabled = BooleanField('Bridging Enabled?')
-    conditional_posting = BooleanField('Conditionally cross-post with hashtags #nt and #nm?')
+    conditional_posting_old = BooleanField('Conditionally cross-post with hashtags #nt and #nm?')
 
     post_to_twitter = BooleanField('Post Public toots to Twitter?')
     post_private_to_twitter = BooleanField('Post Private toots to Twitter?')

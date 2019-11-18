@@ -92,7 +92,7 @@ class Insta(Message):
         if not self.settings.instagram_post_to_mastodon:
             return True
 
-        elif self.settings.conditional_posting:
+        elif self.settings.conditional_posting_old:
             for ht in self.data.tags:
                 if ht.name == 'nm':
                     logger.info(f'Skipping because #nm found')
@@ -106,7 +106,7 @@ class Insta(Message):
         if not self.settings.instagram_post_to_twitter:
             return True
 
-        elif self.settings.conditional_posting:
+        elif self.settings.conditional_posting_old:
             for ht in self.data.tags:
                 if ht.name == 'nt':
                     logger.info(f'Skipping because #nt found')
