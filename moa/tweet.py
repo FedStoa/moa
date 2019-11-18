@@ -194,11 +194,12 @@ class Tweet(Message):
                 rt_pad = 0
 
                 for mention, indices in self.mentions:
+                    suffix = '@twitter.activitypub.actor'
 
-                    pad = (index * 12) - rt_pad
+                    pad = (index * len(suffix)) - rt_pad
                     s = indices[0] + pad
                     e = indices[1] + pad
-                    replacement = f"@{mention}@twitter.com"
+                    replacement = f"@{mention}{suffix}"
 
                     content = content[:s] + replacement + content[e:]
 
