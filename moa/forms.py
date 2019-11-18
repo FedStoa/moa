@@ -7,10 +7,10 @@ from moa.models import CON_XP_DISABLED, CON_XP_ONLYIF, CON_XP_UNLESS
 
 class SettingsForm(FlaskForm):
     enabled = BooleanField('Crossposting Enabled?')
-    conditional_posting = RadioField('Conditional cross-posting', choices=[
+    conditional_posting = RadioField('Conditional crossposting', choices=[
         (CON_XP_DISABLED, 'Disabled'),
-        (CON_XP_ONLYIF, "Cross-post only if hashtag #moa or #xp is present"),
-        (CON_XP_UNLESS, 'Cross-post unless hashtag #nomoa or #noxp is present'),
+        (CON_XP_ONLYIF, "Crosspost only if hashtag #moa or #xp is present"),
+        (CON_XP_UNLESS, 'Crosspost unless hashtag #nomoa or #noxp is present'),
     ])
 
     post_to_twitter = BooleanField('Post Public toots to Twitter?')
