@@ -35,7 +35,7 @@ else:
 
 l.info("Starting up…")
 engine = create_engine(c.SQLALCHEMY_DATABASE_URI)
-engine.connect()
+db_connection = engine.connect()
 
 try:
     engine.execute('SELECT 1 from bridge')
@@ -88,3 +88,6 @@ for m in mhs:
     session.delete(m)
 
 session.commit()
+
+session.close()
+db_connection.close()

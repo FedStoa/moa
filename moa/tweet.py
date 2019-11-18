@@ -10,6 +10,7 @@ from urllib3.exceptions import NewConnectionError, ConnectionError
 
 from moa.helpers import MoaMediaUploadException
 from moa.message import Message
+from moa.models import CON_XP_ONLYIF, CON_XP_ONLYIF_TAGS, CON_XP_UNLESS, CON_XP_UNLESS_TAGS
 
 logger = logging.getLogger('worker')
 
@@ -96,21 +97,26 @@ class Tweet(Message):
             logger.info(f'Skipping retweet.')
             return True
 
-        elif self.is_retweet and self.settings.post_rts_to_mastodon:
+        if self.is_retweet and self.settings.post_rts_to_mastodon:
             # Posting retweets
             pass
 
-        elif self.settings.conditional_posting_old:
+        elif self.settings.conditional_posting == CON_XP_ONLYIF:
 
-            for ht in self.data.hashtags:
+            twitter_hts = set([h.text for h in self.data.hashtags])
+            if not set(CON_XP_ONLYIF_TAGS) & twitter_hts:
+                logger.info(f'Skipping because {CON_XP_ONLYIF_TAGS} not found')
+                return True
 
-                if ht.text == 'nm':
-                    logger.info(f'Skipping because #nm found')
-                    return True
-            else:
-                return False
+        elif self.settings.conditional_posting == CON_XP_UNLESS:
+            twitter_hts = set([h.text for h in self.data.hashtags])
+            local_tags = CON_XP_UNLESS_TAGS + ['nm']
 
-        elif not self.settings.post_to_mastodon:
+            if set(local_tags) & twitter_hts:
+                logger.info(f'Skipping because {local_tags} found')
+                return True
+
+        if not self.settings.post_to_mastodon:
             logger.info(f'Skipping regular tweets.')
             return True
 

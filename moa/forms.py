@@ -2,10 +2,16 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, RadioField, StringField
 from wtforms.validators import DataRequired, Email, Length
 
+from moa.models import CON_XP_DISABLED, CON_XP_ONLYIF, CON_XP_UNLESS
+
 
 class SettingsForm(FlaskForm):
-    enabled = BooleanField('Bridging Enabled?')
-    conditional_posting_old = BooleanField('Conditionally cross-post with hashtags #nt and #nm?')
+    enabled = BooleanField('Crossposting Enabled?')
+    conditional_posting = RadioField('Conditional cross-posting', choices=[
+        (CON_XP_DISABLED, 'Disabled'),
+        (CON_XP_ONLYIF, "Cross-post only if hashtag #moa or #xp is present"),
+        (CON_XP_UNLESS, 'Cross-post unless hashtag #nomoa or #noxp is present'),
+    ])
 
     post_to_twitter = BooleanField('Post Public toots to Twitter?')
     post_private_to_twitter = BooleanField('Post Private toots to Twitter?')

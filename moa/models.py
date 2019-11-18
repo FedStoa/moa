@@ -43,6 +43,12 @@ class MastodonHost(Base):
     def defer_reset(self):
         self.defer_count = 0
 
+CON_XP_DISABLED = 'disabled'
+CON_XP_ONLYIF = 'onlyif'
+CON_XP_ONLYIF_TAGS = ['moa', 'xp']
+
+CON_XP_UNLESS = 'unless'
+CON_XP_UNLESS_TAGS = ['nomoa', 'noxp']
 
 class TSettings(Base):
     __tablename__ = 'settings'
@@ -51,6 +57,7 @@ class TSettings(Base):
     id = Column(Integer, primary_key=True)
     bridge = relationship('Bridge', backref='t_settings', lazy='dynamic')
     conditional_posting_old = Column(Boolean, nullable=False, default=False)
+    conditional_posting = Column(String(10), nullable=False, server_default=CON_XP_DISABLED, default=CON_XP_DISABLED)
 
     # Masto -> Twitter
     post_to_twitter = Column(Boolean, nullable=False, default=True)  # This means post public toots

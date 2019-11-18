@@ -36,7 +36,7 @@
             {% if g.bridge.twitter_oauth_token or g.bridge.instagram_access_code %}
             <hr>
             <li>{{ form.enabled(checked=g.bridge.enabled) }}{{ form.enabled.label }}</li>
-            <li>{{ form.conditional_posting_old }}{{ form.conditional_posting_old.label }}</li>
+            <li>{{ form.conditional_posting.label }}: {{ form.conditional_posting }}</li>
             {% endif %}
 
             {% if g.bridge.twitter_oauth_token and g.bridge.mastodon_access_code %}

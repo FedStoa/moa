@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from instagram.helper import datetime_to_timestamp
 
 from moa.message import Message
+from moa.models import CON_XP_ONLYIF, CON_XP_ONLYIF_TAGS, CON_XP_UNLESS, CON_XP_UNLESS_TAGS
 from moa.tweet import HOUR_CUTOFF
 
 logger = logging.getLogger('worker')
@@ -83,6 +84,19 @@ class Insta(Message):
         if self.too_old:
             logger.info(f'Skipping because >= {HOUR_CUTOFF} hours old.')
             return True
+
+        insta_hts = set([h.name for h in self.data.tags])
+        if self.settings.conditional_posting == CON_XP_ONLYIF:
+
+            if not set(CON_XP_ONLYIF_TAGS) & insta_hts:
+                logger.info(f'Skipping because {CON_XP_ONLYIF_TAGS} not found')
+                return True
+
+        elif self.settings.conditional_posting == CON_XP_UNLESS:
+
+            if set(CON_XP_UNLESS_TAGS) & insta_hts:
+                logger.info(f'Skipping because {CON_XP_UNLESS_TAGS} found')
+                return True
 
         return False
 

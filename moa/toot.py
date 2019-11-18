@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from moa.message import Message
+from moa.models import CON_XP_ONLYIF, CON_XP_ONLYIF_TAGS, CON_XP_UNLESS, CON_XP_UNLESS_TAGS
 from moa.tweet import HOUR_CUTOFF
 
 MY_TLDS = [
@@ -146,15 +147,20 @@ class Toot(Message):
             # If it's a boost and boosts are allowed then post it even
             # if public toots aren't allowed
             pass
-        elif self.settings.conditional_posting_old:
 
-            for ht in self.data['tags']:
+        elif self.settings.conditional_posting == CON_XP_ONLYIF:
 
-                if ht.name == 'nt':
-                    logger.info(f'Skipping because #nt found')
-                    return True
-            else:
-                return False
+            if not set(CON_XP_ONLYIF_TAGS) & self.data['tags']:
+                logger.info(f'Skipping because {CON_XP_ONLYIF_TAGS} not found')
+                return True
+
+        elif self.settings.conditional_posting == CON_XP_UNLESS:
+            local_tags = CON_XP_UNLESS_TAGS + ['nt']
+
+            if set(local_tags) & self.data['tags']:
+                logger.info(f'Skipping because {local_tags} found')
+                return True
+
         else:
             if self.visibility == 'public' and not self.settings.post_to_twitter:
                 logger.info(f'Skipping: Not Posting Public toots.')
