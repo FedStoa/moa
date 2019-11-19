@@ -7,6 +7,7 @@ from urllib.error import URLError
 import pandas as pd
 import pygal
 import twitter
+from authlib.integrations._client import MissingRequestTokenError
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from flask_migrate import Migrate
 from authlib.integrations.flask_client import OAuth
@@ -250,11 +251,10 @@ def twitter_login():
 
 @app.route('/twitter_oauthorized')
 def twitter_oauthorized():
-    # try:
-    resp = oauth.twitter.authorize_access_token()
-    # resp = twitter_oauth.authorized_response()
-    # except OAuthException:
-    #     resp = None
+    try:
+        resp = oauth.twitter.authorize_access_token()
+    except MissingRequestTokenError:
+         resp = None
 
     if resp is None:
         flash('ERROR: You denied the request to sign in or have cookies disabled.')
