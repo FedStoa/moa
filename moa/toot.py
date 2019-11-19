@@ -150,7 +150,7 @@ class Toot(Message):
 
         elif self.settings.conditional_posting == CON_XP_ONLYIF:
 
-            if not set(CON_XP_ONLYIF_TAGS) & self.data['tags']:
+            if not set(CON_XP_ONLYIF_TAGS) & set(self.data['tags']):
                 logger.info(f'Skipping because {CON_XP_ONLYIF_TAGS} not found')
                 return True
 
