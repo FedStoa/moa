@@ -4,11 +4,13 @@ import os
 import platform
 import pprint as pp
 import subprocess
+import sys
 import tempfile
 import time
 from typing import Optional
 
 import requests
+from pymysql import OperationalError
 from requests.exceptions import SSLError
 from twitter import TwitterError
 from urllib3.exceptions import ProtocolError, NewConnectionError, ConnectionError
@@ -94,7 +96,13 @@ class TweetPoster(Poster):
                 if post.type == "Toot":
                     self.bridge.mastodon_last_id = post.id
 
-                self.session.commit()
+                try:
+                    self.session.commit()
+                except OperationalError as e:
+                    # MySQL might be down
+                    logger.error(e)
+                    sys.exit()
+
 
             return True
         else:

@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import tempfile
 import time
 from os.path import splitext
@@ -9,6 +10,7 @@ import pprint as pp
 
 import requests
 from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError, MastodonUnauthorizedError
+from pymysql import OperationalError
 from requests.exceptions import SSLError
 from urllib3.exceptions import ProtocolError, ConnectionError
 
@@ -81,7 +83,12 @@ class TootPoster(Poster):
 
                     self.bridge.mastodon_last_id = mastodon_last_id
 
-                self.session.commit()
+                try:
+                    self.session.commit()
+                except OperationalError as e:
+                    # MySQL might be down
+                    logger.error(e)
+                    sys.exit()
 
         else:
             logger.info(post.media_attachments)

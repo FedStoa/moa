@@ -153,6 +153,12 @@ for bridge in bridges:
         # in case the row is removed during a run
         continue
 
+    except OperationalError as e:
+        # MySQL might be down
+        l.error(e)
+        sys.exit()
+
+
     #
     # Fetch from Mastodon
     #
@@ -380,6 +386,13 @@ for bridge in bridges:
 
     bridge_stat = None
 
+    try:
+        settings = bridge.t_settings
+    except OperationalError as e:
+        # MySQL might be down
+        l.error(e)
+        sys.exit()
+
     if bridge.twitter_oauth_token:
         tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
@@ -388,7 +401,7 @@ for bridge in bridges:
 
             tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
-            if bridge.t_settings.post_to_twitter_enabled and len(new_toots) > 0:
+            if settings.post_to_twitter_enabled and len(new_toots) > 0:
 
                 l.info(f"{len(new_toots)} new toots found")
 
@@ -396,7 +409,7 @@ for bridge in bridges:
 
                 for toot in new_toots:
 
-                    t = Toot(bridge.t_settings, toot, c)
+                    t = Toot(settings, toot, c)
 
                     try:
                         result = tweet_poster.post(t)
@@ -417,7 +430,7 @@ for bridge in bridges:
         if bridge.twitter_oauth_token:
             l.debug(f"{bridge.id}: T - @{bridge.twitter_handle}")
 
-            if bridge.t_settings.post_to_mastodon_enabled and len(new_tweets) > 0:
+            if settings.post_to_mastodon_enabled and len(new_tweets) > 0:
                 l.info(f"{len(new_tweets)} new tweets found")
 
                 if not bridge_stat:
@@ -425,7 +438,7 @@ for bridge in bridges:
 
                 for status in new_tweets:
 
-                    tweet = Tweet(bridge.t_settings, status, twitter_api)
+                    tweet = Tweet(settings, status, twitter_api)
 
                     try:
                         result = toot_poster.post(tweet)
@@ -444,7 +457,7 @@ for bridge in bridges:
     if len(new_instas) > 0:
         l.debug(f"{bridge.id}: I - {bridge.instagram_handle}")
 
-        if bridge.t_settings.instagram_post_to_mastodon or bridge.t_settings.instagram_post_to_twitter:
+        if settings.instagram_post_to_mastodon or settings.instagram_post_to_twitter:
             l.info(f"{len(new_instas)} new instas found")
 
             if not bridge_stat:
@@ -453,7 +466,7 @@ for bridge in bridges:
             for data in new_instas:
                 stat_recorded = False
 
-                insta = Insta(bridge.t_settings, data)
+                insta = Insta(settings, data)
 
                 if not insta.should_skip_mastodon and bridge.mastodon_access_code:
                     toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
@@ -482,7 +495,12 @@ for bridge in bridges:
         session.add(bridge_stat)
 
     if c.SEND:
-        session.commit()
+        try:
+            session.commit()
+        except OperationalError as e:
+            # MySQL might be down
+            l.error(e)
+            sys.exit()
 
     end_time = time.time()
     worker_stat.time = end_time - start_time
