@@ -255,22 +255,22 @@ class Tweet(Message):
 
             if self.is_retweet:
                 if len(content) > 0:
-                    content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.com\n{content}"
+                    content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.activitypub.actor\n{content}"
                 else:
-                    content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.com\n"
+                    content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.activitypub.actor\n"
 
             elif self.is_quoted:
                 for attachment in self.media:
                     # Remove the t.co link to the media
                     quoted_text = re.sub(attachment.url, "", quoted_text)
 
-                possible_content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}@twitter.com\n{quoted_text}\n{self.url}"
+                possible_content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}@twitter.activitypub.actor\n{quoted_text}\n{self.url}"
 
                 if len(possible_content) > 500:
                     logger.info(f"Toot is too long: {len(possible_content)}")
                     diff = len(possible_content) - 500 + 1
                     quoted_text = quoted_text[:-diff]
-                    content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}@twitter.com\n{quoted_text}…\n{self.url}"
+                    content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}@twitter.activitypub.actor\n{quoted_text}…\n{self.url}"
                     logger.info(f"Length is now: {len(content)}")
 
                 else:
