@@ -24,6 +24,7 @@ PyMySQL = "==0.9.3"
 pip-check = "*"
 'sentry-sdk[flask]' = "*"
 authlib = "==0.13"
+cairosvg = "*"
 
 [requires]
 python_version = "3.6"

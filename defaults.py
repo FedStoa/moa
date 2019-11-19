@@ -34,3 +34,6 @@ class DefaultConfig(object):
     SEND_DEFERRED_EMAIL = False
     SEND_DEFER_FAILED_EMAIL = False
     MAINTENANCE_MODE = False
+
+    STATS_POSTER_BASE_URL = None
+    STATS_POSTER_ACCESS_TOKEN = None
