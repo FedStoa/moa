@@ -157,7 +157,7 @@ class Toot(Message):
         elif self.settings.conditional_posting == CON_XP_UNLESS:
             local_tags = CON_XP_UNLESS_TAGS + ['nt']
 
-            if set(local_tags) & self.data['tags']:
+            if set(local_tags) & set(self.data['tags']):
                 logger.info(f'Skipping because {local_tags} found')
                 return True
 
