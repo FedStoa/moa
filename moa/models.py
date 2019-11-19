@@ -56,7 +56,6 @@ class TSettings(Base):
 
     id = Column(Integer, primary_key=True)
     bridge = relationship('Bridge', backref='t_settings', lazy='dynamic')
-    conditional_posting_old = Column(Boolean, nullable=False, default=False)
     conditional_posting = Column(String(10), nullable=False, server_default=CON_XP_DISABLED, default=CON_XP_DISABLED)
 
     # Masto -> Twitter
