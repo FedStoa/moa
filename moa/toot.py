@@ -149,15 +149,17 @@ class Toot(Message):
             pass
 
         elif self.settings.conditional_posting == CON_XP_ONLYIF:
+            toot_tags = [x.name for x in self.data['tags']]
 
-            if not set(CON_XP_ONLYIF_TAGS) & set(self.data['tags']):
+            if not set(CON_XP_ONLYIF_TAGS) & set(toot_tags):
                 logger.info(f'Skipping because {CON_XP_ONLYIF_TAGS} not found')
                 return True
 
         elif self.settings.conditional_posting == CON_XP_UNLESS:
             local_tags = CON_XP_UNLESS_TAGS + ['nt']
+            toot_tags = [x.name for x in self.data['tags']]
 
-            if set(local_tags) & set(self.data['tags']):
+            if set(local_tags) & set(toot_tags):
                 logger.info(f'Skipping because {local_tags} found')
                 return True
 
