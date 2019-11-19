@@ -6,7 +6,8 @@ from datetime import datetime, timezone
 
 import requests
 from twitter import TwitterError
-from urllib3.exceptions import NewConnectionError, ConnectionError
+from urllib3.exceptions import NewConnectionError
+from requests import ConnectionError
 
 from moa.helpers import MoaMediaUploadException
 from moa.message import Message
