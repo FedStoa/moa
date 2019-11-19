@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-
+from moa.helpers import FORMAT
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 
@@ -21,8 +21,6 @@ if c.SENTRY_DSN:
             event_level=logging.FATAL  # Only send fatal errors as events
     )
     sentry_sdk.init(dsn=c.SENTRY_DSN, integrations=[sentry_logging])
-
-FORMAT = "%(asctime)-15s [%(process)d] [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 logging.basicConfig(format=FORMAT)
 

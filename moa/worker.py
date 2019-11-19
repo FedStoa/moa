@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from twitter import TwitterError
 
-from moa.helpers import email_deferral, MoaMediaUploadException
+from moa.helpers import email_deferral, MoaMediaUploadException, FORMAT
 from moa.insta import Insta
 from moa.models import Bridge, WorkerStat, DEFER_OK, DEFER_FAILED, BridgeStat
 from moa.toot import Toot
@@ -58,8 +58,6 @@ args = parser.parse_args()
 
 worker_stat = WorkerStat(worker=args.worker)
 worker_stat.time = 0
-
-FORMAT = "%(asctime)-15s [%(process)d] [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 logging.basicConfig(format=FORMAT)
 

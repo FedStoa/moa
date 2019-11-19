@@ -26,12 +26,10 @@ from sqlalchemy import exc, func
 from twitter import TwitterError
 
 from moa.forms import MastodonIDForm, SettingsForm
-from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email
+from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email, timespan, FORMAT
 from moa.models import Bridge, MastodonHost, TSettings, WorkerStat, metadata, BridgeStat
 
 app = Flask(__name__)
-
-FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 formatter = logging.Formatter(FORMAT)
 
@@ -254,7 +252,7 @@ def twitter_oauthorized():
     try:
         resp = oauth.twitter.authorize_access_token()
     except MissingRequestTokenError:
-         resp = None
+        resp = None
 
     if resp is None:
         flash('ERROR: You denied the request to sign in or have cookies disabled.')
@@ -605,24 +603,6 @@ def deactivate():
         db.session.commit()
 
     return redirect(url_for('index'))
-
-
-def timespan(hours):
-    t = hours
-    tw = 'hour'
-
-    if hours % 24 == 0:
-        t = hours // 24
-        tw = 'days'
-
-        if t == 1:
-            tw = 'day'
-
-    if hours % (24 * 7) == 0:
-        t = hours // (24 * 7)
-        tw = 'weeks'
-
-    return f'{t} {tw}'
 
 
 @app.route('/stats/times.svg')

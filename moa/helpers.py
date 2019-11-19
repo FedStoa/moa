@@ -6,6 +6,7 @@ from flask import render_template
 from flask_mail import Message, Mail
 from twitter import TwitterError
 
+FORMAT = "%(asctime)-15s [%(process)d] [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 
 def blacklisted(name, bl):
     for p in bl:
@@ -145,3 +146,21 @@ def email_deferral(c, mastodonhost, l, msg):
 
 class MoaMediaUploadException(Exception):
     pass
+
+
+def timespan(hours):
+    t = hours
+    tw = 'hour'
+
+    if hours % 24 == 0:
+        t = hours // 24
+        tw = 'days'
+
+        if t == 1:
+            tw = 'day'
+
+    if hours % (24 * 7) == 0:
+        t = hours // (24 * 7)
+        tw = 'weeks'
+
+    return f'{t} {tw}'
