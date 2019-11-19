@@ -59,7 +59,7 @@ user_count = session.query(Bridge).filter_by(enabled=1).count()
 msg = f"Active Users: {user_count}"
 
 # Create count graph
-since = datetime.now() - timedelta(hours=10)
+since = datetime.now() - timedelta(hours=24 * 7)
 
 stats_query = session.query(WorkerStat).filter(WorkerStat.created > since).with_entities(WorkerStat.created, WorkerStat.toots, WorkerStat.tweets, WorkerStat.instas)
 
