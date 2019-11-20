@@ -74,7 +74,7 @@ toots = r['toots'].tolist()
 tweets = r['tweets'].tolist()
 instas = r['instas'].tolist()
 
-chart = pygal.StackedBar(title="# of Messages (1 week)",
+chart = pygal.StackedBar(title="# of messages per hour over the previous week",
                          human_readable=True,
                          legend_at_bottom=True)
 chart.add('Toots', toots)
