@@ -666,6 +666,8 @@ def count_graph():
     df = pd.read_sql(stats_query.statement, stats_query.session.bind)
     df.set_index(['created'], inplace=True)
 
+    total = df.to_numpy().sum()
+
     df.groupby(level=0).sum()
     r = df.resample('h').sum()
     r = r.fillna(0)
@@ -674,7 +676,7 @@ def count_graph():
     tweets = r['tweets'].tolist()
     instas = r['instas'].tolist()
 
-    chart = pygal.StackedBar(title=f"# of Incoming Messages ({timespan(hours)})",
+    chart = pygal.StackedBar(title=f"# of Incoming Messages ({timespan(hours)})\n{total} total",
                              human_readable=True,
                              legend_at_bottom=True)
     chart.add('Toots', toots)
