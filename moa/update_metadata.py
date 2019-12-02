@@ -72,35 +72,35 @@ for bridge in bridges:
             profile = mast_api.account_verify_credentials()
             bridge.md.is_bot = profile['bot']
 
-            statuses = mast_api.account_statuses(bridge.mastodon_account_id)
-            if len(statuses) > 0:
-                bridge.md.last_toot = statuses[0]["created_at"]
+            # statuses = mast_api.account_statuses(bridge.mastodon_account_id)
+            # if len(statuses) > 0:
+            #     bridge.md.last_toot = statuses[0]["created_at"]
 
         except (MastodonAPIError, MastodonNetworkError) as e:
             l.error(e)
             session.commit()
             continue
 
-    if bridge.twitter_oauth_token:
-
-        try:
-            twitter_api = twitter.Api(
-                    consumer_key=c.TWITTER_CONSUMER_KEY,
-                    consumer_secret=c.TWITTER_CONSUMER_SECRET,
-                    access_token_key=bridge.twitter_oauth_token,
-                    access_token_secret=bridge.twitter_oauth_secret,
-                    tweet_mode='extended'  # Allow tweets longer than 140 raw characters
-            )
-            tl = twitter_api.GetUserTimeline()
-        except TwitterError as e:
-            l.error(e)
-            session.commit()
-            continue
-
-        else:
-            if len(tl) > 0:
-                d = datetime.strptime(tl[0].created_at, '%a %b %d %H:%M:%S %z %Y')
-                bridge.md.last_tweet = d
+    # if bridge.twitter_oauth_token:
+    #
+    #     try:
+    #         twitter_api = twitter.Api(
+    #                 consumer_key=c.TWITTER_CONSUMER_KEY,
+    #                 consumer_secret=c.TWITTER_CONSUMER_SECRET,
+    #                 access_token_key=bridge.twitter_oauth_token,
+    #                 access_token_secret=bridge.twitter_oauth_secret,
+    #                 tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+    #         )
+    #         tl = twitter_api.GetUserTimeline()
+    #     except TwitterError as e:
+    #         l.error(e)
+    #         session.commit()
+    #         continue
+    #
+    #     else:
+    #         if len(tl) > 0:
+    #             d = datetime.strptime(tl[0].created_at, '%a %b %d %H:%M:%S %z %Y')
+    #             bridge.md.last_tweet = d
 
     session.commit()
 
