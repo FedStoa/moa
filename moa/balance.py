@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 
 from moa.helpers import FORMAT
-from moa.models import Bridge, Mapping, WorkerStat
+from moa.models import Bridge, Mapping, WorkerStat, BridgeMetadata
 
 moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
@@ -48,6 +48,9 @@ w = 1
 
 for b in bridges:
     print(w, b)
+
+    if not b.md:
+        b.md = BridgeMetadata()
 
     b.md.worker_id = w
     w += 1
