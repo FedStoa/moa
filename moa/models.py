@@ -140,8 +140,6 @@ class Bridge(Base):
     t_settings_id = Column(Integer, ForeignKey('settings.id'), nullable=True)
     metadata_id = Column(Integer, ForeignKey('bridgemetadata.id'), nullable=True)
 
-    worker_id = Column(Integer, default=1)
-
     created = Column(DateTime, default=datetime.utcnow)
     updated = Column(DateTime)
 
