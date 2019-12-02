@@ -65,6 +65,7 @@ stats_query = session.query(WorkerStat).filter(WorkerStat.created > since).with_
 
 df = pd.read_sql(stats_query.statement, stats_query.session.bind)
 df.set_index(['created'], inplace=True)
+total = df.to_numpy().sum()
 
 df.groupby(level=0).sum()
 r = df.resample('h').sum()
@@ -74,7 +75,7 @@ toots = r['toots'].tolist()
 tweets = r['tweets'].tolist()
 instas = r['instas'].tolist()
 
-chart = pygal.StackedBar(title="# of messages per hour over the previous week",
+chart = pygal.StackedBar(title=f"# of messages per hour over the previous week\n{total} Total",
                          human_readable=True,
                          legend_at_bottom=True)
 chart.add('Toots', toots)
