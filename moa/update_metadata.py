@@ -55,46 +55,46 @@ for bridge in bridges:
     if not bridge.md:
         bridge.md = BridgeMetadata()
 
-    mastodonhost = bridge.mastodon_host
+        mastodonhost = bridge.mastodon_host
 
-    mast_api = Mastodon(
-            client_id=mastodonhost.client_id,
-            client_secret=mastodonhost.client_secret,
-            api_base_url=f"https://{mastodonhost.hostname}",
-            access_token=bridge.mastodon_access_code,
-            debug_requests=False,
-            request_timeout=15,
-            ratelimit_method='throw'
-    )
+        mast_api = Mastodon(
+                client_id=mastodonhost.client_id,
+                client_secret=mastodonhost.client_secret,
+                api_base_url=f"https://{mastodonhost.hostname}",
+                access_token=bridge.mastodon_access_code,
+                debug_requests=False,
+                request_timeout=15,
+                ratelimit_method='throw'
+        )
 
-    profile = mast_api.account_verify_credentials()
-    bridge.md.is_bot = profile['bot']
+        profile = mast_api.account_verify_credentials()
+        bridge.md.is_bot = profile['bot']
 
-    try:
-        statuses = mast_api.account_statuses(bridge.mastodon_account_id)
-        if len(statuses) > 0:
-            bridge.md.last_toot = statuses[0]["created_at"]
+        try:
+            statuses = mast_api.account_statuses(bridge.mastodon_account_id)
+            if len(statuses) > 0:
+                bridge.md.last_toot = statuses[0]["created_at"]
 
-    except MastodonAPIError as e:
-        l.error(e)
+        except MastodonAPIError as e:
+            l.error(e)
 
-    twitter_api = twitter.Api(
-            consumer_key=c.TWITTER_CONSUMER_KEY,
-            consumer_secret=c.TWITTER_CONSUMER_SECRET,
-            access_token_key=bridge.twitter_oauth_token,
-            access_token_secret=bridge.twitter_oauth_secret,
-            tweet_mode='extended'  # Allow tweets longer than 140 raw characters
-    )
-    try:
-        tl = twitter_api.GetUserTimeline()
-    except TwitterError as e:
-        l.error(e)
-    else:
-        if len(tl) > 0:
-            d = datetime.strptime(tl[0].created_at, '%a %b %d %H:%M:%S %z %Y')
-            bridge.md.last_tweet = d
+        twitter_api = twitter.Api(
+                consumer_key=c.TWITTER_CONSUMER_KEY,
+                consumer_secret=c.TWITTER_CONSUMER_SECRET,
+                access_token_key=bridge.twitter_oauth_token,
+                access_token_secret=bridge.twitter_oauth_secret,
+                tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+        )
+        try:
+            tl = twitter_api.GetUserTimeline()
+        except TwitterError as e:
+            l.error(e)
+        else:
+            if len(tl) > 0:
+                d = datetime.strptime(tl[0].created_at, '%a %b %d %H:%M:%S %z %Y')
+                bridge.md.last_tweet = d
 
-    session.commit()
+        session.commit()
 
 session.close()
 db_connection.close()
