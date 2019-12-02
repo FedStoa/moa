@@ -55,46 +55,52 @@ for bridge in bridges:
     if not bridge.md:
         bridge.md = BridgeMetadata()
 
-        mastodonhost = bridge.mastodon_host
+        if bridge.mastodon_access_code:
+            mastodonhost = bridge.mastodon_host
 
-        mast_api = Mastodon(
-                client_id=mastodonhost.client_id,
-                client_secret=mastodonhost.client_secret,
-                api_base_url=f"https://{mastodonhost.hostname}",
-                access_token=bridge.mastodon_access_code,
-                debug_requests=False,
-                request_timeout=15,
-                ratelimit_method='throw'
-        )
+            mast_api = Mastodon(
+                    client_id=mastodonhost.client_id,
+                    client_secret=mastodonhost.client_secret,
+                    api_base_url=f"https://{mastodonhost.hostname}",
+                    access_token=bridge.mastodon_access_code,
+                    debug_requests=False,
+                    request_timeout=15,
+                    ratelimit_method='throw'
+            )
 
-        try:
-            profile = mast_api.account_verify_credentials()
-            bridge.md.is_bot = profile['bot']
+            try:
+                profile = mast_api.account_verify_credentials()
+                bridge.md.is_bot = profile['bot']
 
-            statuses = mast_api.account_statuses(bridge.mastodon_account_id)
-            if len(statuses) > 0:
-                bridge.md.last_toot = statuses[0]["created_at"]
+                statuses = mast_api.account_statuses(bridge.mastodon_account_id)
+                if len(statuses) > 0:
+                    bridge.md.last_toot = statuses[0]["created_at"]
 
-        except (MastodonAPIError, MastodonNetworkError) as e:
-            l.error(e)
-            session.commit()
-            continue
+            except (MastodonAPIError, MastodonNetworkError) as e:
+                l.error(e)
+                session.commit()
+                continue
 
-        twitter_api = twitter.Api(
-                consumer_key=c.TWITTER_CONSUMER_KEY,
-                consumer_secret=c.TWITTER_CONSUMER_SECRET,
-                access_token_key=bridge.twitter_oauth_token,
-                access_token_secret=bridge.twitter_oauth_secret,
-                tweet_mode='extended'  # Allow tweets longer than 140 raw characters
-        )
-        try:
-            tl = twitter_api.GetUserTimeline()
-        except TwitterError as e:
-            l.error(e)
-        else:
-            if len(tl) > 0:
-                d = datetime.strptime(tl[0].created_at, '%a %b %d %H:%M:%S %z %Y')
-                bridge.md.last_tweet = d
+        if bridge.twitter_oauth_token:
+
+            try:
+                twitter_api = twitter.Api(
+                        consumer_key=c.TWITTER_CONSUMER_KEY,
+                        consumer_secret=c.TWITTER_CONSUMER_SECRET,
+                        access_token_key=bridge.twitter_oauth_token,
+                        access_token_secret=bridge.twitter_oauth_secret,
+                        tweet_mode='extended'  # Allow tweets longer than 140 raw characters
+                )
+                tl = twitter_api.GetUserTimeline()
+            except TwitterError as e:
+                l.error(e)
+                session.commit()
+                continue
+
+            else:
+                if len(tl) > 0:
+                    d = datetime.strptime(tl[0].created_at, '%a %b %d %H:%M:%S %z %Y')
+                    bridge.md.last_tweet = d
 
         session.commit()
 
