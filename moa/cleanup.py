@@ -49,8 +49,10 @@ target_date = datetime.now() - timedelta(days=30)
 bridges = session.query(Bridge).filter_by(enabled=False).filter_by(updated=None)
 for b in bridges:
     settings = b.t_settings
+    md = b.md
     session.delete(b)
     session.delete(settings)
+    session.delete(md)
     session.commit()
 
 bridges = session.query(Bridge).filter_by(enabled=False).filter(Bridge.updated < target_date)
@@ -59,8 +61,10 @@ for b in bridges:
     session.commit()
 
     settings = b.t_settings
+    md = b.md
     session.delete(b)
     session.delete(settings)
+    session.delete(md)
     session.commit()
 
 
