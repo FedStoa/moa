@@ -36,9 +36,13 @@ class Tweet(Message):
         return json.dumps(self.data._json)
 
     @property
+    def created_at(self):
+        return datetime.strptime(self.data.created_at, '%a %b %d %H:%M:%S %z %Y')
+
+    @property
     def too_old(self) -> bool:
         now = datetime.now(timezone.utc)
-        td = now - datetime.strptime(self.data.created_at, '%a %b %d %H:%M:%S %z %Y')
+        td = now - self.created_at
         return td.total_seconds() >= 60 * 60 * HOUR_CUTOFF
 
     @property

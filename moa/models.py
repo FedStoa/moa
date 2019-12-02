@@ -205,6 +205,9 @@ class BridgeStat(Base):
     instas = Column(Integer, default=0, server_default="0")
 
     def __init__(self, bridge_id):
+        self.tweets = 0
+        self.toots = 0
+        self.instas = 0
         self.bridge_id = bridge_id
 
     @property

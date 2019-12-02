@@ -418,6 +418,8 @@ for bridge in bridges:
                         worker_stat.add_toot()
                         bridge_stat.add_toot()
 
+                    bridge.md.last_toot = t.data['created_at']
+
     #
     # Post Tweets to Mastodon
     #
@@ -447,6 +449,9 @@ for bridge in bridges:
                     if result:
                         worker_stat.add_tweet()
                         bridge_stat.add_tweet()
+
+                    bridge.md.last_tweet = tweet.created_at
+
 
     #
     # Post Instagram
