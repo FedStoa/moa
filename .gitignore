@@ -1,7 +1,6 @@
 __pycache__
 .venv
 config.py
-/.idea
 /.moa-venv
 /moa.egg-info
 /.moa_venv
@@ -12,3 +11,5 @@ config.py
 .DS_Store
 /worker_stop
 worker_*.lock
+
+/.idea/workspace.xml
