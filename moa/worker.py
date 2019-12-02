@@ -156,6 +156,8 @@ for bridge in bridges:
         l.error(e)
         sys.exit()
 
+    if not bridge.md:
+        bridge.md = BridgeMetadata()
 
     #
     # Fetch from Mastodon
