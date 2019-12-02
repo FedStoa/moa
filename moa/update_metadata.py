@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 
 import twitter
-from mastodon import Mastodon, MastodonAPIError
+from mastodon import Mastodon, MastodonAPIError, MastodonNetworkError
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import Session
 from twitter import TwitterError
@@ -67,16 +67,18 @@ for bridge in bridges:
                 ratelimit_method='throw'
         )
 
-        profile = mast_api.account_verify_credentials()
-        bridge.md.is_bot = profile['bot']
-
         try:
+            profile = mast_api.account_verify_credentials()
+            bridge.md.is_bot = profile['bot']
+
             statuses = mast_api.account_statuses(bridge.mastodon_account_id)
             if len(statuses) > 0:
                 bridge.md.last_toot = statuses[0]["created_at"]
 
-        except MastodonAPIError as e:
+        except [MastodonAPIError, MastodonNetworkError] as e:
             l.error(e)
+            session.commit()
+            continue
 
         twitter_api = twitter.Api(
                 consumer_key=c.TWITTER_CONSUMER_KEY,
