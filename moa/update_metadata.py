@@ -75,7 +75,7 @@ for bridge in bridges:
             if len(statuses) > 0:
                 bridge.md.last_toot = statuses[0]["created_at"]
 
-        except [MastodonAPIError, MastodonNetworkError] as e:
+        except (MastodonAPIError, MastodonNetworkError) as e:
             l.error(e)
             session.commit()
             continue
