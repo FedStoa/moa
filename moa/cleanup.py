@@ -52,7 +52,8 @@ for b in bridges:
     md = b.md
     session.delete(b)
     session.delete(settings)
-    session.delete(md)
+    if md:
+        session.delete(md)
     session.commit()
 
 bridges = session.query(Bridge).filter_by(enabled=False).filter(Bridge.updated < target_date)
@@ -64,7 +65,8 @@ for b in bridges:
     md = b.md
     session.delete(b)
     session.delete(settings)
-    session.delete(md)
+    if md:
+        session.delete(md)
     session.commit()
 
 
