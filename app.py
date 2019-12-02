@@ -466,6 +466,8 @@ def mastodon_oauthorized():
         else:
             bridge = get_or_create_bridge()
             bridge.mastodon_host = get_or_create_host(host)
+            bridge.md.is_bot = creds['bot']
+
             try:
                 bridge.mastodon_account_id = int(account_id)
             except ValueError:
