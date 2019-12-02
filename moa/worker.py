@@ -29,7 +29,7 @@ from twitter import TwitterError
 
 from moa.helpers import email_deferral, MoaMediaUploadException, FORMAT
 from moa.insta import Insta
-from moa.models import Bridge, WorkerStat, DEFER_OK, DEFER_FAILED, BridgeStat
+from moa.models import Bridge, WorkerStat, DEFER_OK, DEFER_FAILED, BridgeStat, BridgeMetadata
 from moa.toot import Toot
 from moa.toot_poster import TootPoster
 from moa.tweet import Tweet
@@ -131,7 +131,7 @@ with lockfile.open('wt') as f:
 if not c.SEND:
     l.warning("SENDING IS NOT ENABLED")
 
-bridges = session.query(Bridge).filter_by(enabled=True).filter_by(worker_id=args.worker)
+bridges = session.query(Bridge).filter_by(enabled=True).filter(BridgeMetadata.worker_id == args.worker)
 
 if 'sqlite' not in c.SQLALCHEMY_DATABASE_URI and not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())

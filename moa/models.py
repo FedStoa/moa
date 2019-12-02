@@ -43,6 +43,7 @@ class MastodonHost(Base):
     def defer_reset(self):
         self.defer_count = 0
 
+
 CON_XP_DISABLED = 'disabled'
 CON_XP_ONLYIF = 'onlyif'
 CON_XP_ONLYIF_TAGS = ['moa', 'xp']
@@ -52,7 +53,7 @@ CON_XP_UNLESS_TAGS = ['nomoa', 'noxp']
 
 class TSettings(Base):
     __tablename__ = 'settings'
-    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci' }
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
 
     id = Column(Integer, primary_key=True)
     bridge = relationship('Bridge', backref='t_settings', lazy='dynamic')
@@ -137,6 +138,7 @@ class Bridge(Base):
     instagram_handle = Column(String(30))
 
     t_settings_id = Column(Integer, ForeignKey('settings.id'), nullable=True)
+    metadata_id = Column(Integer, ForeignKey('bridgemetadata.id'), nullable=True)
 
     worker_id = Column(Integer, default=1)
 
@@ -200,14 +202,11 @@ class BridgeStat(Base):
     created = Column(DateTime, default=datetime.utcnow)
     bridge_id = Column(Integer, ForeignKey('bridge.id'), nullable=True)
 
-    tweets = Column(Integer, default=0)
-    toots = Column(Integer, default=0)
-    instas = Column(Integer, default=0)
+    tweets = Column(Integer, default=0, server_default="0")
+    toots = Column(Integer, default=0, server_default="0")
+    instas = Column(Integer, default=0, server_default="0")
 
     def __init__(self, bridge_id):
-        self.tweets = 0
-        self.toots = 0
-        self.instas = 0
         self.bridge_id = bridge_id
 
     @property
@@ -222,6 +221,18 @@ class BridgeStat(Base):
 
     def add_insta(self):
         self.instas += 1
+
+
+class BridgeMetadata(Base):
+    __tablename__ = 'bridgemetadata'
+    id = Column(Integer, primary_key=True)
+    created = Column(DateTime, default=datetime.utcnow)
+
+    bridge = relationship('Bridge', backref='md', lazy='dynamic')
+    last_tweet = Column(DateTime, default=datetime.utcnow)
+    last_toot = Column(DateTime, default=datetime.utcnow)
+    is_bot = Column(Boolean, default=0, server_default="0")
+    worker_id = Column(Integer, default=1)
 
 
 @event.listens_for(WorkerStat.time, 'set')

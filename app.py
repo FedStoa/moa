@@ -27,7 +27,7 @@ from twitter import TwitterError
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email, timespan, FORMAT
-from moa.models import Bridge, MastodonHost, TSettings, WorkerStat, metadata, BridgeStat
+from moa.models import Bridge, MastodonHost, TSettings, WorkerStat, metadata, BridgeStat, BridgeMetadata
 
 app = Flask(__name__)
 
@@ -180,6 +180,8 @@ def catch_up_twitter(bridge):
         else:
             if len(tl) > 0:
                 bridge.twitter_last_id = tl[0].id
+                d = datetime.strptime(tl[0].created_at, '%a %b %d %H:%M:%S %z %Y')
+                bridge.md.last_tweet = d
             else:
                 bridge.twitter_last_id = 0
 
@@ -199,6 +201,7 @@ def catch_up_mastodon(bridge):
             statuses = api.account_statuses(bridge.mastodon_account_id)
             if len(statuses) > 0:
                 bridge.mastodon_last_id = statuses[0]["id"]
+                bridge.md.last_toot = statuses[0]["created_at"]
             else:
                 bridge.mastodon_last_id = 0
 
@@ -217,9 +220,11 @@ def delete():
         if bridge:
             app.logger.info(f"Deleting settings for Bridge {bridge.id}")
             settings = bridge.t_settings
+            md = bridge.md
             db.session.query(BridgeStat).filter_by(bridge_id=bridge.id).delete()
             db.session.delete(bridge)
             db.session.delete(settings)
+            db.session.delete(md)
             db.session.commit()
 
     return redirect(url_for('logout'))
@@ -346,7 +351,8 @@ def get_or_create_bridge(bridge_id=None):
         bridge = Bridge()
         bridge.enabled = True
         bridge.t_settings = TSettings()
-        bridge.worker_id = random.randint(1, app.config['WORKER_JOBS'])
+        bridge.md = BridgeMetadata()
+        bridge.md.worker_id = random.randint(1, app.config['WORKER_JOBS'])
         bridge.updated = datetime.now()
         db.session.add(bridge.t_settings)
         db.session.add(bridge)

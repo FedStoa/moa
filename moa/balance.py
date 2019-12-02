@@ -49,7 +49,7 @@ w = 1
 for b in bridges:
     print(w, b)
 
-    b.worker_id = w
+    b.md.worker_id = w
     w += 1
     if w > c.WORKER_JOBS:
         w = 1
