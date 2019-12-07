@@ -148,6 +148,9 @@ def options():
         bridge.enabled = form.enabled.data
         bridge.updated = datetime.now()
 
+        if not bridge.md:
+            bridge.md = BridgeMetadata()
+
         catch_up_twitter(bridge)
         catch_up_mastodon(bridge)
 
@@ -346,6 +349,8 @@ def mastodon_api(hostname, access_code=None):
 def get_or_create_bridge(bridge_id=None):
     if bridge_id:
         bridge = db.session.query(Bridge).filter_by(id=bridge_id).first()
+        if not bridge.md:
+            bridge.md = BridgeMetadata()
 
     else:
         bridge = Bridge()
