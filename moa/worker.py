@@ -421,6 +421,7 @@ for bridge in bridges:
                         bridge_stat.add_toot()
 
                     bridge.md.last_toot = t.data['created_at']
+                    session.commit()
 
     #
     # Post Tweets to Mastodon
@@ -453,6 +454,7 @@ for bridge in bridges:
                         bridge_stat.add_tweet()
 
                     bridge.md.last_tweet = tweet.created_at
+                    session.commit()
 
 
     #
