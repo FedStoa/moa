@@ -397,7 +397,7 @@ for bridge in bridges:
         tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
         if bridge.mastodon_access_code:
-            l.debug(f"{bridge.id}: M - {bridge.mastodon_user}@{mastodonhost.hostname}")
+            l.info(f"{bridge.id}: M - {bridge.mastodon_user}@{mastodonhost.hostname}")
 
             tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
 
@@ -431,7 +431,7 @@ for bridge in bridges:
         toot_poster = TootPoster(c.SEND, session, mast_api, bridge)
 
         if bridge.twitter_oauth_token:
-            l.debug(f"{bridge.id}: T - @{bridge.twitter_handle}")
+            l.info(f"{bridge.id}: T - @{bridge.twitter_handle}")
 
             if settings.post_to_mastodon_enabled and len(new_tweets) > 0:
                 l.info(f"{len(new_tweets)} new tweets found")
@@ -462,7 +462,7 @@ for bridge in bridges:
     #
 
     if len(new_instas) > 0:
-        l.debug(f"{bridge.id}: I - {bridge.instagram_handle}")
+        l.info(f"{bridge.id}: I - {bridge.instagram_handle}")
 
         if settings.instagram_post_to_mastodon or settings.instagram_post_to_twitter:
             l.info(f"{len(new_instas)} new instas found")
