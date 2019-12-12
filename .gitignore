@@ -13,3 +13,4 @@ config.py
 worker_*.lock
 
 /.idea/workspace.xml
+/.ipynb_checkpoints

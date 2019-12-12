@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 coverage = "*"
 instagram = {editable = true,git = "git@github.com/foozmeat/python-instagram.git"}
+jupyter = "*"
 
 [packages]
 certifi = ">=2019.3.9"
@@ -25,6 +26,7 @@ pip-check = "*"
 'sentry-sdk[flask]' = "*"
 authlib = "==0.13"
 cairosvg = "*"
+jupyter = "*"
 
 [requires]
 python_version = "3.6"
