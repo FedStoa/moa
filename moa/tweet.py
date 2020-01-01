@@ -199,7 +199,7 @@ class Tweet(Message):
                 rt_pad = 0
 
                 for mention, indices in self.mentions:
-                    suffix = '@twitter.activitypub.actor'
+                    suffix = '@twitter.com'
 
                     pad = (index * len(suffix)) - rt_pad
                     s = indices[0] + pad
