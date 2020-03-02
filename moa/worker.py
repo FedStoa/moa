@@ -13,18 +13,20 @@ from typing import Any, List
 import psutil
 import requests
 import twitter
+from httplib2 import ServerNotFoundError
 from instagram import InstagramAPI, InstagramAPIError, InstagramClientError
 from instagram.helper import datetime_to_timestamp
 from mastodon import Mastodon
-from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError
+from mastodon.Mastodon import MastodonAPIError, MastodonNetworkError, MastodonRatelimitError, MastodonServerError
 from requests import ConnectionError
 from sqlalchemy import create_engine, exc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from twitter import TwitterError
 
+from moa.helpers import email_deferral
 from moa.insta import Insta
-from moa.models import Bridge, WorkerStat
+from moa.models import Bridge, WorkerStat, DEFER_OK, DEFER_FAILED
 from moa.toot import Toot
 from moa.toot_poster import TootPoster
 from moa.tweet import Tweet
@@ -36,9 +38,14 @@ moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
 c = getattr(importlib.import_module('config'), moa_config)
 
 if c.SENTRY_DSN:
-    from raven import Client
+    import sentry_sdk
+    from sentry_sdk.integrations.logging import LoggingIntegration
 
-    client = Client(c.SENTRY_DSN)
+    sentry_logging = LoggingIntegration(
+            level=logging.INFO,  # Capture info and above as breadcrumbs
+            event_level=logging.FATAL  # Only send fatal errors as events
+    )
+    sentry_sdk.init(dsn=c.SENTRY_DSN, integrations=[sentry_logging])
 
 parser = argparse.ArgumentParser(description='Moa Worker')
 parser.add_argument('--worker', dest='worker', type=int, required=False, default=1)
@@ -116,7 +123,7 @@ with lockfile.open('wt') as f:
 if not c.SEND:
     l.warning("SENDING IS NOT ENABLED")
 
-bridges = session.query(Bridge).filter_by(enabled=True)
+bridges = session.query(Bridge).filter_by(enabled=True).filter_by(worker_id=args.worker)
 
 if 'sqlite' not in c.SQLALCHEMY_DATABASE_URI and not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())
@@ -136,15 +143,15 @@ for bridge in bridges:
         # in case the row is removed during a run
         continue
 
-    if args.worker != (bridge.id % c.WORKER_JOBS) + 1:
-        continue
-
     #
     # Fetch from Mastodon
     #
     new_toots: List[Any] = []
 
-    if bridge.mastodon_access_code:
+    if not bridge.mastodon_access_code:
+        bridge.enabled = False
+        session.commit()
+    else:
         mastodon_last_id = bridge.mastodon_last_id
         mastodonhost = bridge.mastodon_host
 
@@ -168,35 +175,68 @@ for bridge in bridges:
                     since_id=bridge.mastodon_last_id
             )
         except MastodonAPIError as e:
-            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
+            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonAPIError: {e}"
+            l.error(msg)
 
-            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized']):
+            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
+                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
                 l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
                 bridge.enabled = False
             else:
-                mastodonhost.defer()
-                session.commit()
+                r = mastodonhost.defer()
+
+                if r == DEFER_OK:
+                    email_deferral(c, mastodonhost, l, msg)
+
+                elif r == DEFER_FAILED:
+                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                    bridge.enabled = False
+
+            session.commit()
+
+            continue
+
+        except MastodonServerError as e:
+            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonServerError: {e}"
+            l.error(msg)
+
+            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
+                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
+                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.enabled = False
+            else:
+                r = mastodonhost.defer()
+
+                if r == DEFER_OK:
+                    email_deferral(c, mastodonhost, l, msg)
+
+                elif r == DEFER_FAILED:
+                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                    bridge.enabled = False
+
+            session.commit()
 
             continue
 
         except MastodonNetworkError as e:
-            l.error(f"{bridge.mastodon_user}@{mastodonhost.hostname}: {e}")
-            mastodonhost.defer()
+            msg = f"{bridge.mastodon_user}@{mastodonhost.hostname} MastodonNetworkError: {e}"
+            l.error(msg)
+
+            if any(x in repr(e) for x in ['revoked', 'invalid', 'not found', 'Forbidden', 'Unauthorized', 'Bad Request',
+                                          'Name or service not known', 'certificate verify failed', 'CertificateError']):
+                l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                bridge.enabled = False
+            else:
+                r = mastodonhost.defer()
+
+                if r == DEFER_OK:
+                    email_deferral(c, mastodonhost, l, msg)
+
+                elif r == DEFER_FAILED:
+                    l.warning(f"Disabling bridge for user {bridge.mastodon_user}@{mastodonhost.hostname}")
+                    bridge.enabled = False
+
             session.commit()
-
-            if c.MAIL_SERVER and c.SEND_DEFERRED_EMAIL:
-
-                try:
-                    message = f"""From: {c.MAIL_DEFAULT_SENDER}
-    To: {c.MAIL_TO}
-    Subject: {mastodonhost.hostname} Deferred
-    
-    """
-                    smtpObj = smtplib.SMTP(c.MAIL_SERVER)
-                    smtpObj.sendmail(c.MAIL_DEFAULT_SENDER, [c.MAIL_TO], message)
-
-                except smtplib.SMTPException as e:
-                    l.error(e)
 
             continue
 
@@ -212,10 +252,11 @@ for bridge in bridges:
                 bridge.mastodon_last_id = int(new_toots[0]['id'])
             except ValueError:
                 continue
-                
-            bridge.updated = datetime.now()
-        new_toots.reverse()
 
+            bridge.updated = datetime.now()
+
+        new_toots.reverse()
+        mastodonhost.defer_reset()
     #
     # Fetch from Twitter
     #
@@ -292,7 +333,7 @@ for bridge in bridges:
         except InstagramClientError as e:
             l.error(f"{bridge.instagram_handle}: Client Error: {e.error_message}")
 
-        except (ConnectionResetError, IncompleteRead) as e:
+        except (ConnectionResetError, IncompleteRead, ServerNotFoundError) as e:
             l.error(f"{e}")
             continue
 

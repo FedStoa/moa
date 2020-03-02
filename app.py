@@ -1,7 +1,6 @@
 import logging
 import os
 from datetime import datetime, timedelta
-from logging.handlers import TimedRotatingFileHandler
 
 import pandas as pd
 import pygal
@@ -16,12 +15,13 @@ from instagram.oauth2 import OAuth2AuthExchangeError
 from mastodon import Mastodon
 from mastodon.Mastodon import MastodonAPIError, MastodonIllegalArgumentError, MastodonNetworkError, \
     MastodonUnauthorizedError
+from pymysql import DataError
 from sqlalchemy import exc, func
 from twitter import TwitterError
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email
-from moa.models import Bridge, MastodonHost, WorkerStat, metadata, TSettings
+from moa.models import Bridge, MastodonHost, TSettings, WorkerStat, metadata
 
 app = Flask(__name__)
 
@@ -30,7 +30,7 @@ FORMAT = "%(asctime)-15s [%(filename)s:%(lineno)s : %(funcName)s()] %(message)s"
 formatter = logging.Formatter(FORMAT)
 
 # initialize the log handler
-logHandler = TimedRotatingFileHandler('logs/app.log', when='D', backupCount=7)
+logHandler = logging.FileHandler('logs/app.log')
 logHandler.setFormatter(formatter)
 
 # set the app logger level
@@ -44,9 +44,13 @@ config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
 app.config.from_object(config)
 
 if app.config['SENTRY_DSN']:
-    from raven.contrib.flask import Sentry
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
 
-    sentry = Sentry(app, dsn=app.config['SENTRY_DSN'])
+    sentry_sdk.init(
+        dsn=app.config['SENTRY_DSN'],
+        integrations=[FlaskIntegration()]
+    )
 
 db = SQLAlchemy(metadata=metadata)
 migrate = Migrate(app, db)
@@ -429,14 +433,23 @@ def mastodon_oauthorized():
             bridge.mastodon_host = get_or_create_host(host)
             bridge.mastodon_account_id = account_id
             # email_bridge_details(app, bridge)
-            db.session.commit()
+
+            try:
+                db.session.commit()
+            except DataError as e:
+                flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+                return redirect(url_for('index'))
 
         if not bridge.mastodon_access_code:
             # in case they deactivated this account and are logging in again
             bridge.mastodon_access_code = access_code
             bridge.mastodon_user = username
             catch_up_mastodon(bridge)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except DataError as e:
+                flash(f"There was a problem connecting to the mastodon server. The error was {e}")
+                return redirect(url_for('index'))
 
     return redirect(url_for('index'))
 

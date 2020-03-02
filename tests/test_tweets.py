@@ -49,3 +49,19 @@ class TestTweets(unittest.TestCase):
         expected_content = 'RT @lorddeath@twitter.com\nTbh I need to find time to email @aaisp@twitter.com and be prepared to do some troubleshooting, as my “@a@twitter.com.1” line drops pretty much daily :( Even @aaisp@twitter.com can\'t force BT OpenReach to give me fully-stable lines :p'
 
         self.assertEqual(expected_content, tweet.clean_content)
+
+    def test_mention_replacement_1(self):
+        status = self.thaw_tweet('mention_replacement_1')
+
+        tweet = Tweet(self.settings, status, self.api)
+        expected_content = '#booster2019 was another great time. Lovely city, on-point organization (food, coffee), awesome talks & crowd (including an evolter, @MartinBurnsSCO@twitter.com).'
+
+        self.assertEqual(expected_content, tweet.clean_content)
+
+    def test_rt_with_entity_1(self):
+        status = self.thaw_tweet('rt_with_entity_1')
+
+        tweet = Tweet(self.settings, status, self.api)
+        expected_content = '+1 \n---\nRT @lisacrispin@twitter.com\nThanks again to all the wonderful, welcoming people who made @boosterconf amazing. Umbrellas, great food, perfect mix of session types & lengths, great diversity, wide range of topics, so fun. #booster2019 💜\nhttps://twitter.com/lisacrispin/status/1106754071233552384'
+
+        self.assertEqual(expected_content, tweet.clean_content)

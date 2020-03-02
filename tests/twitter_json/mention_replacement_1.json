@@ -1,0 +1,99 @@
+{
+  "created_at": "Sat Mar 30 20:39:38 +0000 2019",
+  "id": 1112092037434662912,
+  "id_str": "1112092037434662912",
+  "full_text": "#booster2019 was another great time. Lovely city, on-point organization (food, coffee), awesome talks &amp; crowd (including an evolter, @MartinBurnsSCO).",
+  "truncated": false,
+  "display_text_range": [
+    0,
+    154
+  ],
+  "entities": {
+    "hashtags": [
+      {
+        "text": "booster2019",
+        "indices": [
+          0,
+          12
+        ]
+      }
+    ],
+    "symbols": [],
+    "user_mentions": [
+      {
+        "screen_name": "MartinBurnsSCO",
+        "name": "Martin Burns\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc73\udb40\udc63\udb40\udc74\udb40\udc7f\ud83c\uddea\ud83c\uddfa\ud83c\udff3\ufe0f\u200d\ud83c\udf08",
+        "id": 222071394,
+        "id_str": "222071394",
+        "indices": [
+          137,
+          152
+        ]
+      }
+    ],
+    "urls": []
+  },
+  "source": "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>",
+  "in_reply_to_status_id": null,
+  "in_reply_to_status_id_str": null,
+  "in_reply_to_user_id": null,
+  "in_reply_to_user_id_str": null,
+  "in_reply_to_screen_name": null,
+  "user": {
+    "id": 925031723233972224,
+    "id_str": "925031723233972224",
+    "name": "Moa Bridge Test",
+    "screen_name": "moabridge",
+    "location": "",
+    "description": "",
+    "url": null,
+    "entities": {
+      "description": {
+        "urls": []
+      }
+    },
+    "protected": true,
+    "followers_count": 0,
+    "friends_count": 1,
+    "listed_count": 0,
+    "created_at": "Mon Oct 30 16:08:43 +0000 2017",
+    "favourites_count": 0,
+    "utc_offset": null,
+    "time_zone": null,
+    "geo_enabled": false,
+    "verified": false,
+    "statuses_count": 240,
+    "lang": "en",
+    "contributors_enabled": false,
+    "is_translator": false,
+    "is_translation_enabled": false,
+    "profile_background_color": "F5F8FA",
+    "profile_background_image_url": null,
+    "profile_background_image_url_https": null,
+    "profile_background_tile": false,
+    "profile_image_url": "http://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    "profile_image_url_https": "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    "profile_link_color": "1DA1F2",
+    "profile_sidebar_border_color": "C0DEED",
+    "profile_sidebar_fill_color": "DDEEF6",
+    "profile_text_color": "333333",
+    "profile_use_background_image": true,
+    "has_extended_profile": false,
+    "default_profile": true,
+    "default_profile_image": true,
+    "following": false,
+    "follow_request_sent": false,
+    "notifications": false,
+    "translator_type": "none"
+  },
+  "geo": null,
+  "coordinates": null,
+  "place": null,
+  "contributors": null,
+  "is_quote_status": false,
+  "retweet_count": 0,
+  "favorite_count": 0,
+  "favorited": false,
+  "retweeted": false,
+  "lang": "en"
+}

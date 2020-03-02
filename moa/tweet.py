@@ -227,7 +227,8 @@ class Tweet(Message):
                 content = re.sub(r'https://twitter.com/.*$', '', content)
 
                 quoted_text = self.data.quoted_status.full_text
-
+                quoted_text = html.unescape(quoted_text)
+                
                 for url in self.data.quoted_status.urls:
                     # Unshorten URLs
                     quoted_text = re.sub(url.url, url.expanded_url, quoted_text)
@@ -242,9 +243,9 @@ class Tweet(Message):
                     content = content.replace(whole_cw, '').strip()
                     self.cw = m.group(1)
 
+            content = self.expand_handles(content)  # The mention indices assume the content has not been unescaped yet
             content = html.unescape(content)
 
-            content = self.expand_handles(content)
             quoted_text = self.expand_handles(quoted_text)
 
             for url in self.urls:

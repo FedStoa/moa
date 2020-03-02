@@ -7,7 +7,11 @@ from sqlalchemy.orm import relationship
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
-PENALTY_TIME = 600  # 10 minutes
+DEFER_TIME = 60 * 15
+DEFER_STRIKES = 86400 / DEFER_TIME
+DEFER_OK = 0
+DEFER_REPEAT = 1
+DEFER_FAILED = 2
 
 
 class MastodonHost(Base):
@@ -20,9 +24,24 @@ class MastodonHost(Base):
     created = Column(DateTime, default=datetime.utcnow)
     bridges = relationship('Bridge', backref='mastodon_host', lazy='dynamic')
     defer_until = Column(DateTime)
+    defer_count = Column(Integer)
 
     def defer(self):
-        self.defer_until = datetime.now() + timedelta(seconds=PENALTY_TIME)
+        self.defer_until = datetime.now() + timedelta(seconds=DEFER_TIME)
+
+        if not self.defer_count:
+            self.defer_count = 1
+            return DEFER_OK
+        else:
+            self.defer_count += 1
+
+            if self.defer_count >= DEFER_STRIKES:
+                return DEFER_FAILED
+            else:
+                return DEFER_REPEAT
+
+    def defer_reset(self):
+        self.defer_count = 0
 
 
 class TSettings(Base):
@@ -113,6 +132,8 @@ class Bridge(Base):
     instagram_handle = Column(String(30))
 
     t_settings_id = Column(Integer, ForeignKey('settings.id'), nullable=True)
+
+    worker_id = Column(Integer, default=1)
 
     created = Column(DateTime, default=datetime.utcnow)
     updated = Column(DateTime)

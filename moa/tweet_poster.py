@@ -1,7 +1,9 @@
 import logging
 import mimetypes
 import os
+import platform
 import pprint as pp
+import subprocess
 import tempfile
 import time
 from typing import Optional
@@ -130,7 +132,7 @@ class TweetPoster(Poster):
                 elif e.message[0]['code'] == 144:
                     # tweet being replied to is gone
                     return None
-                elif e.message[0]['code'] == 89:
+                elif e.message[0]['code'] in [64, 89]:
                     logger.warning(f"Disabling bridge for Twitter user @{self.bridge.twitter_handle}")
                     self.bridge.enabled = False
                     return None
@@ -181,6 +183,24 @@ class TweetPoster(Poster):
             upload_file_name = temp_file.name + file_extension
             os.rename(temp_file.name, upload_file_name)
 
+            if file_extension == '.webm':
+                converted_file_name = temp_file.name + '.mp4'
+                if platform.system() == 'Darwin':
+                    FFMPEG = '/usr/local/bin/ffmpeg'
+                else:
+                    FFMPEG = '/usr/bin/ffmpeg'
+
+                return_code = subprocess.call([FFMPEG,
+                                               '-loglevel', 'error',
+                                               '-xerror',
+                                               '-i', upload_file_name,
+                                               '-y',
+                                               converted_file_name])
+                os.unlink(upload_file_name)
+
+                if return_code == 0:
+                    upload_file_name = converted_file_name
+
             description = attachment.get('description', "")
             # self.attachments.append((upload_file_name, description))
 
@@ -188,7 +208,11 @@ class TweetPoster(Poster):
             logger.info(f'Uploading {description} {upload_file_name}')
 
             try:
-                media_id = self.api.UploadMediaChunked(media=temp_file_read)
+                if file_extension in ['.webm', '.mp4', '.mov']:
+                    media_id = self.api.UploadMediaChunked(media=temp_file_read,
+                                                           media_category='tweet_video')
+                else:
+                    media_id = self.api.UploadMediaChunked(media=temp_file_read)
 
                 if description:
                     self.api.PostMediaMetadata(media_id, alt_text=description)
@@ -196,7 +220,7 @@ class TweetPoster(Poster):
                 self.media_ids.append(media_id)
 
             except TwitterError as e:
-                logger.error(f"Twitter upload: {e.message}")
+                logger.error(f"Twitter upload error: {e.message}")
                 return False
 
             finally:
