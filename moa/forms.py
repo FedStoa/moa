@@ -20,6 +20,8 @@ class SettingsForm(FlaskForm):
     split_twitter_messages = BooleanField('Split long toots on Twitter?')
     post_sensitive_behind_link = BooleanField('Link toot with warning if there are sensitive images?')
     sensitive_link_text = StringField('', validators=[Length(min=1, message="Warning can't be empty")])
+    use_cw_prefix = BooleanField('Use a custom prefix for Content Warnings')
+    cw_prefix = StringField('', validators=[Length(min=1, max=10, message="CW prefix length should be in range 1 to 10.")])
 
     post_rts_to_mastodon = BooleanField('Post RTs to Mastodon?')
     post_quotes_to_mastodon = BooleanField('Post quoted tweets to Mastodon?')
@@ -46,6 +48,8 @@ class SettingsForm(FlaskForm):
         del self.split_twitter_messages
         del self.post_sensitive_behind_link
         del self.sensitive_link_text
+        del self.use_cw_prefix
+        del self.cw_prefix
 
         del self.post_rts_to_mastodon
         del self.post_quotes_to_mastodon
