@@ -289,7 +289,7 @@ class Toot(Message):
             self.content = self.content.strip()
 
             if self.spoiler_text:
-                self.content = f"CW: {self.spoiler_text}\n\n{self.content}"
+                self.content = f"{self.settings.cw_prefix} {self.spoiler_text}\n\n{self.content}"
 
             if self.is_sensitive and self.settings.post_sensitive_behind_link and len(self.media_attachments) > 0:
                 self.content = f"{self.content}\n{self.settings.sensitive_link_text}\n{self.url}"
