@@ -133,7 +133,7 @@ if not c.SEND:
 
 bridges = session.query(Bridge).filter_by(enabled=True).filter(BridgeMetadata.worker_id == args.worker)
 
-l.info(f"Working on {len(bridges)} bridges")
+l.info(f"Working on {bridges.count()} bridges")
 
 if 'sqlite' not in c.SQLALCHEMY_DATABASE_URI and not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())
