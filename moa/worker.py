@@ -131,7 +131,7 @@ with lockfile.open('wt') as f:
 if not c.SEND:
     l.warning("SENDING IS NOT ENABLED")
 
-bridges = session.query(Bridge).join(BridgeMetadata).filter_by(enabled=True).filter(BridgeMetadata.worker_id == args.worker).filter(BridgeMetadata.id == Bridge.metadata_id)
+bridges = session.query(Bridge).filter_by(enabled=True).filter(BridgeMetadata.worker_id == args.worker).filter(BridgeMetadata.id == Bridge.metadata_id)
 
 l.info(f"Working on {bridges.count()} bridges")
 
