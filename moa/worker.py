@@ -131,7 +131,7 @@ with lockfile.open('wt') as f:
 if not c.SEND:
     l.warning("SENDING IS NOT ENABLED")
 
-bridges = session.query(Bridge).filter_by(enabled=True).filter(BridgeMetadata.worker_id == args.worker)
+bridges = session.query(Bridge).filter_by(enabled=True).filter(BridgeMetadata.worker_id == args.worker).filter(BridgeMetadata.worker_id == args.worker)
 
 if 'sqlite' not in c.SQLALCHEMY_DATABASE_URI and not c.DEVELOPMENT:
     bridges = bridges.order_by(func.rand())
