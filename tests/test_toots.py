@@ -64,6 +64,11 @@ class TestToots(unittest.TestCase):
         toot = Toot(self.settings, toot_with_cw, self.c)
         self.assertEqual(toot.clean_content, "CW: This is the spoiler text\n\nThis is the secret stuff")
 
+    def test_cw_custom(self):
+        self.settings.cw_prefix = "CN"
+        toot = Toot(self.settings, toot_with_cw, self.c)
+        self.assertEqual(toot.clean_content, "CN This is the spoiler text\n\nThis is the secret stuff")
+
     def test_length(self):
         toot = Toot(self.settings, toot_with_bogus_url, self.c)
         # print(toot.clean_content)

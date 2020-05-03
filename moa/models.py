@@ -67,6 +67,8 @@ class TSettings(Base):
     post_boosts_to_twitter = Column(Boolean, nullable=False, default=True)
     post_sensitive_behind_link = Column(Boolean, nullable=False, default=False)
     sensitive_link_text = Column(String(100), nullable=False, default='(NSFW Image)')
+    use_cw_prefix = Column(Boolean, nullable=False, default=False)
+    cw_prefix = Column(String(10), nullable=False, default="CW:")
 
     # Twitter -> Masto
     post_to_mastodon = Column(Boolean, nullable=False, default=True)
@@ -88,6 +90,8 @@ class TSettings(Base):
         kwargs.setdefault('post_boosts_to_twitter', True)
         kwargs.setdefault('post_sensitive_behind_link', False)
         kwargs.setdefault('sensitive_link_text', '(NSFW Image)')
+        kwargs.setdefault('use_cw_prefix', False)
+        kwargs.setdefault('cw_prefix', "CW:")
 
         kwargs.setdefault('post_to_mastodon', True)
         kwargs.setdefault('post_rts_to_mastodon', True)
