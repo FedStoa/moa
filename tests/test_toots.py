@@ -8,6 +8,10 @@ from moa.tweet_poster import TWEET_LENGTH
 from moa.models import TSettings
 from tests.toot_samples import *
 
+"""
+To add a toot to the sample list stop worker in the debug and copy the value of toot.data
+"""
+
 
 class TestToots(unittest.TestCase):
 
@@ -74,8 +78,8 @@ class TestToots(unittest.TestCase):
         toot.split_toot(TWEET_LENGTH)
 
         self.assertEqual(
-            'Has anyone written a story where the Amish play a crucial role in future society because they deliberately choose which technology they let in to their communities, and can therefore be safe “wake-up zones” for those cryogenically frozen or brought from the past in some way?',
-            toot.message_parts[0])
+                'Has anyone written a story where the Amish play a crucial role in future society because they deliberately choose which technology they let in to their communities, and can therefore be safe “wake-up zones” for those cryogenically frozen or brought from the past in some way?',
+                toot.message_parts[0])
 
     def test_twitter_sanitize(self):
         self.c.SANITIZE_TWITTER_HANDLES = True
@@ -104,3 +108,29 @@ xcxcxcxc."""
 
         self.assertEqual(toot.message_parts[0], part_1)
         self.assertEqual(toot.message_parts[1], part_2)
+
+    def test_long_toot_with_link(self):
+        part_1 = """Managed to get Telus IPv6 working on my UniFi Dream Machine-powered home network without their crappy router in the mix!
+
+I followed this bit about setting dhcpv6 to prefix-only: https://chadohman.ca/telus-optik-iptv-on-ubiquiti-unifi/#DHCPv6_IGMP_Proxy, but on the Dream Machine the config is at (1/2)"""
+        part_2 = """/mnt/data/unifi/data/sites
+
+There is more to it (all in that article) if you use their TV streaming service, but we don’t, so just this bit works!
+
+And on the other end I just had to make sure to turn on IPv6 delegation on the LAN side under the hidden (2/2)"""
+
+        toot = Toot(self.settings, long_toot_with_link, self.c)
+        toot.split_toot(TWEET_LENGTH)
+
+        self.assertEqual(toot.message_parts[0], part_1)
+        self.assertEqual(toot.message_parts[1], part_2)
+
+    def test_long_toot_with_two_links(self):
+
+        part_1 = """I feel like I must be the only one but I still deeply, sincerely miss the early iOS 6 era Podcasts app with its simulated reel-to-reel UI
+
+(images from https://nicemohawk.com/blog/2013/03/making-screens-look-like-objects/ and https://www.niemanlab.org/2012/06/apple-tune-into-podcast-stations-on-an-iphone-radio-dial/)"""
+        toot = Toot(self.settings, long_toot_with_two_links, self.c)
+        toot.split_toot(TWEET_LENGTH)
+
+        self.assertEqual(toot.message_parts[0], part_1)

@@ -12,14 +12,7 @@ MY_TLDS = [
     "shop"
 ]
 
-URL_REGEXP = re.compile((
-    r'('
-    r'(?!(https?://|www\.)?\.|ftps?://|([0-9]+\.){{1,3}}\d+)'  # exclude urls that start with "."
-    r'(?:https?://|www\.)*(?!.*@)(?:[\w+-_]+[.])'  # beginning of url
-    r'(?:\w+'  # all tlds
-    r'(?:[:0-9]*))'  # port numbers & close off TLDs
-    r'(?:[/]?[?][a-z0-9!*\'();:&=+$/%#\[\]\-_.,~?]*)*'  # path/query params
-    r')'), re.U | re.I | re.X)
+URL_REGEXP = re.compile(r"([--:\w?@%&+~#=]*\.[a-z]{2,4}\/{0,2})((?:[?&](?:\w+)=(?:\w+))+|[--:\w?@%&+~#=]+)?", re.U | re.I)
 
 logger = logging.getLogger('worker')
 
@@ -200,11 +193,13 @@ class Toot(Message):
 
         status_length = len(string.encode('utf-16-le')) // 2
 
-        match = re.findall(URL_REGEXP, string)
-        if len(match) >= 1:
-            replaced_chars = len(''.join(map(lambda x: x[0], match)))
-            status_length = status_length - replaced_chars + (self.url_length * len(match))
-            # logger.debug(f"{len(string)} {string} {status_length}")
+        matches = re.finditer(URL_REGEXP, string)
+        for m in matches:
+            url = m.group(0)
+            # subtract the length of the URL
+            status_length -= len(url)
+            # add the length of Twitter's URLs
+            status_length += self.url_length
 
         if self.is_sensitive and self.settings.post_sensitive_behind_link:
             status_length += len(f"\n{self.settings.sensitive_link_text}\n{self.url}")
