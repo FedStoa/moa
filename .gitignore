@@ -14,3 +14,5 @@ worker_*.lock
 
 /.idea/workspace.xml
 /.ipynb_checkpoints
+.idea/misc.xml
+.idea/moa.iml

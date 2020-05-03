@@ -20,6 +20,7 @@ class SettingsForm(FlaskForm):
     split_twitter_messages = BooleanField('Split long toots on Twitter?')
     post_sensitive_behind_link = BooleanField('Link toot with warning if there are sensitive images?')
     sensitive_link_text = StringField('', validators=[Length(min=1, message="Warning can't be empty")])
+    remove_cw = BooleanField("Remove toot content warning?")
 
     post_rts_to_mastodon = BooleanField('Post RTs to Mastodon?')
     post_quotes_to_mastodon = BooleanField('Post quoted tweets to Mastodon?')
@@ -46,6 +47,7 @@ class SettingsForm(FlaskForm):
         del self.split_twitter_messages
         del self.post_sensitive_behind_link
         del self.sensitive_link_text
+        del self.remove_cw
 
         del self.post_rts_to_mastodon
         del self.post_quotes_to_mastodon

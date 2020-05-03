@@ -67,6 +67,7 @@ class TSettings(Base):
     post_boosts_to_twitter = Column(Boolean, nullable=False, default=True)
     post_sensitive_behind_link = Column(Boolean, nullable=False, default=False)
     sensitive_link_text = Column(String(100), nullable=False, default='(NSFW Image)')
+    remove_cw = Column(Boolean, nullable=False, default=False)
 
     # Twitter -> Masto
     post_to_mastodon = Column(Boolean, nullable=False, default=True)
