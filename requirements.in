@@ -1,0 +1,17 @@
+certifi>=2019.3.9
+Flask==1.1.1
+Flask-SQLAlchemy==2.4.1
+Flask-Mail==0.9.1
+Flask-Migrate==2.5.2
+Flask-WTF==0.14.2
+git+https://github.com/foozmeat/python-instagram.git#egg=instagram
+Mastodon.py==1.5.0
+pandas
+psutil
+pygal==2.4.0
+python-twitter==3.5
+PyMySQL==0.9.3
+pip-check
+sentry-sdk[flask]
+authlib==0.13
+cairosvg

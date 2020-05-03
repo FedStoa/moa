@@ -1,0 +1,3 @@
+coverage
+-e git@github.com/foozmeat/python-instagram.git#egg=instagram
+jupyter
