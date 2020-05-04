@@ -16,6 +16,7 @@ from moa.models import CON_XP_ONLYIF, CON_XP_ONLYIF_TAGS, CON_XP_UNLESS, CON_XP_
 logger = logging.getLogger('worker')
 
 HOUR_CUTOFF = 8
+HANDLE_SUFFIX = '@twitter'
 
 
 class Tweet(Message):
@@ -190,21 +191,28 @@ class Tweet(Message):
 
         return m
 
-    def expand_handles(self, content):
+    @property
+    def quoted_mentions(self):
+
+        if self.data.quoted_status:
+            m = [(u.screen_name, u._json['indices']) for u in self.data.quoted_status.user_mentions]
+
+        return m
+
+    def expand_handles(self, content, mentions):
 
         if content:
 
-            if self.mentions:
+            if mentions:
                 index = 0
                 rt_pad = 0
 
-                for mention, indices in self.mentions:
-                    suffix = '@twitter.com'
+                for mention, indices in mentions:
 
-                    pad = (index * len(suffix)) - rt_pad
+                    pad = (index * len(HANDLE_SUFFIX)) - rt_pad
                     s = indices[0] + pad
                     e = indices[1] + pad
-                    replacement = f"@{mention}{suffix}"
+                    replacement = f"@{mention}{HANDLE_SUFFIX}"
 
                     content = content[:s] + replacement + content[e:]
 
@@ -221,9 +229,14 @@ class Tweet(Message):
 
             if self.is_retweet:
                 content = self.data.retweeted_status.full_text
+                content = self.expand_handles(content, self.mentions)
 
             elif self.is_quoted:
                 content = self.data.full_text
+
+                # Handles have to be expanded before URLs are unfurled or the indices
+                # will be wrong
+                content = self.expand_handles(content, self.mentions)
 
                 for url in self.data.urls:
                     # Unshorten URLs
@@ -233,6 +246,7 @@ class Tweet(Message):
                 content = re.sub(r'https://twitter.com/.*$', '', content)
 
                 quoted_text = self.data.quoted_status.full_text
+                quoted_text = self.expand_handles(quoted_text, self.quoted_mentions)
                 quoted_text = html.unescape(quoted_text)
 
                 for url in self.data.quoted_status.urls:
@@ -241,6 +255,7 @@ class Tweet(Message):
 
             else:
                 content = self.data.full_text
+                content = self.expand_handles(content, self.mentions)
 
                 m = re.search(cw_regex, content)
 
@@ -249,10 +264,7 @@ class Tweet(Message):
                     content = content.replace(whole_cw, '').strip()
                     self.cw = m.group(1)
 
-            content = self.expand_handles(content)  # The mention indices assume the content has not been unescaped yet
             content = html.unescape(content)
-
-            quoted_text = self.expand_handles(quoted_text)
 
             for url in self.urls:
                 # Unshorten URLs
@@ -260,22 +272,22 @@ class Tweet(Message):
 
             if self.is_retweet:
                 if len(content) > 0:
-                    content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.activitypub.actor\n{content}"
+                    content = f"RT @{self.data.retweeted_status.user.screen_name}{HANDLE_SUFFIX}\n{content}"
                 else:
-                    content = f"RT @{self.data.retweeted_status.user.screen_name}@twitter.activitypub.actor\n"
+                    content = f"RT @{self.data.retweeted_status.user.screen_name}{HANDLE_SUFFIX}\n"
 
             elif self.is_quoted:
                 for attachment in self.media:
                     # Remove the t.co link to the media
                     quoted_text = re.sub(attachment.url, "", quoted_text)
 
-                possible_content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}@twitter.activitypub.actor\n{quoted_text}\n{self.url}"
+                possible_content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}{HANDLE_SUFFIX}\n{quoted_text}\n{self.url}"
 
                 if len(possible_content) > 500:
                     logger.info(f"Toot is too long: {len(possible_content)}")
                     diff = len(possible_content) - 500 + 1
                     quoted_text = quoted_text[:-diff]
-                    content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}@twitter.activitypub.actor\n{quoted_text}…\n{self.url}"
+                    content = f"{content}\n---\nRT @{self.data.quoted_status.user.screen_name}{HANDLE_SUFFIX}\n{quoted_text}…\n{self.url}"
                     logger.info(f"Length is now: {len(content)}")
 
                 else:
@@ -360,7 +372,7 @@ class Tweet(Message):
                 attachment_url = attachment.media_url
 
             if attachment_url:
-                attachments.append({'url': attachment_url,
+                attachments.append({'url':         attachment_url,
                                     'description': attachment.ext_alt_text})
 
         return attachments

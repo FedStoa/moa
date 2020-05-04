@@ -1,0 +1,253 @@
+{
+  "created_at": "Sun May 03 23:32:19 +0000 2020",
+  "id": 1257090644041842688,
+  "id_str": "1257090644041842688",
+  "full_text": "Say no to spec work.\nhttps://t.co/vEaB7Bgb7D\nSource: https://t.co/ROUu61mNPn\ncc @nospec",
+  "truncated": false,
+  "display_text_range": [
+    0,
+    87
+  ],
+  "entities": {
+    "hashtags": [],
+    "symbols": [],
+    "user_mentions": [
+      {
+        "screen_name": "nospec",
+        "name": "No!Spec",
+        "id": 43678915,
+        "id_str": "43678915",
+        "indices": [
+          80,
+          87
+        ]
+      }
+    ],
+    "urls": [
+      {
+        "url": "https://t.co/vEaB7Bgb7D",
+        "expanded_url": "https://euronews.com/2019/04/15/fire-underway-at-notre-dame-cathedral-in-paris-firefighters-say",
+        "display_url": "euronews.com/2019/04/15/fir\u2026",
+        "indices": [
+          21,
+          44
+        ]
+      },
+      {
+        "url": "https://t.co/ROUu61mNPn",
+        "expanded_url": "https://twitter.com/EPhilippePM/status/1118472220509126661",
+        "display_url": "twitter.com/EPhilippePM/st\u2026",
+        "indices": [
+          53,
+          76
+        ]
+      }
+    ]
+  },
+  "source": "<a href=\"https://mobile.twitter.com\" rel=\"nofollow\">Twitter Web App</a>",
+  "in_reply_to_status_id": null,
+  "in_reply_to_status_id_str": null,
+  "in_reply_to_user_id": null,
+  "in_reply_to_user_id_str": null,
+  "in_reply_to_screen_name": null,
+  "user": {
+    "id": 925031723233972224,
+    "id_str": "925031723233972224",
+    "name": "Moa Bridge Test",
+    "screen_name": "moabridge",
+    "location": "",
+    "description": "",
+    "url": null,
+    "entities": {
+      "description": {
+        "urls": []
+      }
+    },
+    "protected": true,
+    "followers_count": 0,
+    "friends_count": 1,
+    "listed_count": 0,
+    "created_at": "Mon Oct 30 16:08:43 +0000 2017",
+    "favourites_count": 0,
+    "utc_offset": null,
+    "time_zone": null,
+    "geo_enabled": false,
+    "verified": false,
+    "statuses_count": 276,
+    "lang": null,
+    "contributors_enabled": false,
+    "is_translator": false,
+    "is_translation_enabled": false,
+    "profile_background_color": "F5F8FA",
+    "profile_background_image_url": null,
+    "profile_background_image_url_https": null,
+    "profile_background_tile": false,
+    "profile_image_url": "http://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    "profile_image_url_https": "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    "profile_link_color": "1DA1F2",
+    "profile_sidebar_border_color": "C0DEED",
+    "profile_sidebar_fill_color": "DDEEF6",
+    "profile_text_color": "333333",
+    "profile_use_background_image": true,
+    "has_extended_profile": false,
+    "default_profile": true,
+    "default_profile_image": true,
+    "following": false,
+    "follow_request_sent": false,
+    "notifications": false,
+    "translator_type": "none"
+  },
+  "geo": null,
+  "coordinates": null,
+  "place": null,
+  "contributors": null,
+  "is_quote_status": true,
+  "quoted_status_id": 1118472220509126661,
+  "quoted_status_id_str": "1118472220509126661",
+  "quoted_status_permalink": {
+    "url": "https://t.co/ROUu61mNPn",
+    "expanded": "https://twitter.com/EPhilippePM/status/1118472220509126661",
+    "display": "twitter.com/EPhilippePM/st\u2026"
+  },
+  "quoted_status": {
+    "created_at": "Wed Apr 17 11:12:12 +0000 2019",
+    "id": 1118472220509126661,
+    "id_str": "1118472220509126661",
+    "full_text": "Faut-il reconstruire une fl\u00e8che ? \u00c0 l\u2019identique ? Adapt\u00e9e aux techniques et aux enjeux de notre \u00e9poque ? Un concours international d\u2019architecture portant sur la reconstruction de la fl\u00e8che de la cath\u00e9drale sera organis\u00e9. #NotreDame",
+    "truncated": false,
+    "display_text_range": [
+      0,
+      231
+    ],
+    "entities": {
+      "hashtags": [
+        {
+          "text": "NotreDame",
+          "indices": [
+            221,
+            231
+          ]
+        }
+      ],
+      "symbols": [],
+      "user_mentions": [],
+      "urls": []
+    },
+    "source": "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+      "id": 1110890216,
+      "id_str": "1110890216",
+      "name": "Edouard Philippe",
+      "screen_name": "EPhilippePM",
+      "location": "France",
+      "description": "Premier ministre.",
+      "url": "https://t.co/xGkBfN3EWF",
+      "entities": {
+        "url": {
+          "urls": [
+            {
+              "url": "https://t.co/xGkBfN3EWF",
+              "expanded_url": "http://www.gouvernement.fr",
+              "display_url": "gouvernement.fr",
+              "indices": [
+                0,
+                23
+              ]
+            }
+          ]
+        },
+        "description": {
+          "urls": []
+        }
+      },
+      "protected": false,
+      "followers_count": 702893,
+      "friends_count": 1022,
+      "listed_count": 2165,
+      "created_at": "Tue Jan 22 07:42:40 +0000 2013",
+      "favourites_count": 421,
+      "utc_offset": null,
+      "time_zone": null,
+      "geo_enabled": true,
+      "verified": true,
+      "statuses_count": 5431,
+      "lang": null,
+      "contributors_enabled": false,
+      "is_translator": false,
+      "is_translation_enabled": false,
+      "profile_background_color": "C0DEED",
+      "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_tile": false,
+      "profile_image_url": "http://pbs.twimg.com/profile_images/983090563657469952/-026jo7C_normal.jpg",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/983090563657469952/-026jo7C_normal.jpg",
+      "profile_banner_url": "https://pbs.twimg.com/profile_banners/1110890216/1584465611",
+      "profile_link_color": "1DA1F2",
+      "profile_sidebar_border_color": "C0DEED",
+      "profile_sidebar_fill_color": "DDEEF6",
+      "profile_text_color": "333333",
+      "profile_use_background_image": true,
+      "has_extended_profile": true,
+      "default_profile": true,
+      "default_profile_image": false,
+      "following": false,
+      "follow_request_sent": false,
+      "notifications": false,
+      "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": {
+      "id": "09f6a7707f18e0b1",
+      "url": "https://api.twitter.com/1.1/geo/id/09f6a7707f18e0b1.json",
+      "place_type": "city",
+      "name": "Paris",
+      "full_name": "Paris, France",
+      "country_code": "FR",
+      "country": "France",
+      "contained_within": [],
+      "bounding_box": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2.2241006,
+              48.8155214
+            ],
+            [
+              2.4699053,
+              48.8155214
+            ],
+            [
+              2.4699053,
+              48.9021461
+            ],
+            [
+              2.2241006,
+              48.9021461
+            ]
+          ]
+        ]
+      },
+      "attributes": {}
+    },
+    "contributors": null,
+    "is_quote_status": false,
+    "retweet_count": 607,
+    "favorite_count": 2256,
+    "favorited": false,
+    "retweeted": false,
+    "lang": "fr"
+  },
+  "retweet_count": 0,
+  "favorite_count": 0,
+  "favorited": false,
+  "retweeted": false,
+  "possibly_sensitive": false,
+  "lang": "en"
+}
