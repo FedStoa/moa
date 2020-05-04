@@ -16,7 +16,7 @@ from moa.models import CON_XP_ONLYIF, CON_XP_ONLYIF_TAGS, CON_XP_UNLESS, CON_XP_
 logger = logging.getLogger('worker')
 
 HOUR_CUTOFF = 8
-HANDLE_SUFFIX = '@twitter'
+HANDLE_SUFFIX = ''
 
 
 class Tweet(Message):
