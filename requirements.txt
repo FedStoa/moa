@@ -25,7 +25,7 @@ flask-sqlalchemy==2.4.1   # via -r requirements.in, flask-migrate
 flask-wtf==0.14.3         # via -r requirements.in
 flask==1.1.2              # via -r requirements.in, flask-mail, flask-migrate, flask-sqlalchemy, flask-wtf, sentry-sdk
 future==0.18.2            # via python-twitter
-httplib2==0.17.3          # via instagram
+httplib2==0.18.0          # via instagram
 idna==2.9                 # via requests
 git+https://github.com/foozmeat/python-instagram.git#egg=instagram  # via -r requirements.in
 itsdangerous==1.1.0       # via flask, flask-wtf
