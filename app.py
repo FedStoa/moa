@@ -45,8 +45,13 @@ app.logger.addHandler(logHandler)
 
 app.logger.info("Starting up...")
 
+
 config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
 app.config.from_object(config)
+
+if app.config['TRUST_PROXY_HEADERS']:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 if app.config['SENTRY_DSN']:
     import sentry_sdk

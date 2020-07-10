@@ -37,3 +37,5 @@ class DefaultConfig(object):
 
     STATS_POSTER_BASE_URL = None
     STATS_POSTER_ACCESS_TOKEN = None
+
+    TRUST_PROXY_HEADERS = False
