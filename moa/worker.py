@@ -346,41 +346,41 @@ for bridge in bridges:
 
     new_instas = []
 
-    if bridge.instagram_access_code:
-
-        api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=c.INSTAGRAM_SECRET)
-
-        try:
-            recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
-        except InstagramAPIError as e:
-            l.error(f"{bridge.instagram_handle}: '{e.error_type}' {e.error_message}")
-
-            if e.error_type == 'OAuthAccessTokenException':
-                l.error(f"{bridge.instagram_handle}: Removing OAUTH token")
-                bridge.instagram_access_code = None
-                bridge.instagram_account_id = 0
-                bridge.instagram_handle = None
-                bridge.updated = datetime.now()
-                session.commit()
-        except InstagramClientError as e:
-            l.error(f"{bridge.instagram_handle}: Client Error: {e.error_message}")
-
-        except (ConnectionResetError, IncompleteRead, ServerNotFoundError) as e:
-            l.error(f"{e}")
-            continue
-
-        else:
-            for media in recent_media:
-
-                ts = datetime_to_timestamp(media.created_time)
-
-                if ts > bridge.instagram_last_id:
-                    new_instas.append(media)
-
-            if c.SEND and len(new_instas) != 0:
-                bridge.instagram_last_id = datetime_to_timestamp(new_instas[0].created_time)
-
-            new_instas.reverse()
+    # if bridge.instagram_access_code:
+    #
+    #     api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=c.INSTAGRAM_SECRET)
+    #
+    #     try:
+    #         recent_media, _ = api.user_recent_media(user_id=bridge.instagram_account_id)
+    #     except InstagramAPIError as e:
+    #         l.error(f"{bridge.instagram_handle}: '{e.error_type}' {e.error_message}")
+    #
+    #         if e.error_type == 'OAuthAccessTokenException':
+    #             l.error(f"{bridge.instagram_handle}: Removing OAUTH token")
+    #             bridge.instagram_access_code = None
+    #             bridge.instagram_account_id = 0
+    #             bridge.instagram_handle = None
+    #             bridge.updated = datetime.now()
+    #             session.commit()
+    #     except InstagramClientError as e:
+    #         l.error(f"{bridge.instagram_handle}: Client Error: {e.error_message}")
+    #
+    #     except (ConnectionResetError, IncompleteRead, ServerNotFoundError) as e:
+    #         l.error(f"{e}")
+    #         continue
+    #
+    #     else:
+    #         for media in recent_media:
+    #
+    #             ts = datetime_to_timestamp(media.created_time)
+    #
+    #             if ts > bridge.instagram_last_id:
+    #                 new_instas.append(media)
+    #
+    #         if c.SEND and len(new_instas) != 0:
+    #             bridge.instagram_last_id = datetime_to_timestamp(new_instas[0].created_time)
+    #
+    #         new_instas.reverse()
 
     #
     # Post Toots to Twitter
