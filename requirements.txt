@@ -15,7 +15,7 @@ cffi==1.14.0              # via cairocffi, cryptography
 chardet==3.0.4            # via requests
 click==7.1.2              # via flask, pip-tools
 colorclass==2.2.0         # via pip-check
-cryptography==2.9.2       # via authlib
+cryptography==3.2         # via authlib
 cssselect2==0.3.0         # via cairosvg
 decorator==4.4.2          # via mastodon.py
 defusedxml==0.6.0         # via cairosvg
