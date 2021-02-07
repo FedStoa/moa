@@ -1,3 +1,9 @@
+Hello! We are prepping to run Moa as a public utility!
+
+Thank you to [James Moore](https://jmoore.me/) as the original creator and maintainer of both the code and the public service.
+
+Join us on Matrix chat [#moaparty:matrix.org](https://matrix.to/#/!zPwMsygFdoMjtdrDfo:matrix.org?via=matrix.org) to get involved, or file an issue here.
+
 ```
                  _ __ ___   ___   __ _
                 | '_ ` _ \ / _ \ / _` |
