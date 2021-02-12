@@ -30,6 +30,15 @@
 
     {% endif %}
 
+    {#    Gitlab    #}
+    {% if g.bridge.gitlab_access_code %}
+        <p>Gitlab: <strong>{{ g.bridge.gitlab_handle }}</strong> <a class="red" href="{{ url_for('deactivate', type='gitlab') }}">[X]</a></p>
+
+    {% else %}
+        <p><a href="{{ url_for('gitlab_activate') }}">[ ] Connect to Gitlab</a></p>
+
+    {% endif %}
+
     {#    Options    #}
     <form method="POST" action="{{ url_for('options') }}">
         <ul>

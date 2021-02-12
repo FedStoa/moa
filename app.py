@@ -468,7 +468,7 @@ def mastodon_oauthorized():
         except (MastodonUnauthorizedError, MastodonAPIError) as e:
             flash(f"There was a problem connecting to the mastodon server. The error was {e}")
             return redirect(url_for('index'))
-
+        print(creds)
         username = creds["username"]
         account_id = creds["id"]
 
@@ -481,7 +481,7 @@ def mastodon_oauthorized():
             bridge = get_or_create_bridge()
             bridge.mastodon_host = get_or_create_host(host)
             bridge.md.is_bot = creds['bot']
-
+            print(account_id)
             try:
                 bridge.mastodon_account_id = int(account_id)
             except ValueError:

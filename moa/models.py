@@ -252,6 +252,7 @@ if __name__ == '__main__':
     from sqlalchemy import create_engine
 
     moa_config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
+    print(moa_config)
     config = getattr(importlib.import_module('config'), moa_config)
 
     if "mysql" in config.SQLALCHEMY_DATABASE_URI:
