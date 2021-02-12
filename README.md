@@ -36,9 +36,9 @@ Moa is a flask app and can be run with `python` or proxied via WSGI.
 * Install pipenv `pip3 install pipenv`
 * `PIPENV_VENV_IN_PROJECT=1 pipenv install`
 * `cp config.py.sample config.py` and override the settings from `defaults.py`
-* `MOA_CONFIG=config.DevelopmentConfig /usr/local/bin/pipenv run python -m moa.models` to create the DB tables
-* `MOA_CONFIG=config.DevelopmentConfig /usr/local/bin/pipenv run python app.py`
-* run the worker with `MOA_CONFIG=DevelopmentConfig /usr/local/bin/pipenv run python -m moa.worker`
+* `MOA_CONFIG=config.DevelopmentConfig pipenv run python -m moa.models` to create the DB tables
+* `MOA_CONFIG=config.DevelopmentConfig pipenv run python app.py`
+* run the worker with `MOA_CONFIG=DevelopmentConfig pipenv run python -m moa.worker`
 
 ## Features
 * preserves image alt text

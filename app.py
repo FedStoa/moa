@@ -25,6 +25,8 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sqlalchemy import exc, func
 from twitter import TwitterError
+# import python_gitlab as gitlab
+from loginpass import create_gitlab_backend, register_to
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email, timespan, FORMAT
@@ -510,6 +512,11 @@ def mastodon_oauthorized():
     return redirect(url_for('index'))
 
 
+#
+# Instagram
+#
+
+
 @app.route('/instagram_activate', methods=["GET"])
 def instagram_activate():
     client_id = app.config['INSTAGRAM_CLIENT_ID']
@@ -582,6 +589,84 @@ def instagram_oauthorized():
 
     return redirect(url_for('index'))
 
+
+#
+# Gitlab
+#
+
+@app.route('/gitlab_activate', methods=["GET"])
+def gitlab_activate():
+    client_id = app.config['GITLAB_CLIENT_ID']
+    client_secret = app.config['GITLAB_SECRET']
+    gitlab_app_name = app.config['GITLAB_APP_NAME']
+    gitlab_host = app.config['GITLAB_HOST']
+    redirect_uri = url_for('gitlab_oauthorized', _external=True)
+    # app.logger.info(redirect_uri)
+
+    scope = ["basic"]
+    gitlab_backend = create_gitlab_backend(OAUTH_APP_NAME, GITLAB_HOST)
+    api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+
+    try:
+        redirect_uri = api.get_authorize_login_url(scope=scope)
+    except ServerNotFoundError as e:
+        flash(f"There was a problem connecting to Instagram. Please try again")
+        return redirect(url_for('index'))
+    else:
+        return redirect(redirect_uri)
+
+@app.route('/gitlab_oauthorized')
+def gitlab_oauthorized():
+    code = request.args.get('code', None)
+
+    if code:
+
+        client_id = app.config['GITLAB_CLIENT_ID']
+        client_secret = app.config['GITLAB_SECRET']
+        redirect_uri = url_for('gitlab_oauthorized', _external=True)
+        api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+
+        try:
+            access_token = api.exchange_code_for_access_token(code)
+        except OAuth2AuthExchangeError as e:
+            flash("Gitlan authorization failed")
+            return redirect(url_for('index'))
+        except ServerNotFoundError as e:
+            flash("Gitlab authorization failed")
+            return redirect(url_for('index'))
+
+        if 'bridge_id' in session:
+            bridge = get_or_create_bridge(bridge_id=session['bridge_id'])
+
+            if not bridge:
+                pass  # this should be an error
+        else:
+            bridge = get_or_create_bridge()
+
+        bridge.instagram_access_code = access_token[0]
+
+        data = access_token[1]
+        bridge.instagram_account_id = data['id']
+        bridge.instagram_handle = data['username']
+
+        user_api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=client_secret)
+
+        try:
+            latest_media, _ = user_api.user_recent_media(user_id=bridge.instagram_account_id, count=1)
+        except Exception:
+            latest_media = []
+
+        if len(latest_media) > 0:
+            bridge.instagram_last_id = datetime_to_timestamp(latest_media[0].created_time)
+        else:
+            bridge.instagram_last_id = 0
+
+        db.session.commit()
+
+    else:
+        flash("Instagram authorization failed")
+
+    return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():

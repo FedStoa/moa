@@ -10,6 +10,10 @@ class DefaultConfig(object):
     TWITTER_CONSUMER_SECRET = ''
     INSTAGRAM_CLIENT_ID = ''
     INSTAGRAM_SECRET = ''
+    GITLAB_CLIENT_ID = ''
+    GITLAB_SECRET = ''
+    GITLAB_APP_NAME = ''
+    GITLAB_HOST = ''
     SQLALCHEMY_DATABASE_URI = 'sqlite:///moa.db'
     # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
     SEND = True
