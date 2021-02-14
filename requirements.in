@@ -14,6 +14,7 @@ pygal==2.4.0
 python-twitter==3.5
 PyMySQL==0.9.3
 pip-check
+requests
 sentry-sdk[flask]
 authlib==0.13
 cairosvg

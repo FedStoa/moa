@@ -138,6 +138,10 @@ class Bridge(Base):
     instagram_account_id = Column(BigInteger, default=0)
     instagram_handle = Column(String(30))
 
+    gitlab_access_code = Column(String(80))
+    gitlab_account_id = Column(BigInteger, default=0)
+    gitlab_handle = Column(String(30))
+
     t_settings_id = Column(Integer, ForeignKey('settings.id'), nullable=True)
     metadata_id = Column(Integer, ForeignKey('bridgemetadata.id'), nullable=True)
 

@@ -27,6 +27,7 @@ from sqlalchemy import exc, func
 from twitter import TwitterError
 # import python_gitlab as gitlab
 from loginpass import create_gitlab_backend, register_to
+import requests
 
 from moa.forms import MastodonIDForm, SettingsForm
 from moa.helpers import blacklisted, email_bridge_details, send_blacklisted_email, timespan, FORMAT
@@ -604,30 +605,42 @@ def gitlab_activate():
     # app.logger.info(redirect_uri)
 
     scope = ["basic"]
-    gitlab_backend = create_gitlab_backend(OAUTH_APP_NAME, GITLAB_HOST)
-    api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
-
-    try:
-        redirect_uri = api.get_authorize_login_url(scope=scope)
-    except ServerNotFoundError as e:
-        flash(f"There was a problem connecting to Instagram. Please try again")
-        return redirect(url_for('index'))
-    else:
-        return redirect(redirect_uri)
+    gitlab_backend = create_gitlab_backend(gitlab_app_name, gitlab_host)
+    # api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+    # print(gitlab_backend)
+    # try:
+    #     # redirect_uri = api.get_authorize_login_url(scope=scope)
+    #     # return gitlab_backend.authorize_redirect(request, redirect_uri)
+    # except ServerNotFoundError as e:
+    #     flash(f"There was a problem connecting to Instagram. Please try again")
+    #     return redirect(url_for('index'))
+    # else:
+    auth_url = '{}?client_id={}&redirect_uri={}&response_type=code'.format(gitlab_backend.OAUTH_CONFIG['authorize_url'], client_id, redirect_uri)
+    # print(gitlab_backend.OAUTH_CONFIG['authorize_url'])
+    # print(auth_url)
+    return redirect(auth_url)
 
 @app.route('/gitlab_oauthorized')
 def gitlab_oauthorized():
     code = request.args.get('code', None)
+    gitlab_app_name = app.config['GITLAB_APP_NAME']
+    gitlab_host = app.config['GITLAB_HOST']
+    client_id = app.config['GITLAB_CLIENT_ID']
+    client_secret = app.config['GITLAB_SECRET']
 
     if code:
-
-        client_id = app.config['GITLAB_CLIENT_ID']
-        client_secret = app.config['GITLAB_SECRET']
+        gitlab_backend = create_gitlab_backend(gitlab_app_name, gitlab_host)
+        # token_url = '{}'.format(gitlab_backend.OAUTH_CONFIG['token_url'])
+        # client_id = app.config['GITLAB_CLIENT_ID']
+        # client_secret = app.config['GITLAB_SECRET']
         redirect_uri = url_for('gitlab_oauthorized', _external=True)
-        api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
-
+        # api = InstagramAPI(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+        token_data = requests.post(gitlab_backend.OAUTH_CONFIG['access_token_url'], data={'client_id': client_id, 'client_secret': client_secret, 'code': code, 'grant_type': 'authorization_code', 'redirect_uri': redirect_uri})
+        # print(dir(token_data))
+        print(token_data.json())
         try:
-            access_token = api.exchange_code_for_access_token(code)
+            access_token = token_data.json()['access_token']
+            # access_token = api.exchange_code_for_access_token(code)
         except OAuth2AuthExchangeError as e:
             flash("Gitlan authorization failed")
             return redirect(url_for('index'))
@@ -643,28 +656,31 @@ def gitlab_oauthorized():
         else:
             bridge = get_or_create_bridge()
 
-        bridge.instagram_access_code = access_token[0]
+        bridge.gitlab_access_code = access_token
 
-        data = access_token[1]
-        bridge.instagram_account_id = data['id']
-        bridge.instagram_handle = data['username']
+        # get token info
+        token_info = requests.get('https://{}/api/v4/user?access_token={}'.format(gitlab_host, access_token))
+        print(token_info.json())
+        # data = access_token[1]
+        bridge.gitlab_account_id = token_info.json()['id']
+        bridge.gitlab_handle = token_info.json()['username']
 
-        user_api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=client_secret)
+        # user_api = InstagramAPI(access_token=bridge.instagram_access_code, client_secret=client_secret)
 
-        try:
-            latest_media, _ = user_api.user_recent_media(user_id=bridge.instagram_account_id, count=1)
-        except Exception:
-            latest_media = []
+        # try:
+        #     latest_media, _ = user_api.user_recent_media(user_id=bridge.instagram_account_id, count=1)
+        # except Exception:
+        #     latest_media = []
 
-        if len(latest_media) > 0:
-            bridge.instagram_last_id = datetime_to_timestamp(latest_media[0].created_time)
-        else:
-            bridge.instagram_last_id = 0
+        # if len(latest_media) > 0:
+        #     bridge.instagram_last_id = datetime_to_timestamp(latest_media[0].created_time)
+        # else:
+        #     bridge.instagram_last_id = 0
 
         db.session.commit()
 
     else:
-        flash("Instagram authorization failed")
+        flash("Gitlab authorization failed")
 
     return redirect(url_for('index'))
 
