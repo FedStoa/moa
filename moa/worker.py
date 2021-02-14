@@ -34,6 +34,7 @@ from moa.toot import Toot
 from moa.toot_poster import TootPoster
 from moa.tweet import Tweet
 from moa.tweet_poster import TweetPoster
+from moa.git_poster import GitPoster
 
 start_time = time.time()
 
@@ -402,7 +403,7 @@ for bridge in bridges:
             l.info(f"{bridge.id}: M - {bridge.mastodon_user}@{mastodonhost.hostname}")
 
             tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
-
+            git_poster = GitPoster(c.SEND, session, c.GITLAB_HOST, bridge)
             if settings.post_to_twitter_enabled and len(new_toots) > 0:
 
                 l.info(f"{len(new_toots)} new toots found")
@@ -414,6 +415,7 @@ for bridge in bridges:
                     t = Toot(settings, toot, c)
 
                     try:
+                        result = git_poster.post(t)
                         result = tweet_poster.post(t)
                     except MoaMediaUploadException as e:
                         continue
