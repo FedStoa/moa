@@ -39,6 +39,10 @@ class SettingsForm(FlaskForm):
     instagram_post_to_mastodon = BooleanField('Post Instagrams to Mastodon?')
     instagram_include_link = BooleanField('Include link to instagram post')
 
+    post_to_gitlab = BooleanField('Post Public posts to Gitlab?')
+    # TODO add validator when I figure out how to do it conditionally
+    gitlab_project = StringField('')
+
     def remove_masto_and_twitter_fields(self):
         del self.post_to_twitter
         del self.post_private_to_twitter

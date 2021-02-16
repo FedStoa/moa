@@ -2,6 +2,7 @@ import logging
 import requests
 import re
 import base64
+from datetime import datetime
 
 from moa.poster import Poster
 from moa.message import Message
@@ -20,25 +21,30 @@ class GitPoster(Poster):
     def post(self, post: Message) -> bool:
         self.reset()
 
-        reg = re.compile('\[\[push\]\] \[\[(.*?)\]\]*')
+        reg = re.compile('\[\[.*?\]\]')
         m = reg.match(post.clean_content)
-        if m is  None:
-            logger.info("not found")
+        if m is None:
+            logger.info("no wikilink found in post")
             return
-
-        note = m.group(1)
-        logger.info(post.clean_content)
-        logger.info("FOUND NOTE FILE {}".format(note))
-    
-        
-        # gitlab_host = app.config['GITLAB_HOST']
+            
+        date = datetime.now().date().isoformat()
         access_token = self.bridge.gitlab_access_code
-        file_info = requests.get('https://{}/api/v4/projects/23415794/repository/files/{}.md?access_token={}&ref=master'.format(self.gitlab_host, note, access_token))
+        url = 'https://{}/api/v4/projects/{}/repository/files/{}.md'.format(self.gitlab_host, self.bridge.t_settings.gitlab_project, date)
+        raw_url = '{}/raw?ref=master&access_token={}'.format(url, access_token)
+        raw = requests.get(raw_url)
+        logger.info(raw.text)
+        if raw.status_code == 200:
+            content = '{}\n\n{}'.format(raw.text, post.clean_content)
+            file_info = requests.put(url, data={'branch': 'master', 'content': content, 'commit_message': 'update from moa', 'access_token': access_token})
+        else:
+            content = '{}'.format(post.clean_content)
+            file_info = requests.post(url, data={'branch': 'master', 'content': content, 'commit_message': 'update from moa', 'access_token': access_token})
+        logger.info(content)
         if file_info.status_code != 200:
-            logger.info("bad request")
+            logger.info(file_info.text)
             return
         logger.info(file_info.status_code)
-        encoded_content = file_info.json()['content']
-        content = base64.standard_b64decode(encoded_content)
-        logger.info(content)
-        logger.info(file_info.json())
+        # encoded_content = file_info.json()['content']
+        # content = base64.standard_b64decode(encoded_content)
+        # logger.info(content)
+        # logger.info(file_info.json())

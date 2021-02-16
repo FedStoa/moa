@@ -74,7 +74,9 @@
                 {% if g.bridge.mastodon_access_code %}<li>{{ form.instagram_post_to_mastodon }}{{ form.instagram_post_to_mastodon.label }}</li>{% endif %}
                 <li>{{ form.instagram_include_link }}{{ form.instagram_include_link.label }}</li>
             {% endif %}
+            <hr>
 
+            <li>{{ form.post_to_gitlab }}{{ form.post_to_gitlab.label }} Gitlab Project id [number not name]{{form.gitlab_project}}</li>
         </ul>
         {{ form.csrf_token }}
         {% if g.bridge.twitter_oauth_token or g.bridge.instagram_access_code %}
