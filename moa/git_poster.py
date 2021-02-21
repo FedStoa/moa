@@ -14,14 +14,15 @@ class GitPoster(Poster):
 
         super().__init__(send, session)
 
-        # self.api = api
         self.bridge = bridge
         self.gitlab_host = gitlab_host
 
     def post(self, post: Message) -> bool:
         self.reset()
 
-        reg = re.compile('\[\[.*?\]\]')
+
+        logger.info('Post body: {}'.format(post.clean_content))
+        reg = re.compile('.*\[\[.*?\]\]')
         m = reg.match(post.clean_content)
         if m is None:
             logger.info("no wikilink found in post")
@@ -32,19 +33,16 @@ class GitPoster(Poster):
         url = 'https://{}/api/v4/projects/{}/repository/files/{}.md'.format(self.gitlab_host, self.bridge.t_settings.gitlab_project, date)
         raw_url = '{}/raw?ref=master&access_token={}'.format(url, access_token)
         raw = requests.get(raw_url)
-        logger.info(raw.text)
+        # logger.info(raw.text)
         if raw.status_code == 200:
             content = '{}\n\n{}'.format(raw.text, post.clean_content)
             file_info = requests.put(url, data={'branch': 'master', 'content': content, 'commit_message': 'update from moa', 'access_token': access_token})
         else:
             content = '{}'.format(post.clean_content)
             file_info = requests.post(url, data={'branch': 'master', 'content': content, 'commit_message': 'update from moa', 'access_token': access_token})
-        logger.info(content)
+        # logger.info(content)
         if file_info.status_code != 200:
             logger.info(file_info.text)
             return
         logger.info(file_info.status_code)
-        # encoded_content = file_info.json()['content']
-        # content = base64.standard_b64decode(encoded_content)
-        # logger.info(content)
-        # logger.info(file_info.json())
+

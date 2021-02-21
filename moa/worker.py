@@ -2,6 +2,7 @@ import argparse
 import importlib
 import logging
 import os
+import pytz
 import smtplib
 import sys
 import time
@@ -35,6 +36,7 @@ from moa.toot_poster import TootPoster
 from moa.tweet import Tweet
 from moa.tweet_poster import TweetPoster
 from moa.git_poster import GitPoster
+
 
 start_time = time.time()
 
@@ -404,7 +406,7 @@ for bridge in bridges:
 
             tweet_poster = TweetPoster(c.SEND, session, twitter_api, bridge)
             git_poster = GitPoster(c.SEND, session, c.GITLAB_HOST, bridge)
-            if settings.post_to_twitter_enabled and len(new_toots) > 0:
+            if  len(new_toots) > 0:
 
                 l.info(f"{len(new_toots)} new toots found")
 
@@ -415,17 +417,25 @@ for bridge in bridges:
                     t = Toot(settings, toot, c)
 
                     try:
-                        result = git_poster.post(t)
-                        result = tweet_poster.post(t)
+                        if settings.post_to_twitter_enabled:
+                            result = tweet_poster.post(t)
+                        if settings.post_to_gitlab:
+                            result = git_poster.post(t)
                     except MoaMediaUploadException as e:
                         continue
 
+                    l.info('Result: {}'.format(result))
                     if result:
                         worker_stat.add_toot()
                         bridge_stat.add_toot()
 
-                    bridge.md.last_toot = t.data['created_at']
+
                     session.commit()
+
+
+
+
+
 
     #
     # Post Tweets to Mastodon
@@ -437,7 +447,7 @@ for bridge in bridges:
         if bridge.twitter_oauth_token:
             l.info(f"{bridge.id}: T - @{bridge.twitter_handle}")
 
-            if settings.post_to_mastodon_enabled and len(new_tweets) > 0:
+            if len(new_tweets) > 0:
                 l.info(f"{len(new_tweets)} new tweets found")
 
                 if not bridge_stat:
@@ -448,10 +458,15 @@ for bridge in bridges:
                     tweet = Tweet(settings, status, twitter_api)
 
                     try:
-                        result = toot_poster.post(tweet)
+                        if settings.post_to_mastodon_enabled:
+                            result = toot_poster.post(tweet)
+                        if settings.post_to_gitlab:
+                            result = git_poster.post(tweet)
 
                     except MoaMediaUploadException as e:
                         continue
+
+                    l.info('Result: {}'.format(result))
 
                     if result:
                         worker_stat.add_tweet()

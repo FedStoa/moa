@@ -76,7 +76,7 @@
             {% endif %}
             <hr>
 
-            <li>{{ form.post_to_gitlab }}{{ form.post_to_gitlab.label }} Gitlab Project id [number not name]{{form.gitlab_project}}</li>
+            <li>{{ form.post_to_gitlab }}{{ form.post_to_gitlab.label }} Gitlab Project id [number not name] {{form.gitlab_project}}</li>
         </ul>
         {{ form.csrf_token }}
         {% if g.bridge.twitter_oauth_token or g.bridge.instagram_access_code %}
