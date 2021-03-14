@@ -11,6 +11,7 @@ config.py
 .DS_Store
 /worker_stop
 worker_*.lock
+*.lock
 
 /.idea/workspace.xml
 /.ipynb_checkpoints

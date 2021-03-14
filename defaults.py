@@ -10,8 +10,9 @@ class DefaultConfig(object):
     TWITTER_CONSUMER_SECRET = ''
     INSTAGRAM_CLIENT_ID = ''
     INSTAGRAM_SECRET = ''
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///moa.db'
+    # define in config.py
     # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://moa:moa@localhost/moa'
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///moa.db'
     SEND = True
     SENTRY_DSN = ''
     HEALTHCHECKS = []
