@@ -26,7 +26,8 @@
         <p>Instagram: <strong>{{ g.bridge.instagram_handle }}</strong> <a class="red" href="{{ url_for('deactivate', type='instagram') }}">[X]</a></p>
 
     {% else %}
-        <p><a href="{{ url_for('instagram_activate') }}">[ ] Connect to Instagram</a></p>
+        <!-- Instagram is disabled, see https://moaparty.com/instagram/ -->
+        <!-- <p><a href="{{ url_for('instagram_activate') }}">[ ] Connect to Instagram</a></p> -->
 
     {% endif %}
 
