@@ -16,3 +16,5 @@ worker_*.lock
 /.ipynb_checkpoints
 .idea/misc.xml
 .idea/moa.iml
+Pipfile
+Pipefile.lock
