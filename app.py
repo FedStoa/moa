@@ -46,8 +46,9 @@ app.logger.addHandler(logHandler)
 app.logger.info("Starting up...")
 
 
-config = os.environ.get('MOA_CONFIG', 'config.DevelopmentConfig')
-app.config.from_object(config)
+config = os.environ.get('MOA_CONFIG', 'DevelopmentConfig')
+# this is needed to get this in line with other modules, where we expect MOA_CONFIG to be an object in config.py.
+app.config.from_object('config.' + config)
 
 if app.config['TRUST_PROXY_HEADERS']:
     from werkzeug.middleware.proxy_fix import ProxyFix
