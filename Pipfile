@@ -22,7 +22,7 @@ httplib2 = "==0.18.0"
 idna = "==2.9"
 instagram = {git = "https://github.com/foozmeat/python-instagram.git"}
 itsdangerous = "==1.1.0"
-numpy = "==1.18.4"
+numpy = "==1.21.0"
 oauthlib = "==3.1.0"
 pandas = "==1.0.3"
 pip-check = "==2.6"
